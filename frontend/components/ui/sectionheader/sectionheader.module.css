@@ -1,0 +1,34 @@
+.section_header {
+    font-family: 'Thicccboi-semibold';
+    font-size: 32px;
+    line-height: 100%;
+    text-align: center;
+    letter-spacing: -0.03em;
+    color: #FFF;
+    max-width: 1000px;
+    width: 95%;
+    margin: 0 auto;
+}
+
+.description{
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 150%;
+    text-align: center;
+    color: #FFF;
+    max-width: 830px;
+    margin: 0 auto;
+    opacity: 80;
+}
+
+@media screen and (min-width:768px) {
+
+    .section_header{
+        font-size: 56px;
+        font-family: 'Thicccboi-bold';
+    }
+
+    .description{
+        font-size: 24px;
+    }
+}
