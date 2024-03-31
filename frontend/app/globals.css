@@ -86,7 +86,7 @@
   .heading{
     width: 85%;
     font-family: 'Thicccboi-semibold';
-    font-size: 40px;
+    font-size: 60px;
     @media (max-width: 768px) {
         font-size: 26px;
     }

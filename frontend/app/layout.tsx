@@ -8,7 +8,7 @@ import SessionProvider from "@/components/connections/SessionProvider";
 import { FooterSection } from "@/components/FooterSection/FooterSection";
 import { Footer } from "@/components/Footer/Footer";
 import { Toaster } from "@/components/ui/toaster";
-
+import NavBar from "@/components/ui/header";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,12 +25,17 @@ export default async function RootLayout({
   const session = await getServerSession();
   return (
     <html lang="en">
+     
       <body className={inter.className}>
+
         <Providers>
-          <SessionProvider session={session}>{children}</SessionProvider>
+          <SessionProvider session={session}>
+          <NavBar/>
+            {children}
+            </SessionProvider>
           <Toaster />
           <FooterSection title={"Accelerating the unification of web3"} description={"Mainnet is coming soon!"}/>
-      <Footer />
+          <Footer />
           </Providers>
       </body>
     </html>

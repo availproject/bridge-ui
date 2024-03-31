@@ -18,11 +18,11 @@ const buttonVariants = cva(
           "bg-gray-100 text-gray-900 hover:bg-gray-100/80 dark:bg-gray-800 dark:text-gray-50 dark:hover:bg-gray-800/80",
         ghost: "hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-gray-50",
         link: "text-gray-900 text-lg font-ppmori font-bold  dark:text-gray-50",
-        primary: "rounded-full text-md font-ppmori font-bold bg-gradient-to-r to-[#439FE7] from-[#2778E9] transform transition-transform hover:scale-[1.03] text-white"
+        primary: "rounded-full text-sm font-ppmori font-bold bg-gradient-to-r to-[#439FE7] from-[#2778E9] transform transition-transform hover:scale-[1.03] text-white"
       },
       size: {
         default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-full px-3",
+        sm: "h-8 rounded-full px-3",
         lg: "h-12 rounded-full px-8",
         icon: "h-10 w-10",
       },

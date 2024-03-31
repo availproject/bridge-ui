@@ -8,39 +8,13 @@ import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
 import { LoadingButton } from "../ui/loadingbutton";
 import { toast } from "../ui/use-toast";
+import { IoMdClose } from "react-icons/io";
+import { badgeVariants } from "../ui/badge";
+
+//tldr: input fields have a select network dropdown, if avail, the avail connect button shows up, if not, eth, then balances are shown accordingly, the to contains the amount field, or address feild, 
 
 export const CustomEthWalletButton = () => {
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string>(`Sign Message`);
-  const [recoveredAddress, setRecoveredAddress] = useState<string>();
-  const {
-    data: signMessageData,
-    error,
-    isPending,
-    signMessage,
-    variables,
-    isSuccess,
-  } = useSignMessage();
-
-  useEffect(() => {
-    (async () => {
-      if (variables?.message && signMessageData) {
-        const recoveredAddress = await recoverMessageAddress({
-          message: variables?.message,
-          signature: signMessageData,
-        });
-        setRecoveredAddress(recoveredAddress);
-      }
-    })();
-  }, [signMessageData, variables?.message]);
-
-  const onSubmit = async (event: any) => {
-    event.preventDefault();
-    setLoading(true);
-    setMessage("Signing Message");
-    const m = "adfsdd";
-    signMessage({ message: m });
-  };
 
   return (
     <ConnectButton.Custom>
@@ -75,12 +49,11 @@ export const CustomEthWalletButton = () => {
                 return (
                   <Button
                     onClick={openConnectModal}
-                    className=""
-                    variant={"primary"}
-                    size={"lg"}
+                    className="!text-lg font-thin bg-[#3a3b3cb1] text-left font-ppmori rounded-xl p-4 !h-20 w-full"
+                    size={"sm"}
                     type="button"
                   >
-                    Connect Wallet
+                    Connect Ethereum Wallet
                   </Button>
                 );
               }
@@ -91,56 +64,20 @@ export const CustomEthWalletButton = () => {
                   </button>
                 );
               }
-              if (error) {
-                setLoading(false);
-                setMessage("Sign Message");
-                toast({
-                  title: `${error.message}`,
-                  description: "Friday, February 10, 2023 at 5:57 PM",
-                });
-                return (
-                  <div>
-                    <form
-                      onSubmit={onSubmit}
-                    >
-                      <LoadingButton
-                        variant={"primary"}
-                        size={"lg"}
-                        className=" font-thin"
-                        loading={loading}
-                      >
-                        {message}
-                      </LoadingButton>
-                    </form>
-                  </div>
-                );
-              }
-
-              if (isSuccess) {
-                setLoading(false);
-                setMessage("Claimed");
-                return (
-                  <h1 className="text-2xl font-thicccboibold text-white">
-                    Claimed
-                  </h1>
-                );
-              }
               return (
                 <>
                   <>
-                    <div>
-                      <form
-                        onSubmit={onSubmit}
-                      >
-                        <LoadingButton
-                          variant={"primary"}
-                          size={"lg"}
-                          className="!font-md"
-                          loading={loading}
-                        >
-                          {message}
-                        </LoadingButton>
-                      </form>
+                  <div className="flex flex-row items-center justify-between p-4">
+                <p className="subheading">Eth:</p>
+                  <div className={badgeVariants({ variant: "default" })}>
+                      {account?.address?.slice(0, 6) +
+                        "..." +
+                        account?.address?.slice(-4)}
+                      <button onClick={openAccountModal} className="ml-2">
+                        {" "}
+                        <IoMdClose />
+                      </button>
+                    </div>
                     </div>
                   </>
                 </>
