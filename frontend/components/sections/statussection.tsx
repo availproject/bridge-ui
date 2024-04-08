@@ -23,6 +23,19 @@ export default function StatusSection() {
             <CheckCircle className="w-5 h-5 text-[#3E98E8] text-opacity-80" />
           </span>
           <h3 className="flex items-center mb-1 text-lg font-semibold font-thicccboisemibold">
+            Initiated
+          </h3>
+          <time className="block mb-2 text-sm font-normal leading-none text-gray-400 dark:text-gray-500">
+            Released on January 13th, 2022
+          </time>
+
+
+        </li>
+      <li className="mb-10 ms-6">
+          <span className="absolute flex items-center justify-center w-6 h-6 bg-[#232735] rounded-full -start-3 ">
+            <CheckCircle className="w-5 h-5 text-[#3E98E8] text-opacity-80" />
+          </span>
+          <h3 className="flex items-center mb-1 text-lg font-semibold font-thicccboisemibold">
             Bridged
           </h3>
           <time className="block mb-2 text-sm font-normal leading-none text-gray-400 dark:text-gray-500">
@@ -31,19 +44,7 @@ export default function StatusSection() {
 
 
         </li>
-        <li className="mb-10 ms-6">
-          <span className="absolute flex items-center justify-center w-6 h-6 bg-[#232735] rounded-full -start-3 ">
-            <CheckCircle className="w-5 h-5 text-[#3E98E8] text-opacity-80" />
-          </span>
-          <h3 className="flex items-center mb-1 text-lg font-semibold font-thicccboisemibold">
-           Ready
-          </h3>
-          <time className="block mb-2 text-sm font-normal leading-none text-gray-400 dark:text-gray-500">
-            Released on January 13th, 2022
-          </time>
-
-
-        </li>
+        
         
         <li className="mb-10 ms-6">
           <span className="absolute flex items-center justify-center w-6 h-6 bg-[#232735] rounded-full -start-3 ">
