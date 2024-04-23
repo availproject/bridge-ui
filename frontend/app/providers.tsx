@@ -19,8 +19,8 @@ import { WagmiProvider } from "wagmi";
 const { wallets } = getDefaultWallets();
 
 const config = getDefaultConfig({
-  appName: "Avail bridge ui",
-  projectId: "YOUR_PROJECT_ID",
+  appName: "Avail Bridge",
+  projectId: "e77cdade22390c135f6dfb134f075abe",
   wallets: [
     ...wallets,
     {

@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import footersection from './FooterSection.module.css'
 import { FC } from 'react';
-import { Button } from '../ui/button';
+import { Button } from '../../ui/button';
 import { ROUTES } from '@/lib/routes';
 
 interface FooterSectionProps {
