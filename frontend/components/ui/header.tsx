@@ -23,10 +23,7 @@ export default function NavBar() {
           Recent Txns
         </a>
         <a className="text-gray-400 hover:text-white text-sm" href="#">
-          What is Avail?
-        </a>
-        <a className="text-gray-400 hover:text-white text-sm" href="#">
-          Terms
+         What is Avail
         </a>
       </div>
     </header>

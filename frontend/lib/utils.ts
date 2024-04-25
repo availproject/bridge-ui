@@ -15,8 +15,10 @@ import {
   signedExtensions,
   rpc,
 } from "avail-js-sdk";
-import config from "@/config";
+
 import { resolve } from "path";
+import { substrateConfig, ethConfig } from "@/config";
+import { getBalance } from "@wagmi/core";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -42,8 +44,8 @@ export async function getSignature(account: any) {
   }
 }
 export async function sendMessage(props: sendMessageParams) {
-  const api = await initialize(config.endpoint);
-  const keyring = getKeyringFromSeed(config.seed);
+  const api = await initialize(substrateConfig.endpoint);
+  const keyring = getKeyringFromSeed(substrateConfig.seed);
   const result = await new Promise((resolve, reject) => {
     api.tx.vector
       .sendMessage(props.message, props.to, props.domain)
@@ -83,6 +85,7 @@ export async function sendMessage(props: sendMessageParams) {
               });
             }
           });
+          //TODO: add an error 
           resolve(`Transaction successful with hash: ${status.asInBlock}`);
         } else if (status.isFinalized) {
           reject(`Transaction failed. Status: ${status}`);
@@ -93,8 +96,8 @@ export async function sendMessage(props: sendMessageParams) {
 }
 
 export async function executeTransaction(props: executeParams) {
-  const api = await initialize(config.endpoint);
-  const keyring = getKeyringFromSeed(config.seed);
+  const api = await initialize(substrateConfig.endpoint);
+  const keyring = getKeyringFromSeed(substrateConfig.seed);
   const result = await new Promise((resolve, reject) => {
     api.tx.vector
       .execute(props.slot, props.addrMessage, props.accountProof, props.storageProof)
@@ -143,9 +146,9 @@ export async function executeTransaction(props: executeParams) {
   return result;
 }
 
-export async function _getBalance(address: string, chain: Chain) {
+export async function _getBalance(address: `0x${string}`, chain: Chain) {
   if (chain === Chain.AVAIL) {
-    const keyring = getKeyringFromSeed(config.seed);
+    const keyring = getKeyringFromSeed(substrateConfig.seed);
     const options = { app_id: 0, nonce: -1 };
     // const decimals = getDecimals(api);
     // const result = await api.tx.
@@ -155,11 +158,12 @@ export async function _getBalance(address: string, chain: Chain) {
     return 0;
   }
   if (chain === Chain.ETH) {
-    // const balance = getBalance(config, {
-    //   address: address,
-    // })
+    const balance = getBalance(ethConfig, {
+      address: address,
+    })
     return 0;
   } else {
-    return "wrong chain";
+    return 0;
   }
 }
+
