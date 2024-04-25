@@ -5,7 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from "next/image";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { getBalance } from "@wagmi/core";
 import { useForm } from "react-hook-form";
+import config from "@/config";
+
 import {
   Form,
   FormControl,
@@ -23,7 +26,9 @@ import { Chain } from "@/@types/types";
 import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
 import { Button } from "../ui/button";
-
+import { useBalance } from "wagmi";
+import { _getBalance, sendMessage } from "@/lib/utils";
+import { useConnectWallet } from "@subwallet-connect/react";
 const formSchema = z.object({
   fromAmount: z.number().positive("Enter a Valid Amount").or(z.string()),
   toAmount: z.number().positive().or(z.string()),
@@ -33,6 +38,7 @@ export default function BridgeSection() {
   const [from, setFrom] = useState<Chain>(Chain.AVAIL);
   const [recent, setRecent] = useState<boolean>(false);
   const [to, setTo] = useState<Chain>(Chain.ETH);
+  const [{ wallet, connecting }, connect, disconnect] = useConnectWallet()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,17 +52,12 @@ export default function BridgeSection() {
     console.log(values);
   }
 
-  function getBalance(address: string, chain: Chain) {
-    if (chain === Chain.AVAIL) {
-      return 0;
-    }
-
-  }
-
   return (
-    <div className="section_bg text-white p-4 md:w-[60vw] lg:w-[40w] xl:w-[40w] min-h-[50vh]">
+    <div className="section_bg text-white p-4 md:w-[40vw] lg:w-[50w] xl:w-[40w] min-h-[50vh]">
       <div className="flex flex-row pb-[2vh] items-center justify-between">
-        <h1 className="font-thicccboibold text-4xl w-full ">{recent ? "Recent Transactions" : "Avail Bridge"}</h1>
+        <h1 className="font-thicccboibold text-4xl w-full ">
+          {recent ? "Recent Transactions" : "Avail Bridge"}
+        </h1>
         <button
           onClick={() => {
             setRecent(!recent);
@@ -64,7 +65,7 @@ export default function BridgeSection() {
           className=""
         >
           {" "}
-          {recent ? <ChevronLeft /> :<ChevronRight /> }
+          {recent ? <ChevronLeft /> : <ChevronRight />}
         </button>
       </div>
       {recent ? (
@@ -87,8 +88,8 @@ export default function BridgeSection() {
                     <FormItem>
                       <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end space-x-[15vw]  ">
                         <span className="font-ppmori">From</span>
-                        <div className="flex flex-row items-center justify-center">
-                          <TabsList className={`bg-inherit`}>
+                        <div className="flex flex-row items-center justify-center ">
+                          <TabsList className={`bg-inherit `}>
                             <TabsTrigger value="eth">
                               <Image
                                 src="/images/eth.png"
@@ -110,7 +111,7 @@ export default function BridgeSection() {
                             <Eth claimAddress={undefined} />
                           </TabsContent>
                           <TabsContent value="avail">
-                            <Avail />
+                          <Button size={"sm"} variant={"primary"} className="" onClick={() => (wallet ? disconnect(wallet) : connect())}>{connecting ? 'Connecting' : wallet ? 'Disconnect' : 'Connect Wallet'}</Button>
                           </TabsContent>
                         </div>
                       </FormLabel>
@@ -128,7 +129,9 @@ export default function BridgeSection() {
                       <div className="flex flex-row items-end justify-start space-x-2 pl-1 !mt-4">
                         <p className="font-ppmori !text-md !text-opacity-50 !text-white">
                           Balance{" "}
-                          <span className="font-ppmori !text-lg text-[#3FB5F8]">{getBalance("dsf", Chain.AVAIL)}</span>
+                          <span className="font-ppmori !text-lg text-[#3FB5F8]">
+                            {"ok"}
+                          </span>
                         </p>
                       </div>
 
@@ -166,9 +169,7 @@ export default function BridgeSection() {
                       <div className="flex flex-row items-end justify-start space-x-2 pl-1 !mt-4">
                         <p className="font-ppmori !text-md !text-opacity-50 !text-white">
                           Balance{" "}
-                          <span className="font-ppmori !text-lg text-[#3FB5F8]">
-                          {getBalance("dsf", Chain.AVAIL)}
-                          </span>
+                          <span className="font-ppmori !text-lg text-[#3FB5F8]"></span>
                         </p>
                       </div>
 
@@ -189,6 +190,16 @@ export default function BridgeSection() {
           </Form>
         </Tabs>
       )}
+      <button
+        onClick={()=>{
+          console.log( "sfd")
+          sendMessage({
+          message: { ArbitraryMessage: "0xazeazeaze" },
+          to: "0x0000000000000000000000000000000000000000000000000000000000000000",
+          domain: 2,
+        })}}
+      >{`sdf`}</button>
+       
     </div>
   );
 }
