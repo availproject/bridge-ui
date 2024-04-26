@@ -1,28 +1,27 @@
-import { Chain, executeParams, sendMessageParams } from "@/@types/types";
+import {
+  Chain,
+  ethBalance,
+  executeParams,
+  sendMessageParams,
+  TxnData,
+} from "@/@types/types";
 import { toast } from "@/components/ui/use-toast";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import {
   ApiPromise,
-  disconnect,
-  formatNumberToBalance,
-  getDecimals,
   getKeyringFromSeed,
   initialize,
   isValidAddress,
-  WsProvider,
-  types,
-  signedExtensions,
-  rpc,
 } from "avail-js-sdk";
-
-import { resolve } from "path";
 import { substrateConfig, ethConfig } from "@/config";
 import { getBalance } from "@wagmi/core";
+import { indexerInstance } from "./axios-instance";
+import { WalletAccount } from "@talismn/connect-wallets";
+import { SignerOptions } from "@polkadot/api/types";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
 
 export async function getSignature(account: any) {
   try {
@@ -43,13 +42,15 @@ export async function getSignature(account: any) {
     });
   }
 }
-export async function sendMessage(props: sendMessageParams) {
+
+export async function sendMessage(props: sendMessageParams, account: WalletAccount) {
   const api = await initialize(substrateConfig.endpoint);
   const keyring = getKeyringFromSeed(substrateConfig.seed);
   const result = await new Promise((resolve, reject) => {
     api.tx.vector
       .sendMessage(props.message, props.to, props.domain)
-      .signAndSend(keyring, ({ status, events }) => {
+      .signAndSend(  account.address,
+        { signer: account.signer, app_id: 0 } as Partial<SignerOptions>, ({ status, events }) => {
         if (status.isInBlock) {
           console.log(`Transaction included at blockHash ${status.asInBlock}`);
           events.forEach(({ event }) => {
@@ -58,7 +59,6 @@ export async function sendMessage(props: sendMessageParams) {
               let errorInfo;
               //@ts-ignore
               if (dispatchError.isModule) {
-                
                 const decoded = api.registry.findMetaError(
                   //@ts-ignore
                   dispatchError.asModule
@@ -76,18 +76,38 @@ export async function sendMessage(props: sendMessageParams) {
               console.log(`$:: ExtrinsicFailed:: ${errorInfo}`);
             }
             if (api.events.system.ExtrinsicSuccess.is(event)) {
-              console.log(
-                "Transaction successful with hash: ",
-                event.data.toString()
-              );
-              toast({
-                title: `Transaction Success. Status: ${status}`,
-              });
+              if(status.isFinalized) {
+                console.log(
+                  "Transaction successful with hash: ",
+                  event.data.toString()
+                );
+                toast({
+                  title: `Transaction Success. Status: ${status}`,
+                });
+                resolve(`Transaction successful with hash: ${status.asInBlock}`);
+              } else {
+                //fix with @Leouarz if finality takes more than 4 minutes
+                setTimeout(() => {
+                  if (status.isFinalized) {
+                    console.log(
+                      "Transaction successful with hash: ",
+                      event.data.toString()
+                    );
+                    toast({
+                      title: `Transaction Success. Status: ${status}`,
+                    });
+                    resolve(`Transaction successful with hash: ${status.asInBlock}`);
+                  } else {
+                    toast({
+                      title:`Block not finalised after 2 minutes`,
+                    });
+                    reject(`Block not finalised after 2 minutes`);
+                  }
+                }, 2 * 60 * 1000);
+              }
             }
           });
-          //TODO: add an error 
-          resolve(`Transaction successful with hash: ${status.asInBlock}`);
-        } else if (status.isFinalized) {
+        } else  {
           reject(`Transaction failed. Status: ${status}`);
         }
       });
@@ -100,7 +120,12 @@ export async function executeTransaction(props: executeParams) {
   const keyring = getKeyringFromSeed(substrateConfig.seed);
   const result = await new Promise((resolve, reject) => {
     api.tx.vector
-      .execute(props.slot, props.addrMessage, props.accountProof, props.storageProof)
+      .execute(
+        props.slot,
+        props.addrMessage,
+        props.accountProof,
+        props.storageProof
+      )
       .signAndSend(keyring, ({ status, events }) => {
         if (status.isInBlock) {
           console.log(`Transaction included at blockHash ${status.asInBlock}`);
@@ -110,7 +135,6 @@ export async function executeTransaction(props: executeParams) {
               let errorInfo;
               //@ts-ignore
               if (dispatchError.isModule) {
-                
                 const decoded = api.registry.findMetaError(
                   //@ts-ignore
                   dispatchError.asModule
@@ -146,7 +170,7 @@ export async function executeTransaction(props: executeParams) {
   return result;
 }
 
-export async function _getBalance(address: `0x${string}`, chain: Chain) {
+export async function _getBalance(address: `${string}`, chain: Chain) {
   if (chain === Chain.AVAIL) {
     const keyring = getKeyringFromSeed(substrateConfig.seed);
     const options = { app_id: 0, nonce: -1 };
@@ -157,13 +181,34 @@ export async function _getBalance(address: `0x${string}`, chain: Chain) {
     // const _amount = formatNumberToBalance(amount, decimals);
     return 0;
   }
-  if (chain === Chain.ETH) {
-    const balance = getBalance(ethConfig, {
+  if (chain === Chain.ETH && isValidAddress(address)) {
+    const balance: ethBalance = await getBalance(ethConfig, {
       address: address,
-    })
-    return 0;
+    });
+    return parseFloat(balance.formatted);
   } else {
     return 0;
   }
 }
 
+export async function fetchLatestTxns(
+  userAddress: `0x${string}`,
+  sourceChain: Chain,
+  destinationChain: Chain
+): Promise<{ txnData: TxnData[] }> {
+  const response = await indexerInstance
+    .get(`/transactions`, {
+      params: {
+        sourceChain,
+        destinationChain,
+        userAddress,
+      },
+    })
+    .catch((e) => {
+      console.log(e);
+      return { data: { data: [] } };
+    });
+
+  const result: TxnData[] = response.data.data;
+  return { txnData: result };
+}

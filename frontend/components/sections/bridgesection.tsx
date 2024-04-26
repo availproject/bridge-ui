@@ -16,15 +16,23 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { RiLoopLeftFill } from "react-icons/ri";
 import { Input } from "@/components/ui/input";
-import { ArrowLeftRightIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ArrowLeftRightIcon,
+  ChevronLeft,
+  ChevronRight,
+  InfoIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
-import { Chain } from "@/@types/types";
+import { Chain, TxnData } from "@/@types/types";
 import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
 import { Button } from "../ui/button";
-import { _getBalance } from "@/lib/utils";
+import { _getBalance, fetchLatestTxns, sendMessage } from "@/lib/utils";
 import { useAccount } from "wagmi";
+import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
+import { useAvailAccount } from "@/stores/availwallethook";
 const formSchema = z.object({
   fromAmount: z.number().positive("Enter a Valid Amount").or(z.string()),
   toAmount: z.number().positive().or(z.string()),
@@ -32,8 +40,11 @@ const formSchema = z.object({
 
 export default function BridgeSection() {
   const [from, setFrom] = useState<Chain>(Chain.AVAIL);
-  const [ethBalance, setEthBalance] = useState<number>(0);
+  const [latestTransactions, setLatestTransactions] = useState<TxnData[]>([]);
+  const { ethHead, setEthHead } = useLatestBlockInfo();
+  const [ethBalance, setEthBalance] = useState<GLfloat>(0);
   const [availBalance, setAvailBalance] = useState<number>(0);
+  const { selected, selectedWallet } = useAvailAccount();
   const [recent, setRecent] = useState<boolean>(false);
   const [to, setTo] = useState<Chain>(Chain.ETH);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -45,40 +56,67 @@ export default function BridgeSection() {
   });
   const account = useAccount();
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  console.log(selected, selectedWallet, "selected");
+
+  useEffect(() => {
+    (async () => {
+      if (account?.address) {
+        const { txnData } = await fetchLatestTxns(
+          account?.address,
+          Chain.ETH,
+          Chain.AVAIL
+        );
+        setLatestTransactions(txnData);
+        console.log(txnData);
+      }
+    })();
+  }, [account.address]);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
+    console.log(ethHead, "before");
+    await setEthHead({
+      slot: 102,
+      timestamp: 32,
+      timestampDiff: 23,
+    });
+    console.log(ethHead, "after");
   }
 
-  useEffect(()=>{(
-    async ()=>{
-      if(account.address) {
-      const result = await _getBalance(account?.address, Chain.ETH);
-      setEthBalance(result);
-      }
-    }
-  )()},[account.address])
+  function LatestTransactions() {
+    return <></>;
+  }
 
+  useEffect(() => {
+    (async () => {
+      if (account.address) {
+        const result = await _getBalance(account?.address, Chain.ETH);
+        setEthBalance(result);
+      }
+    })();
+  }, [account.address]);
+
+  useEffect(() => {
+    (async () => {
+      if (selected?.address) {
+        const result = await _getBalance(selected?.address, Chain.AVAIL);
+        setAvailBalance(result);
+      }
+    })();
+  }, [selected?.address]);
 
   return (
     <div className="flex md:flex-row flex-col h-full md:space-x-[2vw] max-md:space-y-[2vw]">
-    <div id="bridge" className="section_bg flex-1 text-white p-4 md:w-[40vw] lg:w-[50w] xl:w-[40w] ">
-      <div className="flex flex-row pb-[2vh] items-center justify-between">
-        <h1 className="font-thicccboibold text-4xl w-full ">
-          {recent ? "Recent Transactions" : "Avail Bridge"}
-        </h1>
-        <button
-          onClick={() => {
-            setRecent(!recent);
-          }}
-          className=""
-        >
-          {" "}
-          {recent ? <ChevronLeft /> : <ChevronRight />}
-        </button>
-      </div>
-      {recent ? (
-        <>sdf</>
-      ) : (
+      <div
+        id="bridge"
+        className="section_bg flex-1 text-white p-4 w-[85vw] md:w-[40vw] lg:w-[50w] xl:w-[40w] "
+      >
+        <div className="flex flex-row pb-[2vh] items-center justify-between">
+          <h1 className="font-thicccboisemibold text-4xl w-full ">
+            Avail Bridge
+          </h1>
+        </div>
+
         <Tabs
           defaultValue="avail"
           className=" flex flex-row items-center justify-center"
@@ -104,7 +142,6 @@ export default function BridgeSection() {
                                 alt="eth"
                                 width={20}
                                 height={20}
-                               
                               ></Image>
                             </TabsTrigger>
                             <TabsTrigger value="avail">
@@ -113,15 +150,14 @@ export default function BridgeSection() {
                                 alt="eth"
                                 width={20}
                                 height={20}
-                              
                               ></Image>{" "}
                             </TabsTrigger>
                           </TabsList>
                           <TabsContent value="eth">
-                            <Eth/>
+                            <Eth />
                           </TabsContent>
                           <TabsContent value="avail">
-                      <Avail />
+                            <Avail />
                           </TabsContent>
                         </div>
                       </FormLabel>
@@ -140,7 +176,12 @@ export default function BridgeSection() {
                         <p className="font-ppmori !text-md !text-opacity-50 !text-white">
                           Balance{" "}
                           <span className="font-ppmori !text-lg text-[#3FB5F8]">
-                          {ethBalance}
+                            <TabsContent value="eth">
+                              {availBalance}
+                            </TabsContent>
+                            <TabsContent value="avail">
+                              {ethBalance}
+                            </TabsContent>
                           </span>
                         </p>
                       </div>
@@ -179,7 +220,12 @@ export default function BridgeSection() {
                       <div className="flex flex-row items-end justify-start space-x-2 pl-1 !mt-4">
                         <p className="font-ppmori !text-md !text-opacity-50 !text-white">
                           Balance{" "}
-                          <span className="font-ppmori !text-lg text-[#3FB5F8]"></span>
+                          <span className="font-ppmori !text-lg text-[#3FB5F8]">
+                            <TabsContent value="eth">{ethBalance}</TabsContent>
+                            <TabsContent value="avail">
+                              {availBalance}
+                            </TabsContent>
+                          </span>
                         </p>
                       </div>
 
@@ -199,43 +245,29 @@ export default function BridgeSection() {
             </form>
           </Form>
         </Tabs>
-      )}
-      {/* <button
-        onClick={()=>{
-          console.log( "sfd")
-          sendMessage({
-          message: { ArbitraryMessage: "0xazeazeaze" },
-          to: "0x0000000000000000000000000000000000000000000000000000000000000000",
-          domain: 2,
-        })}}
-      >{`sdf`}</button> */}
-       
-    </div>
-    <div id="status" className="section_bg flex-1 text-white p-4 md:w-[30vw] lg:w-[40w] xl:w-[30w]">
-      <div className="flex flex-row pb-[2vh] items-center justify-between">
-        <h1 className="font-thicccboibold text-3xl w-full ">
-         Recent Transactions
-        </h1>
         <button
           onClick={() => {
-            setRecent(!recent);
+            console.log("sfd");
+            sendMessage({
+              message: { ArbitraryMessage: "0xazeazeaze" },
+              to: "0x0000000000000000000000000000000000000000000000000000000000000000",
+              domain: 2,
+            }, selected!);
           }}
-          className=""
-        >
-          {" "}  
-        </button>
+        >{`sdf`}</button>
       </div>
-        <>sdf</>
-      {/* <button
-        onClick={()=>{
-          console.log( "sfd")
-          sendMessage({
-          message: { ArbitraryMessage: "0xazeazeaze" },
-          to: "0x0000000000000000000000000000000000000000000000000000000000000000",
-          domain: 2,
-        })}}
-      >{`sdf`}</button> */}
-    </div>
+      <div
+        id="status"
+        className="section_bg flex-1 text-white p-4 md:w-[30vw] lg:w-[40w] xl:w-[30w]"
+      >
+        <div className="flex flex-row pb-[2vh] items-center justify-between">
+          <h1 className="font-thicccboiregular items-center flex flex-row space-x-3 text-white text-opacity-80 text-2xl w-full ">
+            <p>Recent</p> <RiLoopLeftFill /> <></>
+          </h1>
+        </div>
+
+        <LatestTransactions />
+      </div>
     </div>
   );
 }

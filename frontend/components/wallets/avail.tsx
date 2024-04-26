@@ -16,6 +16,7 @@ import { IoMdClose } from "react-icons/io";
 import { badgeVariants } from "../ui/badge";
 import { useCookies } from "react-cookie";
 import { ArrowDownCircle, ArrowLeft, InfoIcon } from "lucide-react";
+import { useAvailAccount } from "@/stores/availwallethook";
 
 export default function Avail() {
   const [open, setOpen] = useState(false);
@@ -24,8 +25,7 @@ export default function Avail() {
     "substrateWallet",
   ]);
   const [supportedWallets, setSupportedWallets] = useState<Wallet[]>([]);
-  const [selected, setSelected] = useState<WalletAccount | null>(null);
-  const [selectedWallet, setSelectedWallet] = useState<any>();
+const { selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAccount();
   const [enabledAccounts, setEnabledAccounts] = useState<WalletAccount[]>([]);
 
   useEffect(() => {
@@ -61,7 +61,6 @@ export default function Avail() {
       });
     }
   }, []);
-
   async function updateEnabledAccounts(wallet: Wallet): Promise<undefined> {
     const accounts = await wallet.getAccounts();
     setEnabledAccounts(accounts);
