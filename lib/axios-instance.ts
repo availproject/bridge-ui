@@ -11,7 +11,7 @@ export const apiInstance = axios.create({
 });
 
 export const indexerInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_BRIDGE_API_URL,
+    baseURL: process.env.NEXT_PUBLIC_BRIDGE_INDEXER_URL,
 
     withCredentials: false
 });

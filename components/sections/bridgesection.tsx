@@ -10,7 +10,6 @@ import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -39,6 +38,7 @@ const formSchema = z.object({
 });
 
 export default function BridgeSection() {
+  const account = useAccount();
   const [from, setFrom] = useState<Chain>(Chain.AVAIL);
   const [latestTransactions, setLatestTransactions] = useState<TxnData[]>([]);
   const { ethHead, setEthHead } = useLatestBlockInfo();
@@ -54,10 +54,8 @@ export default function BridgeSection() {
       toAmount: "",
     },
   });
-  const account = useAccount();
 
-  console.log(selected, selectedWallet, "selected");
-
+  /////// HOOKS
   useEffect(() => {
     (async () => {
       if (account?.address) {
@@ -71,7 +69,24 @@ export default function BridgeSection() {
       }
     })();
   }, [account.address]);
+  useEffect(() => {
+    (async () => {
+      if (account.address) {
+        const result = await _getBalance(account?.address, Chain.ETH);
+        setEthBalance(result);
+      }
+    })();
+  }, [account.address]);
+  useEffect(() => {
+    (async () => {
+      if (selected?.address) {
+        const result = await _getBalance(selected?.address, Chain.AVAIL);
+        setAvailBalance(result);
+      }
+    })();
+  }, [selected?.address]);
 
+  /////CUSTOM FUNCTIONS
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
     console.log(ethHead, "before");
@@ -87,23 +102,7 @@ export default function BridgeSection() {
     return <></>;
   }
 
-  useEffect(() => {
-    (async () => {
-      if (account.address) {
-        const result = await _getBalance(account?.address, Chain.ETH);
-        setEthBalance(result);
-      }
-    })();
-  }, [account.address]);
 
-  useEffect(() => {
-    (async () => {
-      if (selected?.address) {
-        const result = await _getBalance(selected?.address, Chain.AVAIL);
-        setAvailBalance(result);
-      }
-    })();
-  }, [selected?.address]);
 
   return (
     <div className="flex md:flex-row flex-col h-full md:space-x-[2vw] max-md:space-y-[2vw]">
@@ -162,6 +161,7 @@ export default function BridgeSection() {
                         </div>
                       </FormLabel>
                       <FormControl>
+                        <>
                         <Input
                           type="number"
                           min={0}
@@ -171,20 +171,18 @@ export default function BridgeSection() {
                             field.onChange(+event.target.value)
                           }
                         />
-                      </FormControl>
-                      <div className="flex flex-row items-end justify-start space-x-2 pl-1 !mt-4">
-                        <p className="font-ppmori !text-md !text-opacity-50 !text-white">
-                          Balance{" "}
-                          <span className="font-ppmori !text-lg text-[#3FB5F8]">
+<div className="flex flex-row items-end justify-start pl-1 ">
+                          <span className="font-ppmori ">
                             <TabsContent value="eth">
-                              {availBalance}
+                            <p className="text-[#]">Balance</p>{availBalance}
                             </TabsContent>
                             <TabsContent value="avail">
-                              {ethBalance}
+                            Balance  {ethBalance}
                             </TabsContent>
                           </span>
-                        </p>
                       </div>
+                      </>
+                      </FormControl>
 
                       <FormMessage />
                     </FormItem>
