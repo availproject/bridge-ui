@@ -64,6 +64,7 @@ const { selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcc
   async function updateEnabledAccounts(wallet: Wallet): Promise<undefined> {
     const accounts = await wallet.getAccounts();
     setEnabledAccounts(accounts);
+    return;
   }
 
   function DisconnectWallet() {

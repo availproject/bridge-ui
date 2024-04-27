@@ -170,7 +170,7 @@ export async function executeTransaction(props: executeParams) {
   return result;
 }
 
-export async function _getBalance(address: `${string}`, chain: Chain) {
+export async function _getBalance(address: `0x${string}`, chain: Chain) {
   if (chain === Chain.AVAIL) {
     const keyring = getKeyringFromSeed(substrateConfig.seed);
     const options = { app_id: 0, nonce: -1 };

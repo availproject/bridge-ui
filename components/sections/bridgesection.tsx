@@ -77,14 +77,14 @@ export default function BridgeSection() {
       }
     })();
   }, [account.address]);
-  useEffect(() => {
-    (async () => {
-      if (selected?.address) {
-        const result = await _getBalance(selected?.address, Chain.AVAIL);
-        setAvailBalance(result);
-      }
-    })();
-  }, [selected?.address]);
+  // useEffect(() => {
+  //   (async () => {
+  //     if (selected?.address) {
+  //       const result = await _getBalance(selected?.address, Chain.AVAIL);
+  //       setAvailBalance(result);
+  //     }
+  //   })();
+  // }, [selected?.address]);
 
   /////CUSTOM FUNCTIONS
   async function onSubmit(values: z.infer<typeof formSchema>) {
