@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import BridgeSection from "@/components/sections/bridgesection";
-import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
+import { useLatestBlockInfo } from "@/store/lastestBlockInfo";
 
 export default function Home() {
   const { ethHead } = useLatestBlockInfo()

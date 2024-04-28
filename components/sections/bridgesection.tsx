@@ -28,11 +28,11 @@ import { Chain, TxnData } from "@/@types/types";
 import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
 import { Button } from "../ui/button";
-import { _getBalance, fetchLatestTxns, sendMessage } from "@/lib/utils";
+import { _getBalance, fetchLatestTxns, sendMessage } from "@/utils/transactions";
 import { useAccount } from "wagmi";
-import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
-import { useAvailAccount } from "@/stores/availwallethook";
-import { useCommonStore } from "@/stores/common";
+import { useLatestBlockInfo } from "@/store/lastestBlockInfo";
+import { useAvailAccount } from "@/store/availWalletHook";
+import { useCommonStore } from "@/store/common";
 const formSchema = z.object({
   fromAmount: z.number().positive("Enter a Valid Amount").or(z.string()),
   toAddress: z.string().min(42, "Enter a Valid Address"),

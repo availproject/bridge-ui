@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { IoMdClose } from "react-icons/io";
-import { getSignature } from "@/lib/utils";
+import { getSignature } from "@/utils/transactions";
 import { toast } from "./ui/use-toast";
 import { LoadingButton } from "./ui/loadingbutton";
 import { Button } from "./ui/button";
