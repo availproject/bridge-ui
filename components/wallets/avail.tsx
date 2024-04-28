@@ -16,7 +16,7 @@ import { IoMdClose } from "react-icons/io";
 import { badgeVariants } from "../ui/badge";
 import { useCookies } from "react-cookie";
 import { ArrowDownCircle, ArrowLeft, InfoIcon } from "lucide-react";
-import { useAvailAccount } from "@/stores/availwallethook";
+import { useAvailAccount } from "@/store/availWalletHook";
 
 export default function Avail() {
   const [open, setOpen] = useState(false);

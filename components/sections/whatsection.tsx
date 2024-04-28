@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { SectionHeader } from "../ui/sectionheader/sectionheader";
-import { IntroData } from "@/static/data";
+import { IntroData } from "@/constants/text";
 
 export default function WhatSection() {
 

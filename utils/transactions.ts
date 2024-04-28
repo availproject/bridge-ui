@@ -6,8 +6,6 @@ import {
   TxnData,
 } from "@/@types/types";
 import { toast } from "@/components/ui/use-toast";
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
 import {
   ApiPromise,
   getKeyringFromSeed,
@@ -19,9 +17,7 @@ import { getBalance } from "@wagmi/core";
 import { indexerInstance } from "./axios-instance";
 import { WalletAccount } from "@talismn/connect-wallets";
 import { SignerOptions } from "@polkadot/api/types";
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+
 
 export async function getSignature(account: any) {
   try {
@@ -49,68 +45,68 @@ export async function sendMessage(props: sendMessageParams, account: WalletAccou
   const result = await new Promise((resolve, reject) => {
     api.tx.vector
       .sendMessage(props.message, props.to, props.domain)
-      .signAndSend(  account.address,
+      .signAndSend(account.address,
         { signer: account.signer, app_id: 0 } as Partial<SignerOptions>, ({ status, events }) => {
-        if (status.isInBlock) {
-          console.log(`Transaction included at blockHash ${status.asInBlock}`);
-          events.forEach(({ event }) => {
-            if (api.events.system.ExtrinsicFailed.is(event)) {
-              const [dispatchError] = event.data;
-              let errorInfo;
-              //@ts-ignore
-              if (dispatchError.isModule) {
-                const decoded = api.registry.findMetaError(
-                  //@ts-ignore
-                  dispatchError.asModule
-                );
-                errorInfo = `${decoded.section}.${decoded.name}`;
-              } else {
-                errorInfo = dispatchError.toString();
-              }
-              toast({
-                title: `Transaction failed. Status: ${status} with error: ${errorInfo}`,
-              });
-              reject(
-                `Transaction failed. Status: ${status} with error: ${errorInfo}`
-              );
-              console.log(`$:: ExtrinsicFailed:: ${errorInfo}`);
-            }
-            if (api.events.system.ExtrinsicSuccess.is(event)) {
-              if(status.isFinalized) {
-                console.log(
-                  "Transaction successful with hash: ",
-                  event.data.toString()
-                );
+          if (status.isInBlock) {
+            console.log(`Transaction included at blockHash ${status.asInBlock}`);
+            events.forEach(({ event }) => {
+              if (api.events.system.ExtrinsicFailed.is(event)) {
+                const [dispatchError] = event.data;
+                let errorInfo;
+                //@ts-ignore
+                if (dispatchError.isModule) {
+                  const decoded = api.registry.findMetaError(
+                    //@ts-ignore
+                    dispatchError.asModule
+                  );
+                  errorInfo = `${decoded.section}.${decoded.name}`;
+                } else {
+                  errorInfo = dispatchError.toString();
+                }
                 toast({
-                  title: `Transaction Success. Status: ${status}`,
+                  title: `Transaction failed. Status: ${status} with error: ${errorInfo}`,
                 });
-                resolve(`Transaction successful with hash: ${status.asInBlock}`);
-              } else {
-                //fix with @Leouarz if finality takes more than 4 minutes
-                setTimeout(() => {
-                  if (status.isFinalized) {
-                    console.log(
-                      "Transaction successful with hash: ",
-                      event.data.toString()
-                    );
-                    toast({
-                      title: `Transaction Success. Status: ${status}`,
-                    });
-                    resolve(`Transaction successful with hash: ${status.asInBlock}`);
-                  } else {
-                    toast({
-                      title:`Block not finalised after 2 minutes`,
-                    });
-                    reject(`Block not finalised after 2 minutes`);
-                  }
-                }, 2 * 60 * 1000);
+                reject(
+                  `Transaction failed. Status: ${status} with error: ${errorInfo}`
+                );
+                console.log(`$:: ExtrinsicFailed:: ${errorInfo}`);
               }
-            }
-          });
-        } else  {
-          reject(`Transaction failed. Status: ${status}`);
-        }
-      });
+              if (api.events.system.ExtrinsicSuccess.is(event)) {
+                if (status.isFinalized) {
+                  console.log(
+                    "Transaction successful with hash: ",
+                    event.data.toString()
+                  );
+                  toast({
+                    title: `Transaction Success. Status: ${status}`,
+                  });
+                  resolve(`Transaction successful with hash: ${status.asInBlock}`);
+                } else {
+                  //fix with @Leouarz if finality takes more than 4 minutes
+                  setTimeout(() => {
+                    if (status.isFinalized) {
+                      console.log(
+                        "Transaction successful with hash: ",
+                        event.data.toString()
+                      );
+                      toast({
+                        title: `Transaction Success. Status: ${status}`,
+                      });
+                      resolve(`Transaction successful with hash: ${status.asInBlock}`);
+                    } else {
+                      toast({
+                        title: `Block not finalised after 2 minutes`,
+                      });
+                      reject(`Block not finalised after 2 minutes`);
+                    }
+                  }, 2 * 60 * 1000);
+                }
+              }
+            });
+          } else {
+            reject(`Transaction failed. Status: ${status}`);
+          }
+        });
   });
   return result;
 }
