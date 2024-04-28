@@ -28,10 +28,10 @@ import { Chain, TxnData } from "@/@types/types";
 import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
 import { Button } from "../ui/button";
-import { _getBalance, fetchLatestTxns, sendMessage } from "@/lib/utils";
+import { _getBalance, fetchLatestTxns, sendMessage } from "@/utils/transactions";
 import { useAccount } from "wagmi";
 import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
-import { useAvailAccount } from "@/stores/availwallethook";
+import { useAvailAccount } from "@/stores/availWalletHook";
 const formSchema = z.object({
   fromAmount: z.number().positive("Enter a Valid Amount").or(z.string()),
   toAmount: z.number().positive().or(z.string()),

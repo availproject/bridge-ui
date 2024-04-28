@@ -6,8 +6,7 @@ import {
   TxnData,
 } from "@/@types/types";
 import { toast } from "@/components/ui/use-toast";
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+
 import {
   ApiPromise,
   getKeyringFromSeed,
@@ -19,9 +18,6 @@ import { getBalance } from "@wagmi/core";
 import { indexerInstance } from "./axios-instance";
 import { WalletAccount } from "@talismn/connect-wallets";
 import { SignerOptions } from "@polkadot/api/types";
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
 
 export async function getSignature(account: any) {
   try {

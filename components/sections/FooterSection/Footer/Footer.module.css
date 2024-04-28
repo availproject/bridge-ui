@@ -1,0 +1,132 @@
+.footer{
+    border: 4px solid; 
+  background: #252831;
+  border: 1.705px solid #303441;
+  box-shadow: 0px 3.20498px 70.50948px -12.81991px rgba(5, 13, 24, 0.20);
+  border-radius: 24px;
+    margin: 125px 15px 0px;
+    padding-bottom: 90px;
+    position: relative;
+    top: -175px;
+}
+
+.footer > div:nth-child(1){
+    max-width: 255px;
+    padding: 60px 35px 40px;
+}
+
+.footer > div > div {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    column-gap: 12px;
+}
+
+.footer div p {
+    font-family: 'PP Mori';
+    font-size: 14px;
+    line-height: 19px;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+    padding: 13px 0px;
+}
+
+.footer_links{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0px 35px;
+    column-gap: 20px;
+}
+
+.footer .footer_main{
+    flex-direction: column;
+    align-items: flex-start;
+    padding-bottom: 40px;
+    row-gap: 16px;
+}
+
+.footer_main a {
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 15px;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+}
+
+.footer_main > div:first-child{
+    font-family: 'PP Mori';
+    font-size: 16px;
+    line-height: 17px;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+}
+
+.footer_container{
+    position: relative;
+    z-index: 1;
+    margin-top: 300px;
+}
+
+.footer_container > img:nth-child(1), .footer_container > img:nth-child(3){
+    position: absolute;
+    width: 100%;
+    height: 197px;
+    bottom: 0;
+}
+
+.footer_container > img:nth-child(1){
+    z-index: -1;
+}
+
+.footer_container > img:nth-child(3){
+    z-index: 2;
+}
+
+@media screen and (min-width:768px) {
+
+    .footer > div:nth-child(1){
+        padding: unset;
+    }
+
+    .footer > div:nth-child(1) > div > a > img{
+        transition: 0.5s scale;
+    }
+
+    .footer > div:nth-child(1) > div > a > img:hover {
+        scale:1.4
+    }
+
+    .footer_container > img:nth-child(1), 
+    .footer_container > img:nth-child(3){
+        height: 60%;
+    }
+
+    .footer_links{
+        column-gap: 40px;
+    }
+
+    .footer {
+        display: flex;
+        justify-content: space-evenly;
+        margin: 355px auto 0;
+        max-width: 1300px;
+        padding: 110px;
+        position: relative;
+        top: -195px;
+        width: 80%;
+    }
+}
+
+@media screen and (min-width:768px) and (max-width:1157px) {
+
+    .footer_container > img:nth-child(1), 
+    .footer_container > img:nth-child(3){
+        height: 40%;
+    }
+}
+
+@media screen and (min-width:768px) and (max-width:992px) {
+    .footer{
+        width: 90%;
+    }
+}
