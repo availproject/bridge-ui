@@ -192,9 +192,9 @@ export async function _getBalance(address: `0x${string}`, chain: Chain) {
 }
 
 export async function fetchLatestTxns(
-  userAddress: `0x${string}`,
   sourceChain: Chain,
-  destinationChain: Chain
+  destinationChain: Chain,
+  userAddress?: `0x${string}`,
 ): Promise<{ txnData: TxnData[] }> {
   const response = await indexerInstance
     .get(`/transactions`, {
@@ -206,9 +206,11 @@ export async function fetchLatestTxns(
     })
     .catch((e) => {
       console.log(e);
-      return { data: { data: [] } };
+      return { data: { result: [] } };
     });
 
-  const result: TxnData[] = response.data.data;
+  const result: TxnData[] = response.data.result;
   return { txnData: result };
 }
+
+fetchLatestTxns(Chain.ETH, Chain.AVAIL)
