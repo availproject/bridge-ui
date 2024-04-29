@@ -4,6 +4,8 @@
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { FaHistory } from "react-icons/fa";
+import Image from "next/image";
 import {
   Table,
   TableBody,
@@ -28,11 +30,12 @@ import { Chain, TxnData } from "@/@types/types";
 import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
 import { Button } from "../ui/button";
-import { _getBalance, fetchLatestTxns, sendMessage } from "@/utils/transactions";
+import { _getBalance, fetchLatestTxns } from "@/utils/transactions";
 import { useAccount } from "wagmi";
 import { useLatestBlockInfo } from "@/store/lastestBlockInfo";
 import { useAvailAccount } from "@/store/availWalletHook";
 import { useCommonStore } from "@/store/common";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 const formSchema = z.object({
   fromAmount: z.number().positive("Enter a Valid Amount").or(z.string()),
   toAddress: z.string().min(42, "Enter a Valid Address"),
@@ -81,7 +84,7 @@ export default function BridgeSection() {
     })();
   }, [selected?.address]);
 
-  /////CUSTOM FUNCTIONS
+  /////CUSTOM
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
     console.log(ethHead, "before");
@@ -93,7 +96,7 @@ export default function BridgeSection() {
     console.log(ethHead, "after");
   }
 
-  function LatestTransactions() {
+  function LatestTransactions(pending?: boolean) {
     return (
       <div className="flex flex-col ">
         <div className="rounded-xl overflow-scroll-y max-h-[40vh]">
@@ -109,25 +112,81 @@ export default function BridgeSection() {
                 <TableRow key={txn.amount}>
                   <TableCell className="font-medium w-full flex flex-row space-x-2">
                     <p className="flex flex-col">
-                      <p className="text-white text-opacity-60">
-                        {new Date(
-                          txn.sourceTransactionTimestamp
-                        ).toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "short",
-                        })}
+                      <p className="text-white text-opacity-60 flex flex-col items-center justify-center">
+                        <p className="text-white text-md">
+                          {`${new Date(
+                            txn.sourceTransactionTimestamp
+                          ).toLocaleDateString("en-GB", { day: "numeric" })}
+   `}{" "}
+                        </p>
+                        <p>{` ${new Date(txn.sourceTransactionTimestamp)
+                          .toLocaleDateString("en-GB", { month: "short" })
+                          .toUpperCase()}`}</p>
                       </p>
-                      <p className="text-white text-opacity-60">{` ${new Date(
+                      {/* <p className="text-white text-opacity-60">{` ${new Date(
                         txn.sourceTransactionTimestamp
-                      ).getHours()}:${new Date(
+                      ).getHours()}${new Date(
                         txn.sourceTransactionTimestamp
-                      ).getMinutes()}`}</p>
+                      ).getMinutes()}`}</p> */}
                     </p>
-                    <p className="flex flex-col ">
-                     <p> {txn.sourceChain} {`--->`} {txn.destinationChain}</p>
-                     <p className="flex flex-row space-x-2">
-                     <p> Sent 1200 AVAIL</p> <ExternalLink className="h-4 w-4"/>
-                     </p>
+                    <p className="flex flex-col space-y-1 ">
+                      <p className="flex flex-row w-full">
+                        {" "}
+                        {txn.sourceChain === Chain.ETH ? (
+                          <p className="flex flex-row space-x-1">
+                            {" "}
+                            <Image
+                              src="/images/eth.png"
+                              alt="eth"
+                              width={18}
+                              height={14}
+                            ></Image>
+                            <p>ETH</p>
+                          </p>
+                        ) : (
+                          <p className="flex flex-row space-x-1">
+                            {" "}
+                            <Image
+                              src="/images/logo.png"
+                              alt="avail"
+                              width={16}
+                              height={1}
+                            ></Image>
+                            <p>AVAIL</p>
+                          </p>
+                        )}{" "}
+                        <p className="px-1">{` --> `}</p>{" "}
+                        {txn.destinationChain === Chain.ETH ? (
+                          <p className="flex flex-row space-x-1">
+                            {" "}
+                            <Image
+                              src="/images/eth.png"
+                              alt="eth"
+                              width={18}
+                              height={14}
+                            ></Image>
+                            <p>ETH</p>
+                          </p>
+                        ) : (
+                          <p className="flex flex-row space-x-1">
+                            {" "}
+                            <Image
+                              src="/images/logo.png"
+                              alt="avail"
+                              width={16}
+                              height={1}
+                            ></Image>
+                            <p>AVAIL</p>
+                          </p>
+                        )}{" "}
+                      </p>
+                    
+                      <p className="flex flex-row space-x-2">
+                        <p className="text-white text-opacity-60 text-xs ml-2">
+                          {" "}
+                          Sent 1200 AVAIL
+                        </p>
+                      </p>
                     </p>
 
                     <br />
@@ -153,7 +212,7 @@ export default function BridgeSection() {
         id="bridge"
         className="section_bg flex-1 text-white p-4 w-[85vw] md:w-[40vw] lg:w-[50w] xl:w-[40w] "
       >
-        <div className="flex flex-row pb-[2vh] items-center justify-between"></div>
+        <div className="flex flex-row pb-[4vh] items-center justify-between"></div>
 
         <Form {...form}>
           <form
@@ -289,7 +348,7 @@ export default function BridgeSection() {
             <Button
               variant={"primary"}
               type="submit"
-              className="!rounded-xl w-full font-ppmori"
+              className="!rounded-xl w-full items-end  font-ppmori"
             >
               Initiate Transaction{" "}
               <ArrowLeftRightIcon className="ml-2 w-4 h-4" />
@@ -314,14 +373,31 @@ export default function BridgeSection() {
       >
         <div className="flex flex-row pb-[2vh] items-center justify-between">
           <h1 className="font-ppmori items-center flex flex-row space-x-2 text-white text-opacity-80 text-2xl w-full ">
-            <p className="font-thicccboibold">Recent</p>
+            <p className="font-thicccboibold">Transactions</p>
             <RiLoopLeftFill className={`h-5 w-5 text-[#3FB5F8]`} /> <></>
           </h1>
         </div>
-        <div className="overflow-y-scroll">
-          {" "}
-          <LatestTransactions />
-        </div>
+        <Tabs defaultValue="pending" className="w-[95%] mx-auto">
+          <TabsList className="grid w-full grid-cols-2 bg-inherit mb-4">
+            <TabsTrigger value="pending" className="">
+              Pending
+            </TabsTrigger>
+            <TabsTrigger
+              value="history"
+              className="flex flex-row items-center justify-center space-x-1"
+            >
+              <p>History</p> <FaHistory />
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="pending">
+            <div className="overflow-y-scroll">
+              <LatestTransactions pending={true} />
+            </div>
+          </TabsContent>
+          <TabsContent value="history">
+            <div className="overflow-y-scroll"></div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

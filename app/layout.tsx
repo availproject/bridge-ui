@@ -3,10 +3,10 @@ import { Inter } from "next/font/google";
 import '@rainbow-me/rainbowkit/styles.css';
 import { Providers } from "./providers";
 import "./globals.css";
-import { FooterSection } from "@/components/sections/FooterSection/FooterSection";
-import { Footer } from "@/components/sections/FooterSection/Footer/Footer";
 import { Toaster } from "@/components/ui/toaster";
 import NavBar from "@/components/ui/header";
+import { FooterSection } from "@/components/sections/footersection/FooterSection";
+import { Footer } from "@/components/sections/footersection/Footer/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 

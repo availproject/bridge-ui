@@ -7,7 +7,6 @@ import {
 } from "@/@types/types";
 import { toast } from "@/components/ui/use-toast";
 import {
-  ApiPromise,
   getKeyringFromSeed,
   initialize,
   isValidAddress,

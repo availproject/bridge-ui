@@ -47,11 +47,9 @@ export default function NavBar() {
                         </Tabs> 
       </div>
       <div className="flex-row flex items-center space-x-4">
-       <a className="text-gray-400 hover:text-white text-sm" href="#">
-          Recent Txns
-        </a>
-        <a className="text-gray-400 hover:text-white text-sm" href="#">
-         What is Avail
+     
+        <a className="text-gray-400 hover:text-[#3EB6F8] text-sm" href="#">
+         What is Avail?
         </a>
       </div>
     </header>
