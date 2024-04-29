@@ -1,3 +1,4 @@
+import { appConfig } from "@/config/default";
 import { create } from "zustand";
 
 interface LatestBlockInfo {
@@ -34,7 +35,7 @@ export const useLatestBlockInfo = create<LatestBlockInfo>((set) => ({
 
 async function fetchAvlHead(): Promise<{ data: LatestBlockInfo["avlHead"] }> {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BRIDGE_API_URL}/eth/head`
+    `${appConfig.bridgeApiBaseUrl}/eth/head`
   );
   const avlHead: LatestBlockInfo["avlHead"] = await response.json();
   return { data: avlHead };
@@ -42,7 +43,7 @@ async function fetchAvlHead(): Promise<{ data: LatestBlockInfo["avlHead"] }> {
 
 async function fetchEthHead() {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BRIDGE_API_URL}/eth/head`
+    `${appConfig.bridgeApiBaseUrl}/eth/head`
   );
   const data = await response.json();
   return data;

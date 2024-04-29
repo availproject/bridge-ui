@@ -47,8 +47,10 @@ export default function BridgeSection() {
   const { fromChain } = useCommonStore();
   const { selected, selectedWallet } = useAvailAccount();
   const { ethHead, setEthHead } = useLatestBlockInfo();
+
   const [ethBalance, setEthBalance] = useState<GLfloat>(0);
   const [availBalance, setAvailBalance] = useState<number>(0);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -56,9 +58,6 @@ export default function BridgeSection() {
       toAddress: "",
     },
   });
-
-  /////// HOOKS
-
 
   useEffect(() => {
     (async () => {
@@ -111,11 +110,10 @@ export default function BridgeSection() {
                       <span className="font-ppmori flex flex-row items-center space-x-2">
                         <p>From</p>
                         <span
-                          className={`${
-                            fromChain === Chain.AVAIL
-                              ? "text-[#3EB6F8]"
-                              : "text-[#8C8C8C]"
-                          } text-sm font-mono`}
+                          className={`${fromChain === Chain.AVAIL
+                            ? "text-[#3EB6F8]"
+                            : "text-[#8C8C8C]"
+                            } text-sm font-mono`}
                         >
                           ({fromChain})
                         </span>
@@ -255,7 +253,7 @@ export default function BridgeSection() {
         <div className="flex flex-row pb-[2vh] items-center justify-between">
           <h1 className="font-ppmori items-center flex flex-row space-x-2 text-white text-opacity-80 text-2xl w-full ">
             <p className="font-thicccboibold">Transactions</p>
-            <RiLoopLeftFill className={`h-5 w-5 text-[#3FB5F8]`} /> <></>
+            <RiLoopLeftFill className={`h-5 w-5 text-[#3FB5F8]`} />
           </h1>
         </div>
         <Tabs defaultValue="pending" className="w-[95%] mx-auto">
@@ -277,7 +275,7 @@ export default function BridgeSection() {
           </TabsContent>
           <TabsContent value="history">
             <div className="overflow-y-scroll">
-            <LatestTransactions pending={false} />
+              <LatestTransactions pending={false} />
             </div>
           </TabsContent>
         </Tabs>
