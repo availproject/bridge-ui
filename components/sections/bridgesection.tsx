@@ -36,9 +36,10 @@ import { useLatestBlockInfo } from "@/store/lastestBlockInfo";
 import { useAvailAccount } from "@/store/availWalletHook";
 import { useCommonStore } from "@/store/common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import LatestTransactions from "./latestransactionsection";
 const formSchema = z.object({
   fromAmount: z.number().positive("Enter a Valid Amount").or(z.string()),
-  toAddress: z.string().min(42, "Enter a Valid Address"),
+  toAddress: z.string(),
 });
 
 export default function BridgeSection() {
@@ -46,7 +47,6 @@ export default function BridgeSection() {
   const { fromChain } = useCommonStore();
   const { selected, selectedWallet } = useAvailAccount();
   const { ethHead, setEthHead } = useLatestBlockInfo();
-  const [latestTransactions, setLatestTransactions] = useState<TxnData[]>([]);
   const [ethBalance, setEthBalance] = useState<GLfloat>(0);
   const [availBalance, setAvailBalance] = useState<number>(0);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -58,31 +58,23 @@ export default function BridgeSection() {
   });
 
   /////// HOOKS
-  useEffect(() => {
-    (async () => {
-      if (account?.address) {
-        const { txnData } = await fetchLatestTxns(Chain.ETH, Chain.AVAIL);
-        setLatestTransactions(txnData);
-        console.log(txnData, "txnData");
-      }
-    })();
-  }, [account.address]);
+
+
   useEffect(() => {
     (async () => {
       if (account.address) {
-        const result = await _getBalance(account?.address, Chain.ETH);
+        const result: number = await _getBalance(Chain.ETH, undefined, account.address,);
         setEthBalance(result);
       }
-    })();
-  }, [account.address]);
-  useEffect(() => {
-    (async () => {
       if (selected?.address) {
-        const result = await _getBalance(selected?.address, Chain.AVAIL);
+        const result: number = await _getBalance(Chain.AVAIL, selected?.address);
         setAvailBalance(result);
       }
-    })();
-  }, [selected?.address]);
+    })(
+    );
+  }, [account.address, selected?.address]);
+
+  console.log(ethBalance, availBalance, "balances")
 
   /////CUSTOM
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -93,117 +85,6 @@ export default function BridgeSection() {
       timestamp: 32,
       timestampDiff: 23,
     });
-    console.log(ethHead, "after");
-  }
-
-  function LatestTransactions(pending?: boolean) {
-    return (
-      <div className="flex flex-col ">
-        <div className="rounded-xl overflow-scroll-y max-h-[40vh]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Transaction</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {latestTransactions.map((txn) => (
-                <TableRow key={txn.amount}>
-                  <TableCell className="font-medium w-full flex flex-row space-x-2">
-                    <p className="flex flex-col">
-                      <p className="text-white text-opacity-60 flex flex-col items-center justify-center">
-                        <p className="text-white text-md">
-                          {`${new Date(
-                            txn.sourceTransactionTimestamp
-                          ).toLocaleDateString("en-GB", { day: "numeric" })}
-   `}{" "}
-                        </p>
-                        <p>{` ${new Date(txn.sourceTransactionTimestamp)
-                          .toLocaleDateString("en-GB", { month: "short" })
-                          .toUpperCase()}`}</p>
-                      </p>
-                      {/* <p className="text-white text-opacity-60">{` ${new Date(
-                        txn.sourceTransactionTimestamp
-                      ).getHours()}${new Date(
-                        txn.sourceTransactionTimestamp
-                      ).getMinutes()}`}</p> */}
-                    </p>
-                    <p className="flex flex-col space-y-1 ">
-                      <p className="flex flex-row w-full">
-                        {" "}
-                        {txn.sourceChain === Chain.ETH ? (
-                          <p className="flex flex-row space-x-1">
-                            {" "}
-                            <Image
-                              src="/images/eth.png"
-                              alt="eth"
-                              width={18}
-                              height={14}
-                            ></Image>
-                            <p>ETH</p>
-                          </p>
-                        ) : (
-                          <p className="flex flex-row space-x-1">
-                            {" "}
-                            <Image
-                              src="/images/logo.png"
-                              alt="avail"
-                              width={16}
-                              height={1}
-                            ></Image>
-                            <p>AVAIL</p>
-                          </p>
-                        )}{" "}
-                        <p className="px-1">{` --> `}</p>{" "}
-                        {txn.destinationChain === Chain.ETH ? (
-                          <p className="flex flex-row space-x-1">
-                            {" "}
-                            <Image
-                              src="/images/eth.png"
-                              alt="eth"
-                              width={18}
-                              height={14}
-                            ></Image>
-                            <p>ETH</p>
-                          </p>
-                        ) : (
-                          <p className="flex flex-row space-x-1">
-                            {" "}
-                            <Image
-                              src="/images/logo.png"
-                              alt="avail"
-                              width={16}
-                              height={1}
-                            ></Image>
-                            <p>AVAIL</p>
-                          </p>
-                        )}{" "}
-                      </p>
-                    
-                      <p className="flex flex-row space-x-2">
-                        <p className="text-white text-opacity-60 text-xs ml-2">
-                          {" "}
-                          Sent 1200 AVAIL
-                        </p>
-                      </p>
-                    </p>
-
-                    <br />
-                  </TableCell>
-
-                  <TableCell>
-                    <Button variant="primary" onClick={() => {}}>
-                      {txn.status === "READY_TO_CLAIM" ? "Claim" : txn.status}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -369,7 +250,7 @@ export default function BridgeSection() {
       </div>
       <div
         id="status"
-        className="section_bg flex-1 text-white p-4 md:w-[30vw] lg:w-[40w] xl:w-[30w]"
+        className="section_bg flex-1 text-white p-4 md:w-[30vw] lg:w-[35w] xl:w-[30w]"
       >
         <div className="flex flex-row pb-[2vh] items-center justify-between">
           <h1 className="font-ppmori items-center flex flex-row space-x-2 text-white text-opacity-80 text-2xl w-full ">
@@ -395,7 +276,9 @@ export default function BridgeSection() {
             </div>
           </TabsContent>
           <TabsContent value="history">
-            <div className="overflow-y-scroll"></div>
+            <div className="overflow-y-scroll">
+            <LatestTransactions pending={false} />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

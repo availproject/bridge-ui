@@ -165,22 +165,18 @@ export async function executeTransaction(props: executeParams) {
   return result;
 }
 
-export async function _getBalance(address: `0x${string}`, chain: Chain) {
-  if (chain === Chain.AVAIL) {
-    const keyring = getKeyringFromSeed(substrateConfig.seed);
-    const options = { app_id: 0, nonce: -1 };
-    // const decimals = getDecimals(api);
-    // const result = await api.tx.
-    // let data = await api.query.system.account(address);
-    // console.log(data, "as")
-    // const _amount = formatNumberToBalance(amount, decimals);
-    return 0;
+export async function _getBalance(chain: Chain, availAddress?: string, ethAddress?: `0x${string}`) : Promise<number> {
+  if (chain === Chain.AVAIL && availAddress) {
+    const api = await initialize(substrateConfig.endpoint);
+    const oldBalance: any = await api.query.system.account(availAddress)
+    var intValue = parseInt(oldBalance["data"]["free"].toHuman().replace(/,/g, ''), 10)/ Math.pow(10, 18);
+    return intValue;
   }
-  if (chain === Chain.ETH && isValidAddress(address)) {
+  if (chain === Chain.ETH && ethAddress) {
     const balance: ethBalance = await getBalance(ethConfig, {
-      address: address,
+      address: ethAddress,
     });
-    return parseFloat(balance.formatted);
+    return +(parseFloat(balance.formatted).toFixed(4));
   } else {
     return 0;
   }
@@ -207,5 +203,7 @@ export async function fetchLatestTxns(
   const result: TxnData[] = response.data.result;
   return { txnData: result };
 }
+
+
 
 fetchLatestTxns(Chain.ETH, Chain.AVAIL)
