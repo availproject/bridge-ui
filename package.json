@@ -40,6 +40,7 @@
     "@wagmi/core": "^2.6.17",
     "avail-js-sdk": "^0.2.11",
     "axios": "^1.6.7",
+    "bignumber.js": "^9.1.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "cron": "^3.1.7",
