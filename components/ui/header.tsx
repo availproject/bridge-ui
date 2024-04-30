@@ -3,11 +3,11 @@
 import { Tabs, TabsList, TabsTrigger } from "./tabs";
 import Image from "next/image";
 import { useCommonStore } from "@/store/common";
-import { Chain } from "@/@types/types";
+import { Chain } from "@/types/common";
 
 /* eslint-disable @next/next/no-img-element */
 export default function NavBar() {
-  const {fromChain, setFromChain} = useCommonStore()
+  const {setFromChain} = useCommonStore()
   
   return (
     <header className="absolute bg-[#191D24] w-full top-0 !z-50 flex flex-row justify-between items-center py-4 px-8 border-b border-gray-700">

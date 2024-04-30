@@ -26,17 +26,19 @@ import { RiLoopLeftFill } from "react-icons/ri";
 import { Input } from "@/components/ui/input";
 import { ArrowLeftRightIcon, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Chain, TxnData } from "@/@types/types";
 import Avail from "../wallets/avail";
+import { ethers } from "ethers";
 import Eth from "../wallets/eth";
 import { Button } from "../ui/button";
-import { _getBalance, fetchLatestTxns } from "@/utils/transactions";
-import { useAccount } from "wagmi";
-import { useLatestBlockInfo } from "@/store/lastestBlockInfo";
+import { _getBalance } from "@/utils/common";
+import {
+  useAccount,
+} from "wagmi";
 import { useAvailAccount } from "@/store/availWalletHook";
 import { useCommonStore } from "@/store/common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import LatestTransactions from "./latestransactionsection";
+import { Chain } from "@/types/common";
 const formSchema = z.object({
   fromAmount: z.number().positive("Enter a Valid Amount").or(z.string()),
   toAddress: z.string(),
@@ -46,7 +48,6 @@ export default function BridgeSection() {
   const account = useAccount();
   const { fromChain } = useCommonStore();
   const { selected, selectedWallet } = useAvailAccount();
-  const { ethHead, setEthHead } = useLatestBlockInfo();
   const [ethBalance, setEthBalance] = useState<GLfloat>(0);
   const [availBalance, setAvailBalance] = useState<number>(0);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -57,34 +58,30 @@ export default function BridgeSection() {
     },
   });
 
-  /////// HOOKS
-
 
   useEffect(() => {
     (async () => {
       if (account.address) {
-        const result: number = await _getBalance(Chain.ETH, undefined, account.address,);
+        const result: number = await _getBalance(
+          Chain.ETH,
+          undefined,
+          account.address
+        );
         setEthBalance(result);
       }
       if (selected?.address) {
-        const result: number = await _getBalance(Chain.AVAIL, selected?.address);
+        const result: number = await _getBalance(
+          Chain.AVAIL,
+          selected?.address
+        );
         setAvailBalance(result);
       }
-    })(
-    );
+    })();
   }, [account.address, selected?.address]);
-
-  console.log(ethBalance, availBalance, "balances")
 
   /////CUSTOM
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
-    console.log(ethHead, "before");
-    await setEthHead({
-      slot: 102,
-      timestamp: 32,
-      timestampDiff: 23,
-    });
   }
 
   return (
@@ -94,7 +91,6 @@ export default function BridgeSection() {
         className="section_bg flex-1 text-white p-4 w-[85vw] md:w-[40vw] lg:w-[50w] xl:w-[40w] "
       >
         <div className="flex flex-row pb-[4vh] items-center justify-between"></div>
-
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -236,17 +232,6 @@ export default function BridgeSection() {
             </Button>
           </form>
         </Form>
-
-        {/* <button
-          onClick={() => {
-            console.log("sfd");
-            sendMessage({
-              message: { ArbitraryMessage: "0xazeazeaze" },
-              to: "0x0000000000000000000000000000000000000000000000000000000000000000",
-              domain: 2,
-            }, selected!);
-          }}
-        >{`sdf`}</button> */}
       </div>
       <div
         id="status"
@@ -277,7 +262,7 @@ export default function BridgeSection() {
           </TabsContent>
           <TabsContent value="history">
             <div className="overflow-y-scroll">
-            <LatestTransactions pending={false} />
+              <LatestTransactions pending={false} />
             </div>
           </TabsContent>
         </Tabs>

@@ -1,27 +1,27 @@
-import { Chain, TxnData } from "@/@types/types";
+
 import {
   Table,
   TableBody,
   TableCell,
-  TableHeader,
   TableRow,
 } from "../ui/table";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { fetchLatestTxns } from "@/utils/transactions";
+import { Chain } from "@/types/common";
+import { TxnData } from "@/types/transaction";
+import { fetchLatestTxns } from "@/utils/indexer";
 
 export default function LatestTransactions(props: { pending: boolean }) {
   const [latestTransactions, setLatestTransactions] = useState<TxnData[]>([]);
 
   useEffect(() => {
     (async () => {
-      const { txnData } = await fetchLatestTxns(Chain.ETH, Chain.AVAIL);
+      const { txnData } = await fetchLatestTxns(Chain.ETH, Chain.AVAIL, );
       setLatestTransactions(txnData);
     })();
   }, []);
-
 
 
   return (
