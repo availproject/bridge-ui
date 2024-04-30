@@ -36,7 +36,7 @@ const getInjectorMetadata = (api: ApiPromise) => {
     };
   };
   
-  export async function sendMessage(props: sendMessageParams, account: WalletAccount) {
+export async function sendMessage(props: sendMessageParams, account: WalletAccount) {
     const { web3Accounts, web3FromSource } = await import(
       "@polkadot/extension-dapp"
     );
@@ -115,7 +115,7 @@ const getInjectorMetadata = (api: ApiPromise) => {
     return result;
   }
 
-  export async function executeTransaction(props: executeParams) {
+export async function executeTransaction(props: executeParams) {
     const api = await initialize(substrateConfig.endpoint);
     const keyring = getKeyringFromSeed(substrateConfig.seed);
     const result = await new Promise((resolve, reject) => {

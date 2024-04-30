@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import BridgeSection from "@/components/sections/bridgesection";
-import { useLatestBlockInfo } from "@/store/lastestBlockInfo";
+import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
 
 export default function Home() {
   return (

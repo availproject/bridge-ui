@@ -27,18 +27,17 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeftRightIcon, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 import Avail from "../wallets/avail";
-import { ethers } from "ethers";
 import Eth from "../wallets/eth";
 import { Button } from "../ui/button";
 import { _getBalance } from "@/utils/common";
-import {
-  useAccount,
-} from "wagmi";
-import { useAvailAccount } from "@/store/availWalletHook";
-import { useCommonStore } from "@/store/common";
+import { useAccount } from "wagmi";
+import { useAvailAccount } from "@/stores/availWalletHook";
+import { useCommonStore } from "@/stores/common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import LatestTransactions from "./latestransactionsection";
 import { Chain } from "@/types/common";
+import { fetchMerkleProof } from "@/utils/api";
+import { receiveAvail } from "@/utils/contract";
 const formSchema = z.object({
   fromAmount: z.number().positive("Enter a Valid Amount").or(z.string()),
   toAddress: z.string(),
@@ -47,9 +46,9 @@ const formSchema = z.object({
 export default function BridgeSection() {
   const account = useAccount();
   const { fromChain } = useCommonStore();
-  const { selected, selectedWallet } = useAvailAccount();
-  const [ethBalance, setEthBalance] = useState<GLfloat>(0);
-  const [availBalance, setAvailBalance] = useState<number>(0);
+  const { selected } = useAvailAccount();
+  const [ethBalance, setEthBalance] = useState<number | undefined>(undefined);
+  const [availBalance, setAvailBalance] = useState<number | undefined>(undefined);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -57,7 +56,6 @@ export default function BridgeSection() {
       toAddress: "",
     },
   });
-
 
   useEffect(() => {
     (async () => {
@@ -81,6 +79,9 @@ export default function BridgeSection() {
 
   /////CUSTOM
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log("sf");
+    const a = await receiveAvail();
+    console.log(a, "a");
     console.log(values);
   }
 
@@ -137,14 +138,14 @@ export default function BridgeSection() {
                               <span className="font-ppmori text-white text-opacity-70">
                                 Balance{" "}
                                 <span className="text-[#3382E8]">
-                                  {ethBalance}
+                                  {ethBalance ? ethBalance : "--"}
                                 </span>
                               </span>
                             ) : (
                               <span className="font-ppmori text-white text-opacity-70">
                                 Balance{" "}
                                 <span className="text-[#3382E8]">
-                                  {availBalance}
+                                  {availBalance ? availBalance : "--"}
                                 </span>
                               </span>
                             )}
@@ -197,7 +198,7 @@ export default function BridgeSection() {
                     <div className="flex flex-row items-center justify-between">
                       <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70">
                         {/* this will be opposite here since it's the To feild*/}
-                        {fromChain === Chain.ETH ? (
+                        {/* {fromChain === Chain.ETH ? (
                           <span className="font-ppmori text-white text-opacity-70">
                             Balance{" "}
                             <span className="text-[#3382E8]">
@@ -209,7 +210,7 @@ export default function BridgeSection() {
                             Balance{" "}
                             <span className="text-[#3382E8]">{ethBalance}</span>
                           </span>
-                        )}
+                        )} */}
                       </div>
                       <div className="flex flex-row items-center justify-center ">
                         <button className="font-thicccboisemibold text-[#3FB5F8] text-sm">

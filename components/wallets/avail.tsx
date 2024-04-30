@@ -16,7 +16,7 @@ import { IoMdClose } from "react-icons/io";
 import { badgeVariants } from "../ui/badge";
 import { useCookies } from "react-cookie";
 import { ArrowDownCircle, ArrowLeft, InfoIcon } from "lucide-react";
-import { useAvailAccount } from "@/store/availWalletHook";
+import { useAvailAccount } from "@/stores/availWalletHook";
 import { web3Enable } from "@polkadot/extension-dapp";
 
 export default function Avail() {

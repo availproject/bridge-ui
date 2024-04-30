@@ -2,7 +2,7 @@
 
 import { Tabs, TabsList, TabsTrigger } from "./tabs";
 import Image from "next/image";
-import { useCommonStore } from "@/store/common";
+import { useCommonStore } from "@/stores/common";
 import { Chain } from "@/types/common";
 
 /* eslint-disable @next/next/no-img-element */
