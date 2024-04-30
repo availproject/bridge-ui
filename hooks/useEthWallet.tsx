@@ -1,10 +1,16 @@
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
+import { ethers } from "ethers";
+import { useSwitchChain } from "wagmi";
+import { getChainId } from '@wagmi/core'
+import { ethConfig } from "@/config";
 
 /**
  * @description All the functionalities related to wallet such as connecting, switching network, etc
  */
 export default function useEthWallet() {
-   
+    const { switchChainAsync } = useSwitchChain();
+
+
     const isWalletConnected = useMemo(
         async () => {
             // Check if wallet is connected logic
@@ -12,24 +18,41 @@ export default function useEthWallet() {
         [],
     );
 
-    const switchNetwork = useCallback(
+    const switchNetwork =
         async (chainId: number) => {
             // Switch network logic
-        },
-        [],
-    );
+            await switchChainAsync({ chainId: chainId })
+        }
+
 
     const activeUserAddress = useMemo(
-        async () => {
+        () => {
             // Get active user address logic
+            return '0x2254E4D1B41F2Dd3969a79b994E6ee8C3C6F2C71'
         },
         [],
     );
 
-    const activeNetworkId = useMemo(
-        () => {
+    // todo: critical: fix active network id, wagmi is not updating network change
+    const activeNetworkId =
+        async () => {
             // Get active network id logic
-            return 1
+            const chainId = await getChainId(ethConfig)
+
+            return chainId
+        }
+
+    const provider = useMemo(
+        () => {
+            // Get ethereum provider logic
+        },
+        [],
+    );
+
+    const ethersProvider = useMemo(
+        (): ethers.providers.JsonRpcProvider => {
+            // Get ethers provider logic
+            return new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL);
         },
         [],
     );
@@ -37,6 +60,8 @@ export default function useEthWallet() {
     return {
         isWalletConnected,
         activeUserAddress,
+        provider,
+        ethersProvider,
         activeNetworkId,
         switchNetwork
     };

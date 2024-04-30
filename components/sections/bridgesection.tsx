@@ -37,6 +37,11 @@ import { useAvailAccount } from "@/store/availWalletHook";
 import { useCommonStore } from "@/store/common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import LatestTransactions from "./latestransactionsection";
+import useBridge from "@/hooks/useBridge";
+import BigNumber from "bignumber.js";
+import { toast } from "@/components/ui/use-toast";
+
+import { parseError } from "@/utils/parseError";
 const formSchema = z.object({
   fromAmount: z.number().positive("Enter a Valid Amount").or(z.string()),
   toAddress: z.string(),
@@ -47,6 +52,7 @@ export default function BridgeSection() {
   const { fromChain } = useCommonStore();
   const { selected, selectedWallet } = useAvailAccount();
   const { ethHead, setEthHead } = useLatestBlockInfo();
+  const { initEthToAvailBridging} = useBridge()
 
   const [ethBalance, setEthBalance] = useState<GLfloat>(0);
   const [availBalance, setAvailBalance] = useState<number>(0);
@@ -73,17 +79,34 @@ export default function BridgeSection() {
     );
   }, [account.address, selected?.address]);
 
-  console.log(ethBalance, availBalance, "balances")
+  const showSuccessMessage = () => {};
+
+  const resetState = () => {
+    form.reset();
+  }
 
   /////CUSTOM
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    console.log(ethHead, "before");
-    await setEthHead({
-      slot: 102,
-      timestamp: 32,
-      timestampDiff: 23,
-    });
+    console.log(values, selected?.address);
+    try {
+      if(fromChain === Chain.ETH){
+        const fromAmoutAtomic = new BigNumber(values.fromAmount).multipliedBy(new BigNumber(10).pow(18)).toString();
+        const destinationAddress = selected?.address || values.toAddress;
+        await initEthToAvailBridging({atomicAmount: fromAmoutAtomic, destinationAddress: destinationAddress})
+
+        // show success message
+        showSuccessMessage();
+
+        // reset state
+        resetState();
+        } else if(fromChain === Chain.AVAIL){
+          // functions to bridge avail to eth
+        }
+    } catch (error) {
+      toast({
+        title: parseError(error)
+      })
+    }
   }
 
   return (

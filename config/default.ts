@@ -1,7 +1,7 @@
 export const appConfig = Object.freeze({
     networks: {
         ethereum: {
-            networkId: 1,
+            networkId: 11155111,
             name: 'Sepolia',
             symbol: 'ETH',
             decimals: 18,
@@ -17,11 +17,11 @@ export const appConfig = Object.freeze({
     bridgeIndexerBaseUrl: 'https://hex-bridge-indexer.sandbox.avail.tools',
     contracts: {
         ethereum: {
-            avail: '0xa5a871723D0a70CddfF57f938F4C06Fc70632EEc',
-            bridge: '',
+            availToken: '0xb1C3Cb9b5e598d4E95a85870e7812B99f350982d',
+            bridge: '0x967F7DdC4ec508462231849AE81eeaa68Ad01389',
         },
         avail: {
-            avail: '',
+            availToken: '',
             bridge: '',
         }
     }
