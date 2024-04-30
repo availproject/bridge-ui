@@ -50,12 +50,12 @@ const formSchema = z.object({
 export default function BridgeSection() {
   const account = useAccount();
   const { fromChain } = useCommonStore();
-  const { selected, selectedWallet } = useAvailAccount();
-  const { ethHead, setEthHead } = useLatestBlockInfo();
-  const { initEthToAvailBridging} = useBridge()
+  const { selected } = useAvailAccount();
+  const { initEthToAvailBridging } = useBridge()
 
   const [ethBalance, setEthBalance] = useState<GLfloat>(0);
   const [availBalance, setAvailBalance] = useState<number>(0);
+  const [transactionInProgress, setTransactionInProgress] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -79,7 +79,7 @@ export default function BridgeSection() {
     );
   }, [account.address, selected?.address]);
 
-  const showSuccessMessage = () => {};
+  const showSuccessMessage = () => { };
 
   const resetState = () => {
     form.reset();
@@ -89,20 +89,24 @@ export default function BridgeSection() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values, selected?.address);
     try {
-      if(fromChain === Chain.ETH){
+      if (fromChain === Chain.ETH) {
         const fromAmoutAtomic = new BigNumber(values.fromAmount).multipliedBy(new BigNumber(10).pow(18)).toString();
         const destinationAddress = selected?.address || values.toAddress;
-        await initEthToAvailBridging({atomicAmount: fromAmoutAtomic, destinationAddress: destinationAddress})
+
+        setTransactionInProgress(true);
+        await initEthToAvailBridging({ atomicAmount: fromAmoutAtomic, destinationAddress: destinationAddress })
 
         // show success message
         showSuccessMessage();
+        setTransactionInProgress(false);
 
         // reset state
         resetState();
-        } else if(fromChain === Chain.AVAIL){
-          // functions to bridge avail to eth
-        }
+      } else if (fromChain === Chain.AVAIL) {
+        // functions to bridge avail to eth
+      }
     } catch (error) {
+      setTransactionInProgress(false);
       toast({
         title: parseError(error)
       })
@@ -251,8 +255,9 @@ export default function BridgeSection() {
               variant={"primary"}
               type="submit"
               className="!rounded-xl w-full items-end  font-ppmori"
+              disabled={transactionInProgress}
             >
-              Initiate Transaction{" "}
+              {transactionInProgress ? 'Transaction in progress' : 'Initiate Transaction'}
               <ArrowLeftRightIcon className="ml-2 w-4 h-4" />
             </Button>
           </form>

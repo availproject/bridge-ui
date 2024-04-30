@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { ethers } from "ethers";
-import { useSwitchChain } from "wagmi";
-import { getChainId } from '@wagmi/core'
+import { useSwitchChain, useAccount } from "wagmi";
+import { getChainId, getAccount } from '@wagmi/core'
 import { ethConfig } from "@/config";
 
 /**
@@ -9,6 +9,7 @@ import { ethConfig } from "@/config";
  */
 export default function useEthWallet() {
     const { switchChainAsync } = useSwitchChain();
+    const { chainId, address, isConnected } = useAccount();
 
 
     const isWalletConnected = useMemo(
@@ -28,17 +29,18 @@ export default function useEthWallet() {
     const activeUserAddress = useMemo(
         () => {
             // Get active user address logic
-            return '0x2254E4D1B41F2Dd3969a79b994E6ee8C3C6F2C71'
+            if(!isConnected) {
+                return null
+            }
+            
+            return address
         },
-        [],
+        [chainId],
     );
 
     // todo: critical: fix active network id, wagmi is not updating network change
     const activeNetworkId =
         async () => {
-            // Get active network id logic
-            const chainId = await getChainId(ethConfig)
-
             return chainId
         }
 
