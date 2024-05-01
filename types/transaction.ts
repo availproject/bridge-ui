@@ -3,6 +3,12 @@ import { U8aFixed } from "@polkadot/types/codec"
 import type { H256} from '@polkadot/types/interfaces';
 
 
+export enum TRANSACTION_TYPES {
+  // Bridging transactions
+  BRIDGE_ETH_TO_AVAIL = "BRIDGE_ETH_TO_AVAIL",
+  BRIDGE_AVAIL_TO_ETH = "BRIDGE_AVAIL_TO_ETH",
+}
+
 export interface merkleProof {
     blobRoot: string;
     blockHash: string;

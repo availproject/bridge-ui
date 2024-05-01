@@ -1,4 +1,4 @@
-import { Chain } from "@/@types/types";
+import { Chain } from '@/types/common';
 import { create } from "zustand";
 
 interface CommonStore {

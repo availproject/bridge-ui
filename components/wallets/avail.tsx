@@ -64,7 +64,7 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
     }
   })();
     
-  }, []);
+  }, [cookie.substrateAddress, cookie.substrateWallet, setSelected, setSelectedWallet]);
 
   async function updateEnabledAccounts(wallet: Wallet): Promise<undefined> {
     const accounts = await wallet.getAccounts();

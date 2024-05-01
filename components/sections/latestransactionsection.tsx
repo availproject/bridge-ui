@@ -11,17 +11,21 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Chain } from "@/types/common";
 import { TxnData } from "@/types/transaction";
-import { fetchLatestTxns } from "@/utils/indexer";
+import { getTransactionsFromIndexer } from "@/services/transactions";
+import useEthWallet from "@/hooks/useEthWallet";
 
 export default function LatestTransactions(props: { pending: boolean }) {
+  const {activeUserAddress} = useEthWallet()
   const [latestTransactions, setLatestTransactions] = useState<TxnData[]>([]);
 
   useEffect(() => {
     (async () => {
-      const { txnData } = await fetchLatestTxns(Chain.ETH, Chain.AVAIL, );
+      if(!activeUserAddress) return;
+
+      const txnData = await getTransactionsFromIndexer(activeUserAddress, Chain.ETH, Chain.AVAIL,);
       setLatestTransactions(txnData);
     })();
-  }, []);
+  }, [activeUserAddress]);
 
 
   return (
@@ -118,7 +122,7 @@ export default function LatestTransactions(props: { pending: boolean }) {
                     <TableCell>
                       {txn.status === "READY_TO_CLAIM" ? (
                         <>
-                          <Button variant="primary" onClick={() => {}}>
+                          <Button variant="primary" onClick={() => { }}>
                             {txn.status === "READY_TO_CLAIM"
                               ? "Claim"
                               : txn.status}

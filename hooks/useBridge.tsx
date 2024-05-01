@@ -7,7 +7,7 @@ import { readContract } from "@wagmi/core";
 import ethereumAvailTokenAbi from "@/constants/abis/ethereumAvailToken.json";
 import ethereumBridge from "@/constants/abis/ethereumBridge.json";
 
-import { TRANSACTION_TYPES } from "@/@types/transaction";
+import { TRANSACTION_TYPES } from "@/types/transaction";
 import useEthWallet from "@/hooks/useEthWallet";
 import { appConfig } from "@/config/default";
 import { ethConfig } from "@/config/walletConfig";
