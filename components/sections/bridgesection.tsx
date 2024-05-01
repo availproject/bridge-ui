@@ -26,19 +26,22 @@ import { RiLoopLeftFill } from "react-icons/ri";
 import { Input } from "@/components/ui/input";
 import { ArrowLeftRightIcon, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Chain, TxnData } from "@/@types/types";
 import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
 import { Button } from "../ui/button";
-import { _getBalance, fetchLatestTxns } from "@/utils/transactions";
+import { _getBalance } from "@/utils/common";
 import { useAccount } from "wagmi";
-import { useLatestBlockInfo } from "@/store/lastestBlockInfo";
-import { useAvailAccount } from "@/store/availWalletHook";
-import { useCommonStore } from "@/store/common";
+import { useAvailAccount } from "@/stores/availWalletHook";
+import { useCommonStore } from "@/stores/common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import LatestTransactions from "./latestransactionsection";
+import { Chain } from "@/types/common";
+import { fetchMerkleProof } from "@/utils/api";
+import { receiveAvail } from "@/utils/contract";
+import { sendMessage } from "@/utils/vectorpallete";
+import { H256 } from "@polkadot/types/interfaces";
+import { u8aToU8a } from "@polkadot/util";
 import useBridge from "@/hooks/useBridge";
-import BigNumber from "bignumber.js";
 import { toast } from "@/components/ui/use-toast";
 
 import { parseError } from "@/utils/parseError";
@@ -50,12 +53,11 @@ const formSchema = z.object({
 export default function BridgeSection() {
   const account = useAccount();
   const { fromChain } = useCommonStore();
-  const { selected } = useAvailAccount();
-  const { initEthToAvailBridging } = useBridge()
-
+  const { selected, selectedWallet } = useAvailAccount();
   const [ethBalance, setEthBalance] = useState<GLfloat>(0);
   const [availBalance, setAvailBalance] = useState<number>(0);
   const [transactionInProgress, setTransactionInProgress] = useState<boolean>(false);
+  const { initEthToAvailBridging } = useBridge()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -68,15 +70,21 @@ export default function BridgeSection() {
   useEffect(() => {
     (async () => {
       if (account.address) {
-        const result: number = await _getBalance(Chain.ETH, undefined, account.address,);
+        const result: number = await _getBalance(
+          Chain.ETH,
+          undefined,
+          account.address
+        );
         setEthBalance(result);
       }
       if (selected?.address) {
-        const result: number = await _getBalance(Chain.AVAIL, selected?.address);
+        const result: number = await _getBalance(
+          Chain.AVAIL,
+          selected?.address
+        );
         setAvailBalance(result);
       }
-    })(
-    );
+    })();
   }, [account.address, selected?.address]);
 
   const showSuccessMessage = () => { };
@@ -90,7 +98,8 @@ export default function BridgeSection() {
     console.log(values, selected?.address);
     try {
       if (fromChain === Chain.ETH) {
-        const fromAmoutAtomic = new BigNumber(values.fromAmount).multipliedBy(new BigNumber(10).pow(18)).toString();
+        const fromAmoutAtomic = "100"
+        // BigInt(values.fromAmount).multipliedBy(new BigInt(10).pow(18)).toString();
         const destinationAddress = selected?.address || values.toAddress;
 
         setTransactionInProgress(true);
@@ -120,7 +129,6 @@ export default function BridgeSection() {
         className="section_bg flex-1 text-white p-4 w-[85vw] md:w-[40vw] lg:w-[50w] xl:w-[40w] "
       >
         <div className="flex flex-row pb-[4vh] items-center justify-between"></div>
-
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -166,14 +174,14 @@ export default function BridgeSection() {
                               <span className="font-ppmori text-white text-opacity-70">
                                 Balance{" "}
                                 <span className="text-[#3382E8]">
-                                  {ethBalance}
+                                  {ethBalance ? ethBalance : "--"}
                                 </span>
                               </span>
                             ) : (
                               <span className="font-ppmori text-white text-opacity-70">
                                 Balance{" "}
                                 <span className="text-[#3382E8]">
-                                  {availBalance}
+                                  {availBalance ? availBalance : "--"}
                                 </span>
                               </span>
                             )}
@@ -226,7 +234,7 @@ export default function BridgeSection() {
                     <div className="flex flex-row items-center justify-between">
                       <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70">
                         {/* this will be opposite here since it's the To feild*/}
-                        {fromChain === Chain.ETH ? (
+                        {/* {fromChain === Chain.ETH ? (
                           <span className="font-ppmori text-white text-opacity-70">
                             Balance{" "}
                             <span className="text-[#3382E8]">
@@ -238,7 +246,7 @@ export default function BridgeSection() {
                             Balance{" "}
                             <span className="text-[#3382E8]">{ethBalance}</span>
                           </span>
-                        )}
+                        )} */}
                       </div>
                       <div className="flex flex-row items-center justify-center ">
                         <button className="font-thicccboisemibold text-[#3FB5F8] text-sm">
@@ -262,17 +270,6 @@ export default function BridgeSection() {
             </Button>
           </form>
         </Form>
-
-        {/* <button
-          onClick={() => {
-            console.log("sfd");
-            sendMessage({
-              message: { ArbitraryMessage: "0xazeazeaze" },
-              to: "0x0000000000000000000000000000000000000000000000000000000000000000",
-              domain: 2,
-            }, selected!);
-          }}
-        >{`sdf`}</button> */}
       </div>
       <div
         id="status"

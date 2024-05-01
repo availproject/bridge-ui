@@ -1,16 +1,16 @@
 import { appConfig } from '@/config/default';
 import axios from 'axios';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import 'dotenv/config'
 axios.defaults.withCredentials = true;
 
 export const apiInstance = axios.create({
-    baseURL: appConfig.bridgeApiBaseUrl,
+    baseURL: process.env.NEXT_PUBLIC_BRIDGE_API_URL,
+    headers: {"Access-Control-Allow-Origin": "*"},
     withCredentials: false
 });
 
 export const indexerInstance = axios.create({
-    baseURL: appConfig.bridgeIndexerBaseUrl,
+    baseURL: process.env.NEXT_PUBLIC_BRIDGE_INDEXER_URL,
+    headers: {"Access-Control-Allow-Origin": "*"},
     withCredentials: false
 });

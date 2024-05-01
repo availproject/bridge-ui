@@ -6,195 +6,43 @@ settings:
 
 importers:
 
-  .:
-    dependencies:
-      '@hookform/resolvers':
-        specifier: ^3.3.4
-        version: 3.3.4(react-hook-form@7.51.1(react@18.0.0))
-      '@polkadot/api':
-        specifier: ^10.12.1
-        version: 10.12.1(bufferutil@4.0.8)(utf-8-validate@6.0.3)
-      '@polkadot/extension-dapp':
-        specifier: ^0.46.7
-        version: 0.46.7(@polkadot/api@10.12.1(bufferutil@4.0.8)(utf-8-validate@6.0.3))(@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2))(@polkadot/util@12.6.2)(bufferutil@4.0.8)(utf-8-validate@6.0.3)
-      '@polkadot/util':
-        specifier: ^12.6.2
-        version: 12.6.2
-      '@polkadot/util-crypto':
-        specifier: ^12.6.2
-        version: 12.6.2(@polkadot/util@12.6.2)
-      '@radix-ui/react-accordion':
-        specifier: ^1.1.2
-        version: 1.1.2(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      '@radix-ui/react-avatar':
-        specifier: ^1.0.4
-        version: 1.0.4(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      '@radix-ui/react-dialog':
-        specifier: ^1.0.5
-        version: 1.0.5(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      '@radix-ui/react-dropdown-menu':
-        specifier: ^2.0.6
-        version: 2.0.6(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      '@radix-ui/react-label':
-        specifier: ^2.0.2
-        version: 2.0.2(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      '@radix-ui/react-select':
-        specifier: ^2.0.0
-        version: 2.0.0(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      '@radix-ui/react-separator':
-        specifier: ^1.0.3
-        version: 1.0.3(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      '@radix-ui/react-slot':
-        specifier: ^1.0.2
-        version: 1.0.2(@types/react@18.0.0)(react@18.0.0)
-      '@radix-ui/react-tabs':
-        specifier: ^1.0.4
-        version: 1.0.4(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      '@radix-ui/react-toast':
-        specifier: ^1.1.5
-        version: 1.1.5(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      '@rainbow-me/rainbowkit':
-        specifier: ^2.0.1
-        version: 2.0.1(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)(viem@2.0.0(bufferutil@4.0.8)(typescript@5.0.2)(utf-8-validate@6.0.3)(zod@3.22.4))(wagmi@2.5.7(@react-native-async-storage/async-storage@1.23.1(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3)))(@tanstack/query-core@5.24.8)(@tanstack/react-query@5.24.8(react@18.0.0))(@types/react@18.0.0)(bufferutil@4.0.8)(immer@9.0.21)(react-dom@18.0.0(react@18.0.0))(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3))(react@18.0.0)(rollup@2.79.1)(typescript@5.0.2)(utf-8-validate@6.0.3)(viem@2.0.0(bufferutil@4.0.8)(typescript@5.0.2)(utf-8-validate@6.0.3)(zod@3.22.4))(webpack-dev-server@4.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.3)(webpack-cli@5.1.4)(webpack@5.91.0))(zod@3.22.4))
-      '@rainbow-me/rainbowkit-siwe-next-auth':
-        specifier: ^0.4.0
-        version: 0.4.0(@rainbow-me/rainbowkit@2.0.1(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)(viem@2.0.0(bufferutil@4.0.8)(typescript@5.0.2)(utf-8-validate@6.0.3)(zod@3.22.4))(wagmi@2.5.7(@react-native-async-storage/async-storage@1.23.1(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3)))(@tanstack/query-core@5.24.8)(@tanstack/react-query@5.24.8(react@18.0.0))(@types/react@18.0.0)(bufferutil@4.0.8)(immer@9.0.21)(react-dom@18.0.0(react@18.0.0))(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3))(react@18.0.0)(rollup@2.79.1)(typescript@5.0.2)(utf-8-validate@6.0.3)(viem@2.0.0(bufferutil@4.0.8)(typescript@5.0.2)(utf-8-validate@6.0.3)(zod@3.22.4))(webpack-dev-server@4.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.3)(webpack-cli@5.1.4)(webpack@5.91.0))(zod@3.22.4)))(next-auth@4.24.6(next@14.0.1(@babel/core@7.24.4)(react-dom@18.0.0(react@18.0.0))(react@18.0.0))(react-dom@18.0.0(react@18.0.0))(react@18.0.0))(react@18.0.0)(siwe@2.0.0(ethers@5.0.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)))
-      '@subwallet-connect/core':
-        specifier: ^1.0.3
-        version: 1.0.3(@polkadot/api@10.12.1(bufferutil@4.0.8)(utf-8-validate@6.0.3))(@polkadot/util@12.6.2)(@react-native-async-storage/async-storage@1.23.1(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3)))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3)
-      '@subwallet-connect/injected-wallets':
-        specifier: ^1.0.3
-        version: 1.0.3(@polkadot/api@10.12.1(bufferutil@4.0.8)(utf-8-validate@6.0.3))(@polkadot/util@12.6.2)(@react-native-async-storage/async-storage@1.23.1(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3)))(bufferutil@4.0.8)(utf-8-validate@6.0.3)
-      '@subwallet-connect/ledger-polkadot':
-        specifier: ^1.0.4
-        version: 1.0.4(@babel/plugin-syntax-flow@7.24.1(@babel/core@7.24.4))(@babel/plugin-transform-react-jsx@7.23.4(@babel/core@7.24.4))(@polkadot/api@10.12.1(bufferutil@4.0.8)(utf-8-validate@6.0.3))(@polkadot/util@12.6.2)(@react-native-async-storage/async-storage@1.23.1(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3)))(@types/babel__core@7.20.5)(bufferutil@4.0.8)(eslint@8.0.0)(react@18.0.0)(type-fest@2.19.0)(typescript@5.0.2)(utf-8-validate@6.0.3)(webpack-cli@5.1.4(webpack-dev-server@4.15.2)(webpack@5.91.0))(webpack@5.91.0(webpack-cli@5.1.4(webpack-dev-server@4.15.2)(webpack@5.91.0)))
-      '@subwallet-connect/polkadot-js':
-        specifier: ^1.0.4
-        version: 1.0.4(@polkadot/api@10.12.1(bufferutil@4.0.8)(utf-8-validate@6.0.3))(@polkadot/util@12.6.2)(@react-native-async-storage/async-storage@1.23.1(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3)))(bufferutil@4.0.8)(utf-8-validate@6.0.3)
-      '@subwallet-connect/react':
-        specifier: ^1.0.3
-        version: 1.0.3(@polkadot/api@10.12.1(bufferutil@4.0.8)(utf-8-validate@6.0.3))(@polkadot/util@12.6.2)(@react-native-async-storage/async-storage@1.23.1(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3)))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3)
-      '@subwallet-connect/subwallet':
-        specifier: ^1.0.3
-        version: 1.0.3(@polkadot/api@10.12.1(bufferutil@4.0.8)(utf-8-validate@6.0.3))(@polkadot/util@12.6.2)(@react-native-async-storage/async-storage@1.23.1(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3)))(bufferutil@4.0.8)(utf-8-validate@6.0.3)
-      '@subwallet-connect/subwallet-polkadot':
-        specifier: ^1.0.3
-        version: 1.0.3(@polkadot/api@10.12.1(bufferutil@4.0.8)(utf-8-validate@6.0.3))(@polkadot/util@12.6.2)(@react-native-async-storage/async-storage@1.23.1(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3)))(bufferutil@4.0.8)(utf-8-validate@6.0.3)
-      '@subwallet-connect/talisman':
-        specifier: ^1.0.4
-        version: 1.0.4(@polkadot/api@10.12.1(bufferutil@4.0.8)(utf-8-validate@6.0.3))(@polkadot/util@12.6.2)(@react-native-async-storage/async-storage@1.23.1(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3)))(bufferutil@4.0.8)(utf-8-validate@6.0.3)
-      '@subwallet-connect/walletconnect-polkadot':
-        specifier: ^1.0.4
-        version: 1.0.4(@polkadot/api@10.12.1(bufferutil@4.0.8)(utf-8-validate@6.0.3))(@polkadot/util@12.6.2)(@react-native-async-storage/async-storage@1.23.1(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3)))(bufferutil@4.0.8)(utf-8-validate@6.0.3)
-      '@talismn/connect-ui':
-        specifier: ^1.1.3
-        version: 1.1.3(@types/react-dom@18.0.0)(@types/react@18.0.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)(rollup@2.79.1)
-      '@tanstack/react-query':
-        specifier: ^5.24.8
-        version: 5.24.8(react@18.0.0)
-      '@wagmi/core':
-        specifier: ^2.6.17
-        version: 2.6.17(@tanstack/query-core@5.24.8)(@types/react@18.0.0)(bufferutil@4.0.8)(immer@9.0.21)(react@18.0.0)(typescript@5.0.2)(utf-8-validate@6.0.3)(viem@2.0.0(bufferutil@4.0.8)(typescript@5.0.2)(utf-8-validate@6.0.3)(zod@3.22.4))(zod@3.22.4)
-      avail-js-sdk:
-        specifier: ^0.2.11
-        version: 0.2.11(bufferutil@4.0.8)(utf-8-validate@6.0.3)
-      axios:
-        specifier: ^1.6.7
-        version: 1.6.7
-      bignumber.js:
-        specifier: ^9.1.2
-        version: 9.1.2
-      class-variance-authority:
-        specifier: ^0.7.0
-        version: 0.7.0
-      clsx:
-        specifier: ^2.1.0
-        version: 2.1.0
-      cron:
-        specifier: ^3.1.7
-        version: 3.1.7
-      dotenv:
-        specifier: ^16.4.5
-        version: 16.4.5
-      ethers:
-        specifier: ^5
-        version: 5.0.0(bufferutil@4.0.8)(utf-8-validate@6.0.3)
-      lucide-react:
-        specifier: ^0.344.0
-        version: 0.344.0(react@18.0.0)
-      next:
-        specifier: 14.0.1
-        version: 14.0.1(@babel/core@7.24.4)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      next-auth:
-        specifier: ^4.24.6
-        version: 4.24.6(next@14.0.1(@babel/core@7.24.4)(react-dom@18.0.0(react@18.0.0))(react@18.0.0))(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
-      react:
-        specifier: ^18
-        version: 18.0.0
-      react-cookie:
-        specifier: ^7.1.0
-        version: 7.1.0(react@18.0.0)
-      react-dom:
-        specifier: ^18
-        version: 18.0.0(react@18.0.0)
-      react-hook-form:
-        specifier: ^7.51.1
-        version: 7.51.1(react@18.0.0)
-      react-icons:
-        specifier: ^5.0.1
-        version: 5.0.1(react@18.0.0)
-      siwe:
-        specifier: ^2
-        version: 2.0.0(ethers@5.0.0(bufferutil@4.0.8)(utf-8-validate@6.0.3))
-      tailwind-merge:
-        specifier: ^2.2.1
-        version: 2.2.1
-      tailwindcss-animate:
-        specifier: ^1.0.7
-        version: 1.0.7(tailwindcss@3.3.0(postcss@8.0.0))
-      viem:
-        specifier: 2.x
-        version: 2.0.0(bufferutil@4.0.8)(typescript@5.0.2)(utf-8-validate@6.0.3)(zod@3.22.4)
-      wagmi:
-        specifier: ^2.5.7
-        version: 2.5.7(@react-native-async-storage/async-storage@1.23.1(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3)))(@tanstack/query-core@5.24.8)(@tanstack/react-query@5.24.8(react@18.0.0))(@types/react@18.0.0)(bufferutil@4.0.8)(immer@9.0.21)(react-dom@18.0.0(react@18.0.0))(react-native@0.74.0(@babel/core@7.24.4)(@babel/preset-env@7.24.4(@babel/core@7.24.4))(@types/react@18.0.0)(bufferutil@4.0.8)(react@18.0.0)(utf-8-validate@6.0.3))(react@18.0.0)(rollup@2.79.1)(typescript@5.0.2)(utf-8-validate@6.0.3)(viem@2.0.0(bufferutil@4.0.8)(typescript@5.0.2)(utf-8-validate@6.0.3)(zod@3.22.4))(webpack-dev-server@4.15.2(bufferutil@4.0.8)(utf-8-validate@6.0.3)(webpack-cli@5.1.4)(webpack@5.91.0))(zod@3.22.4)
-      zod:
-        specifier: ^3.22.4
-        version: 3.22.4
-      zustand:
-        specifier: ^4.5.2
-        version: 4.5.2(@types/react@18.0.0)(immer@9.0.21)(react@18.0.0)
-    devDependencies:
-      '@talismn/connect-wallets':
-        specifier: ^1.2.5
-        version: 1.2.5(@polkadot/api@10.12.1(bufferutil@4.0.8)(utf-8-validate@6.0.3))(@polkadot/extension-inject@0.47.2(@polkadot/api@10.12.1(bufferutil@4.0.8)(utf-8-validate@6.0.3))(@polkadot/util@12.6.2)(bufferutil@4.0.8)(utf-8-validate@6.0.3))
-      '@types/node':
-        specifier: ^20
-        version: 20.0.0
-      '@types/react':
-        specifier: ^18
-        version: 18.0.0
-      '@types/react-dom':
-        specifier: ^18
-        version: 18.0.0
-      autoprefixer:
-        specifier: ^10.0.1
-        version: 10.0.1(postcss@8.0.0)
-      eslint:
-        specifier: ^8
-        version: 8.0.0
-      eslint-config-next:
-        specifier: 14.0.1
-        version: 14.0.1(eslint@8.0.0)(typescript@5.0.2)
-      postcss:
-        specifier: ^8
-        version: 8.0.0
-      tailwindcss:
-        specifier: ^3.3.0
-        version: 3.3.0(postcss@8.0.0)
-      typescript:
-        specifier: ^5
-        version: 5.0.2
+devDependencies:
+  '@polkadot/types':
+    specifier: ^11.0.2
+    version: 11.0.2
+  '@talismn/connect-wallets':
+    specifier: ^1.2.5
+    version: 1.2.5(@polkadot/api@10.12.1)(@polkadot/extension-inject@0.47.2)
+  '@types/node':
+    specifier: ^20
+    version: 20.0.0
+  '@types/react':
+    specifier: ^18
+    version: 18.0.0
+  '@types/react-dom':
+    specifier: ^18
+    version: 18.0.0
+  autoprefixer:
+    specifier: ^10.0.1
+    version: 10.0.1(postcss@8.0.0)
+  codec:
+    specifier: link:@polkadot/types/codec
+    version: link:@polkadot/types/codec
+  eslint:
+    specifier: ^8
+    version: 8.0.0
+  eslint-config-next:
+    specifier: 14.0.1
+    version: 14.0.1(eslint@8.0.0)(typescript@5.0.2)
+  postcss:
+    specifier: ^8
+    version: 8.0.0
+  tailwindcss:
+    specifier: ^3.3.0
+    version: 3.3.0(postcss@8.0.0)
+  typescript:
+    specifier: ^5
+    version: 5.0.2
 
 packages:
 
@@ -13289,7 +13137,19 @@ snapshots:
       '@polkadot/util': 12.6.2
       tslib: 2.6.2
 
-  '@polkadot/types-codec@10.12.1':
+  /@polkadot/types-augment@11.0.2:
+    resolution: {integrity: sha512-36C1LNWrd/IJu4y4xJFsklw7qmyBMnH16WLkIoma7W7tCkPyuvKpl9btTcNpY9UE0FLb3AEhO0shrz3KUANk/g==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@polkadot/types': 11.0.2
+      '@polkadot/types-codec': 11.0.2
+      '@polkadot/util': 12.6.2
+      tslib: 2.6.2
+    dev: true
+
+  /@polkadot/types-codec@10.12.1:
+    resolution: {integrity: sha512-f6jVI0gIaPwelirtds4W3q4uLboNnzbi/2844/vwlVO4BRLvpoXU8Ee3KuUTU+Qclg14I+S0Zm491O/Op2vgGw==}
+    engines: {node: '>=18'}
     dependencies:
       '@polkadot/util': 12.6.2
       '@polkadot/x-bigint': 12.6.2
@@ -13307,7 +13167,18 @@ snapshots:
       '@polkadot/x-bigint': 12.6.2
       tslib: 2.6.2
 
-  '@polkadot/types-create@10.12.1':
+  /@polkadot/types-codec@11.0.2:
+    resolution: {integrity: sha512-OL7jM9JNzmRo+gLNIWllvyv3I4k+2dywKchC9gw/D5OCkFD+B5T3oHUw99zzER0C/r7/vTH9RM3w79yeW0UYKA==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@polkadot/util': 12.6.2
+      '@polkadot/x-bigint': 12.6.2
+      tslib: 2.6.2
+    dev: true
+
+  /@polkadot/types-create@10.12.1:
+    resolution: {integrity: sha512-ZpWUNrDaJQO1iYwtOva68S2xlEzfpQOPW5IylqlnV6izmavQvClwr7i2y3vL52YjoFNa3ZPEhxvwH7o4NtWB0A==}
+    engines: {node: '>=18'}
     dependencies:
       '@polkadot/types-codec': 10.12.1
       '@polkadot/util': 12.6.2
@@ -13325,7 +13196,18 @@ snapshots:
       '@polkadot/util': 12.6.2
       tslib: 2.6.2
 
-  '@polkadot/types-known@10.12.1':
+  /@polkadot/types-create@11.0.2:
+    resolution: {integrity: sha512-yx5Gef3QkbJjzbEGoyOxv74XslGEK1Uo0IC8qSmwHsqO2+QoAEU7uJ9QpSNxHAcRrjx1W3+MdJAsfXtnwOiOeQ==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@polkadot/types-codec': 11.0.2
+      '@polkadot/util': 12.6.2
+      tslib: 2.6.2
+    dev: true
+
+  /@polkadot/types-known@10.12.1:
+    resolution: {integrity: sha512-qmUZ1HqPRvgrCMmRGrJy7FYuSjACxG1Htf/SSJwfWkwR+prFXQeMmADEmG8L3d9KZ/L1Mat/MF/9it0FrzX6aA==}
+    engines: {node: '>=18'}
     dependencies:
       '@polkadot/networks': 12.6.2
       '@polkadot/types': 10.12.1
@@ -13382,7 +13264,25 @@ snapshots:
       rxjs: 7.8.1
       tslib: 2.6.2
 
-  '@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2)':
+  /@polkadot/types@11.0.2:
+    resolution: {integrity: sha512-jYORxnbR9cOoLW2KI7OAbHlC8bQr+Anj34CqgtlEikRSZBlmmx1CLD08hZSnSHkVAQgqHB6SLfFIW5VTI2YaqA==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@polkadot/keyring': 12.6.2(@polkadot/util-crypto@12.6.2)(@polkadot/util@12.6.2)
+      '@polkadot/types-augment': 11.0.2
+      '@polkadot/types-codec': 11.0.2
+      '@polkadot/types-create': 11.0.2
+      '@polkadot/util': 12.6.2
+      '@polkadot/util-crypto': 12.6.2(@polkadot/util@12.6.2)
+      rxjs: 7.8.1
+      tslib: 2.6.2
+    dev: true
+
+  /@polkadot/util-crypto@12.6.2(@polkadot/util@12.6.2):
+    resolution: {integrity: sha512-FEWI/dJ7wDMNN1WOzZAjQoIcCP/3vz3wvAp5QQm+lOrzOLj0iDmaIGIcBkz8HVm3ErfSe/uKP0KS4jgV/ib+Mg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@polkadot/util': 12.6.2
     dependencies:
       '@noble/curves': 1.4.0
       '@noble/hashes': 1.4.0

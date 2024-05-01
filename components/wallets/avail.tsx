@@ -16,7 +16,8 @@ import { IoMdClose } from "react-icons/io";
 import { badgeVariants } from "../ui/badge";
 import { useCookies } from "react-cookie";
 import { ArrowDownCircle, ArrowLeft, InfoIcon } from "lucide-react";
-import { useAvailAccount } from "@/store/availWalletHook";
+import { useAvailAccount } from "@/stores/availWalletHook";
+import { web3Enable } from "@polkadot/extension-dapp";
 
 export default function Avail() {
   const [open, setOpen] = useState(false);
@@ -25,10 +26,11 @@ export default function Avail() {
     "substrateWallet",
   ]);
   const [supportedWallets, setSupportedWallets] = useState<Wallet[]>([]);
-const { selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAccount();
+const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAccount();
   const [enabledAccounts, setEnabledAccounts] = useState<WalletAccount[]>([]);
 
-  useEffect(() => {
+  useEffect(() => {(async()=>{
+    await web3Enable("bridge-ui")
     setSupportedWallets(getWallets());
     if (cookie.substrateAddress && cookie.substrateWallet) {
       const selectedWallet = getWallets().find((wallet) => {
@@ -40,7 +42,7 @@ const { selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcc
       }
       //TODO: fix this ts error later
       //@ts-ignore
-      selectedWallet.enable("rewards").then(() => {
+      selectedWallet.enable("bridge-ui").then(() => {
         selectedWallet.getAccounts().then((accounts) => {
           // Now you can work with the enabledAccounts
           const enabledAccounts = accounts;
@@ -60,10 +62,14 @@ const { selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcc
         });
       });
     }
+  })();
+    
   }, []);
+
   async function updateEnabledAccounts(wallet: Wallet): Promise<undefined> {
     const accounts = await wallet.getAccounts();
     setEnabledAccounts(accounts);
+
     return;
   }
 
@@ -120,7 +126,7 @@ const { selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcc
             </Button>
           )}
           <p className="text-white my-3 !mt-4 text-opacity-70 font-ppmori font-light text-sm flex flex-row items-center justify-center space-x-2">
-            <span>Select Accounts</span> <ArrowDownCircle className="h-4 w-4" />
+            <span>Select Accounts</span><ArrowDownCircle className="h-4 w-4"/>
           </p>
 
           <div className="flex flex-col gap-2 !max-h-48 overflow-y-scroll overflow-x-hidden ">
@@ -161,25 +167,7 @@ const { selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcc
                         )
                       </p>
                     </div>
-                    {/* <button
-                          className='!bg-none rounded-full !text-sm text-white '
-                            onClick={() => {
-                              setSelected(account);
-                              props.setClaimAddress(account.address);
-                              setCookie(
-                                "substrateAddress",
-                                account?.address,
-                                {
-                                  path: "/",
-                                  sameSite: true,
-                                }
-                              );
-                              setConnected(true)
-                              setOpen(false)
-                            }}
-                          >
-                            Connect
-                          </button> */}
+      
                   </div>
                 </Button>
               );
@@ -215,6 +203,7 @@ const { selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcc
                     (wallet.enable("rewards") as any).then(async () => {
                       await updateEnabledAccounts(wallet);
                     });
+
                   }}
                   key={wallet.title}
                 >

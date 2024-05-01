@@ -12,7 +12,7 @@ import {
   trustWallet,
   ledgerWallet,
 } from "@rainbow-me/rainbowkit/wallets";
-import { sepolia } from "wagmi/chains";
+import { mainnet, sepolia } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import { Web3OnboardProvider } from '@subwallet-connect/react'; 
@@ -29,7 +29,7 @@ export const config = getDefaultConfig({
       wallets: [argentWallet, trustWallet, ledgerWallet],
     },
   ],
-  chains: [sepolia],
+  chains: [mainnet, sepolia],
   ssr: true,
 });
 
