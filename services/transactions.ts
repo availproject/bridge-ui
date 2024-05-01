@@ -1,7 +1,7 @@
 import axios from "axios";
 
 import { appConfig } from "@/config/default";
-import { TxnData } from "@/types/transaction";
+import { TxnData, merkleProof } from "@/types/transaction";
 
 const indexerInstance = axios.create({
     baseURL: appConfig.bridgeIndexerBaseUrl,
@@ -9,20 +9,12 @@ const indexerInstance = axios.create({
     withCredentials: false
 });
 
-// const _chainIdToName = (chainId: number) => {
-//     switch (chainId) {
-//         case 1:
-//             return "ETHEREUM";
-//         case 43114:
-//             return "AVAIL";
-//         default:
-//             return null;
-//     }
-// }
+const bridgeApiInstance = axios.create({
+    baseURL: appConfig.bridgeApiBaseUrl,
+    headers: { "Access-Control-Allow-Origin": "*" },
+    withCredentials: false
+});
 
-// should ideally have the following params:
-//  limit: number,
-//  offset: number
 export const getTransactionsFromIndexer = async (userAddress: string, sourceChain: string, destinationChain: string) => {
     const response = await indexerInstance
         .get(`/transactions`, {
@@ -38,5 +30,21 @@ export const getTransactionsFromIndexer = async (userAddress: string, sourceChai
         });
 
     const result: TxnData[] = response.data.result;
+    return result;
+}
+
+export const getMerkleProof = async (blockhash: string, index: number) => {
+    const response = await bridgeApiInstance
+        .get(`/eth/proof/${blockhash}`, {
+            params: {
+                index,
+            },
+        })
+        .catch((e) => {
+            console.log(e);
+            return { data: [] };
+        });
+
+    const result: merkleProof = response.data;
     return result;
 }

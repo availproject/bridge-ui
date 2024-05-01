@@ -36,7 +36,6 @@ import { useCommonStore } from "@/stores/common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import LatestTransactions from "./latestransactionsection";
 import { Chain } from "@/types/common";
-import { fetchMerkleProof } from "@/utils/api";
 import { receiveAvail } from "@/utils/contract";
 import { sendMessage } from "@/utils/vectorpallete";
 import { H256 } from "@polkadot/types/interfaces";
