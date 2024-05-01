@@ -10,10 +10,10 @@ import ethereumBridge from "@/constants/abis/ethereumBridge.json";
 import { TRANSACTION_TYPES } from "@/@types/transaction";
 import useEthWallet from "@/hooks/useEthWallet";
 import { appConfig } from "@/config/default";
-import { ethConfig } from "@/config";
+import { ethConfig } from "@/config/walletConfig";
 
 import { substrateAddressToPublicKey } from "@/utils/addressFormatting";
-import { useAvailAccount } from "@/store/availWalletHook";
+import { useAvailAccount } from "@/stores/availWalletHook";
 
 export default function useBridge() {
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
@@ -34,12 +34,12 @@ export default function useBridge() {
   const validateChain = useCallback(
     async (txType: TRANSACTION_TYPES) => {
       if (txType === TRANSACTION_TYPES.BRIDGE_AVAIL_TO_ETH) {
-        if (networks.avail.networkId !== await activeNetworkId()) {
-          await switchNetwork(networks.avail.networkId);
-        }
+        // if (networks.avail.networkId !== await activeNetworkId()) {
+        //   await switchNetwork(networks.avail.networkId);
+        // }
       } else if (txType === TRANSACTION_TYPES.BRIDGE_ETH_TO_AVAIL) {
-        if (networks.ethereum.networkId !== await activeNetworkId()) {
-          await switchNetwork(networks.ethereum.networkId);
+        if (networks.ethereum.id !== await activeNetworkId()) {
+          await switchNetwork(networks.ethereum.id);
         }
       }
     },
@@ -53,14 +53,14 @@ export default function useBridge() {
       abi: ethereumAvailTokenAbi,
       functionName: "balanceOf",
       args: [activeUserAddress],
-      chainId: networks.ethereum.networkId,
+      chainId: networks.ethereum.id,
     });
 
     if (!balance) return new BigNumber(0);
 
     return new BigNumber(balance);
   }
-    , [activeUserAddress, networks.ethereum.networkId]);
+    , [activeUserAddress, networks.ethereum.id]);
 
 
   const getCurrentAllowanceOnEth = useCallback(async () => {
@@ -71,7 +71,7 @@ export default function useBridge() {
         abi: ethereumAvailTokenAbi,
         functionName: "allowance",
         args: [activeUserAddress, appConfig.contracts.ethereum.bridge],
-        chainId: networks.ethereum.networkId,
+        chainId: networks.ethereum.id,
       });
 
       if (!allowance) return new BigNumber(0);
@@ -80,7 +80,7 @@ export default function useBridge() {
     } catch (error) {
       throw new Error("error fetching allowance");
     }
-  }, [activeUserAddress, networks.ethereum.networkId]);
+  }, [activeUserAddress, networks.ethereum.id]);
 
   const approveOnEth = useCallback(async (atomicAmount: string) => {
     // approve on ethereum chain
@@ -90,7 +90,7 @@ export default function useBridge() {
       functionName: "approve",
       // args: [spender, amount]
       args: [appConfig.contracts.ethereum.bridge, atomicAmount],
-      chainId: networks.ethereum.networkId,
+      chainId: networks.ethereum.id,
     });
 
     txHash && console.log(txHash);
@@ -112,7 +112,7 @@ export default function useBridge() {
       functionName: "sendAVAIL",
       // args: [recipient, amount]
       args: [byte32DestinationAddress, atomicAmount],
-      chainId: networks.ethereum.networkId,
+      chainId: networks.ethereum.id,
     });
 
     txHash && console.log(txHash);
@@ -126,8 +126,8 @@ export default function useBridge() {
     // validate chain
     await validateChain(TRANSACTION_TYPES.BRIDGE_ETH_TO_AVAIL);
 
-    if (await activeNetworkId() !== networks.ethereum.networkId) {
-      throw new Error(`Invalid network, please switch to ${networks.ethereum.name} network(id: ${networks.ethereum.networkId})`);
+    if (await activeNetworkId() !== networks.ethereum.id) {
+      throw new Error(`Invalid network, please switch to ${networks.ethereum.name} network(id: ${networks.ethereum.id})`);
     }
 
     // check approval

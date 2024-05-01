@@ -1,17 +1,27 @@
-export const appConfig = Object.freeze({
+import { Chain } from 'viem'
+import { sepolia } from '@wagmi/core/chains'
+
+type AppConfig = {
     networks: {
+        ethereum: Chain,
+    },
+    bridgeApiBaseUrl: string,
+    bridgeIndexerBaseUrl: string,
+    contracts: {
         ethereum: {
-            networkId: 11155111,
-            name: 'Sepolia',
-            symbol: 'ETH',
-            decimals: 18,
+            availToken: string,
+            bridge: string,
         },
         avail: {
-            networkId: 2,
-            name: 'Avail Goldberg',
-            symbol: 'AVAIL',
-            decimals: 18,
+            availToken: string,
+            bridge: string,
         }
+    }
+}
+
+export const appConfig: AppConfig = Object.freeze({
+    networks: {
+        ethereum: sepolia,
     },
     bridgeApiBaseUrl: 'https://hex-bridge-api.sandbox.avail.tools',
     bridgeIndexerBaseUrl: 'https://hex-bridge-indexer.sandbox.avail.tools',

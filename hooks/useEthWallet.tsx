@@ -1,8 +1,6 @@
 import { useMemo } from "react";
 import { ethers } from "ethers";
 import { useSwitchChain, useAccount } from "wagmi";
-import { getChainId, getAccount } from '@wagmi/core'
-import { ethConfig } from "@/config";
 
 /**
  * @description All the functionalities related to wallet such as connecting, switching network, etc

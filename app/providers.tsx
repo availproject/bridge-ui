@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { WagmiProvider } from "wagmi";
 import {
   RainbowKitProvider,
   getDefaultWallets,
@@ -12,11 +13,10 @@ import {
   trustWallet,
   ledgerWallet,
 } from "@rainbow-me/rainbowkit/wallets";
-import { mainnet, sepolia } from "wagmi/chains";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider } from "wagmi";
-import { Web3OnboardProvider } from '@subwallet-connect/react'; 
-import type { AppProps } from 'next/app';
+
+import { appConfig } from "@/config/default";
+
 const { wallets } = getDefaultWallets();
 
 export const config = getDefaultConfig({
@@ -29,7 +29,7 @@ export const config = getDefaultConfig({
       wallets: [argentWallet, trustWallet, ledgerWallet],
     },
   ],
-  chains: [mainnet, sepolia],
+  chains: [appConfig.networks.ethereum],
   ssr: true,
 });
 
