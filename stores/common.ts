@@ -1,5 +1,6 @@
 
 import { Chain } from "@/types/common";
+import { ApiPromise } from "avail-js-sdk";
 import { create } from "zustand";
 
 interface CommonStore {
@@ -11,6 +12,8 @@ interface CommonStore {
     setFromChainBalance: (fromChainBalance: number | undefined) => void
     toChainBalance: number | undefined
     setToChainBalance: (toChainBalance: number | undefined) => void
+    api: ApiPromise
+    setApi: (api: ApiPromise) => void
 }
 
 export const useCommonStore = create<CommonStore>((set) => ({
@@ -22,5 +25,8 @@ export const useCommonStore = create<CommonStore>((set) => ({
     setFromChainBalance: (fromChainBalance) => set({ fromChainBalance }),
     toChainBalance: undefined,
     setToChainBalance: (toChainBalance) => set({ toChainBalance }),
+    api: {} as ApiPromise,
+    setApi: (api) => set({ api }),
 }));
 
+ 

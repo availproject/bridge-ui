@@ -7,7 +7,8 @@ import {
   getKeyringFromSeed,
   initialize,
   isValidAddress,
-  rpc, types, TURING_ENDPOINT,signedExtensions 
+  rpc, types, TURING_ENDPOINT,signedExtensions, 
+  disconnect
 } from "avail-js-sdk";
 import { substrateConfig, ethConfig } from "@/config";
 import { getBalance } from "@wagmi/core";
@@ -19,7 +20,9 @@ import { web3Enable } from "@polkadot/extension-dapp";
 import { sepolia } from "wagmi/chains";
 import { executeParams, sendMessageParams, TxnData } from "@/types/transaction";
 import { Chain, ethBalance } from "@/types/common";
+import { useCommonStore } from "@/stores/common";
 
+const {api , setApi} = useCommonStore()
 
 const getInjectorMetadata = (api: ApiPromise) => {
     return {
@@ -35,22 +38,30 @@ const getInjectorMetadata = (api: ApiPromise) => {
       userExtensions: signedExtensions,
     };
   };
+
+  export async function initializeApi() {
+    const api = await initialize(substrateConfig.endpoint);
+    setApi(api)
+  }
   
 export async function sendMessage(props: sendMessageParams, account: WalletAccount) {
     const { web3Accounts, web3FromSource } = await import(
       "@polkadot/extension-dapp"
     );
     const injector = await web3FromSource(account.source);
-  
     console.log(account.source, injector, "sdf");
     const api = await initialize(substrateConfig.endpoint);
     const metadata = getInjectorMetadata(api);
     await injector?.metadata?.provide(metadata);
+
+    console.log(props.message, props.to, props.domain, "sdf")
+    console.log(injector.signer, "sdf");
     const result = await new Promise((resolve, reject) => {
       api.tx.vector
         .sendMessage(props.message, props.to, props.domain)
         .signAndSend(account.address,
           { signer: injector.signer, app_id: 0 } as Partial<SignerOptions>, ({ status, events }) => {
+
             if (status.isInBlock) {
               console.log(`Transaction included at blockHash ${status.asInBlock}`);
               events.forEach(({ event }) => {
@@ -68,7 +79,7 @@ export async function sendMessage(props: sendMessageParams, account: WalletAccou
                     errorInfo = dispatchError.toString();
                   }
                   toast({
-                    title: `Transaction failed. Status: ${status} with error: ${errorInfo}`,
+                    title:`Transaction failed. Status: ${status} with error: ${errorInfo}`,
                   });
                   reject(
                     `Transaction failed. Status: ${status} with error: ${errorInfo}`
@@ -110,7 +121,7 @@ export async function sendMessage(props: sendMessageParams, account: WalletAccou
             } else {
               reject(`Transaction failed. Status: ${status}`);
             }
-          });
+        });
     });
     return result;
   }
@@ -170,3 +181,22 @@ export async function executeTransaction(props: executeParams) {
     return result;
   }
   
+
+
+  export const hello = async () => {
+    const api = await initialize("wss://turing-rpc.avail.so/ws")
+    const message = {
+      FungibleToken: {
+        assetId: "0x0000000000000000000000000000000000000000000000000000000000000000",
+        amount: BigInt(4000000000000000000),
+      },
+    }
+    const to = "0x3942f3a6d7637d9f151b81063a9c5003b278231b000000000000000000000000"
+    const domain = 2
+  
+    const tx = api.tx.vector.sendMessage(message, to, domain)
+    console.log(tx.toHuman())
+    console.log(tx.toHex())
+    await disconnect()
+    return tx.toHex()
+  }

@@ -1,7 +1,7 @@
 /* eslint-disable import/no-anonymous-default-export */
 export const  substrateConfig = {
     seed: "",
-    endpoint: "wss://rpc-hex-devnet.avail.tools/ws",
+    endpoint: "wss://turing-rpc.avail.so/ws",
     appId: 0,
   }
 

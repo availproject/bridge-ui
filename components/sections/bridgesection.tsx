@@ -38,6 +38,9 @@ import LatestTransactions from "./latestransactionsection";
 import { Chain } from "@/types/common";
 import { fetchMerkleProof } from "@/utils/api";
 import { receiveAvail } from "@/utils/contract";
+import { sendMessage } from "@/utils/vectorpallete";
+import { H256 } from "@polkadot/types/interfaces";
+import { u8aToU8a } from "@polkadot/util";
 const formSchema = z.object({
   fromAmount: z.number().positive("Enter a Valid Amount").or(z.string()),
   toAddress: z.string(),
@@ -77,13 +80,53 @@ export default function BridgeSection() {
     })();
   }, [account.address, selected?.address]);
 
+  function stringToH256(hexString: string): H256 {
+    // Remove the "0x" prefix
+    const hex = hexString.replace(/^0x/, '');
+    console.log(hex, "hex")
+    // Convert hexadecimal string to Uint8Array
+    const uint8Array = u8aToU8a(hex);
+    console.log(uint8Array, "uint8Array")
+    // Ensure the Uint8Array has a length of 32 bytes
+    if (uint8Array.length !== 32) {
+        throw new Error('Invalid input: The hexadecimal string must represent 32 bytes (256 bits)');
+    }
+    const h256: H256 = uint8Array as H256;
+    return h256;
+}
+
+
   /////CUSTOM
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log("sf");
-    const a = await receiveAvail();
+    // const a = await receiveAvail();
+    const a = await sendMessage({
+      message: {
+        FungibleToken: {
+          assetId:"0x0000000000000000000000000000000000000000000000000000000000000000",
+          amount: BigInt(4000000000000000000),
+        },
+      },
+      to: "0x3942f3a6d7637d9f151b81063a9c5003b278231b000000000000000000000000",
+      domain: 2,
+    },
+    selected!)
     console.log(a, "a");
     console.log(values);
   }
+
+  // export interface sendMessageParams {
+  //   message: {
+  //     ArbitraryMessage?: `0x${string}`;
+  //     FungibleToken?: {
+  //       assetId: `0x${string}`;
+  //       amount: number;
+  //     };
+  //   };
+  //   to: `0x${string}`;
+  //   domain: number;
+  // }
+  
 
   return (
     <div className="flex md:flex-row flex-col h-full md:space-x-[2vw] max-md:space-y-[2vw]">

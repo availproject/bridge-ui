@@ -1,4 +1,7 @@
 import { Chain, Status } from "./common";
+import { U8aFixed } from "@polkadot/types/codec"
+import type { H256} from '@polkadot/types/interfaces';
+
 
 export interface merkleProof {
     blobRoot: string;
@@ -56,8 +59,8 @@ export interface merkleProof {
     message: {
       ArbitraryMessage?: `0x${string}`;
       FungibleToken?: {
-        assetId: `0x${string}`;
-        amount: number;
+        assetId: string;
+        amount: BigInt;
       };
     };
     to: `0x${string}`;
@@ -86,4 +89,6 @@ export interface merkleProof {
     dataType: string;
     blockHash: `0x${string}`;
   }
+
+  
   
