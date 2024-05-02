@@ -57,7 +57,6 @@ export default function useBridge() {
     });
 
     if (!balance) return new BigNumber(0);
-
     return new BigNumber(balance);
   }
     , [activeUserAddress, networks.ethereum.id]);

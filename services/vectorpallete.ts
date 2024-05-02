@@ -12,7 +12,6 @@ import {
 } from "avail-js-sdk";
 import { substrateConfig, ethConfig } from "@/config/walletConfig";
 import { getBalance } from "@wagmi/core";
-import { apiInstance, indexerInstance } from "./axios-instance";
 import { WalletAccount } from "@talismn/connect-wallets";
 import { SignerOptions } from "@polkadot/api/types";
 import { encodeAbiParameters } from 'viem'

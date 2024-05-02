@@ -11,7 +11,6 @@ import {
   signedExtensions,
 } from "avail-js-sdk";
 import { getBalance, writeContract } from "@wagmi/core";
-import { apiInstance, indexerInstance } from "./axios-instance";
 import { WalletAccount } from "@talismn/connect-wallets";
 import { SignerOptions } from "@polkadot/api/types";
 import { encodeAbiParameters } from "viem";
