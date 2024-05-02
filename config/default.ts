@@ -23,7 +23,7 @@ export const appConfig: AppConfig = Object.freeze({
     networks: {
         ethereum: sepolia,
     },
-    bridgeApiBaseUrl: 'https://hex-bridge-api.sandbox.avail.tools',
+    bridgeApiBaseUrl: 'http://localhost:8080',
     bridgeIndexerBaseUrl: 'https://turing-bridge-indexer.fra.avail.so',
     contracts: {
         ethereum: {

@@ -52,7 +52,7 @@ const formSchema = z.object({
 export default function BridgeSection() {
   const account = useAccount();
   const { fromChain } = useCommonStore();
-  const { selected, selectedWallet } = useAvailAccount();
+  const { selected } = useAvailAccount();
   const [ethBalance, setEthBalance] = useState<GLfloat>(0);
   const [availBalance, setAvailBalance] = useState<number>(0);
   const [transactionInProgress, setTransactionInProgress] = useState<boolean>(false);

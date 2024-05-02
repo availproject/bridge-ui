@@ -15,13 +15,12 @@ import { getTransactionsFromIndexer } from "@/services/transactions";
 import useEthWallet from "@/hooks/useEthWallet";
 
 export default function LatestTransactions(props: { pending: boolean }) {
-  const {activeUserAddress} = useEthWallet()
+  const { activeUserAddress } = useEthWallet()
   const [latestTransactions, setLatestTransactions] = useState<TxnData[]>([]);
 
   useEffect(() => {
     (async () => {
       if(!activeUserAddress) return;
-
       const txnData = await getTransactionsFromIndexer(activeUserAddress, Chain.ETH, Chain.AVAIL,);
       setLatestTransactions(txnData);
     })();

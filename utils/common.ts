@@ -18,10 +18,6 @@ import { executeParams, sendMessageParams, TxnData } from "@/types/transaction";
 import { Chain, ethBalance } from "@/types/common";
 import { appConfig } from "@/config/default";
 
-
-
-
-
 export async function _getBalance(chain: Chain, availAddress?: string, ethAddress?: `0x${string}`) : Promise<number> {
   if (chain === Chain.AVAIL && availAddress) {
     const api = await initialize(substrateConfig.endpoint);

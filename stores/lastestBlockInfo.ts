@@ -1,7 +1,7 @@
 import { appConfig } from "@/config/default";
 import { create } from "zustand";
 
-interface LatestBlockInfo {
+export interface LatestBlockInfo {
   ethHead: {
     slot: number;
     timestamp: number;
@@ -33,18 +33,3 @@ export const useLatestBlockInfo = create<LatestBlockInfo>((set) => ({
   setAvlHead: (avlHead) => set({ avlHead }),
 }));
 
-async function fetchAvlHead(): Promise<{ data: LatestBlockInfo["avlHead"] }> {
-  const response = await fetch(
-    `${appConfig.bridgeApiBaseUrl}/eth/head`
-  );
-  const avlHead: LatestBlockInfo["avlHead"] = await response.json();
-  return { data: avlHead };
-}
-
-async function fetchEthHead() {
-  const response = await fetch(
-    `${appConfig.bridgeApiBaseUrl}/eth/head`
-  );
-  const data = await response.json();
-  return data;
-}

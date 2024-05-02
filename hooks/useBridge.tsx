@@ -2,18 +2,16 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import BigNumber from 'bignumber.js'
 import { useWriteContract } from "wagmi";
 import { readContract } from "@wagmi/core";
-
-
 import ethereumAvailTokenAbi from "@/constants/abis/ethereumAvailToken.json";
 import ethereumBridge from "@/constants/abis/ethereumBridge.json";
-
 import { TRANSACTION_TYPES } from "@/types/transaction";
 import useEthWallet from "@/hooks/useEthWallet";
 import { appConfig } from "@/config/default";
 import { ethConfig } from "@/config/walletConfig";
-
 import { substrateAddressToPublicKey } from "@/utils/addressFormatting";
 import { useAvailAccount } from "@/stores/availWalletHook";
+import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
+import { fetchAvlHead, fetchEthHead } from "@/services/api";
 
 export default function useBridge() {
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
@@ -23,6 +21,7 @@ export default function useBridge() {
     writeContractAsync
   } = useWriteContract()
   const { selected } = useAvailAccount();
+  const {avlHead, ethHead, setAvlHead, setEthHead} = useLatestBlockInfo();
 
 
   const networks = appConfig.networks;
@@ -46,6 +45,17 @@ export default function useBridge() {
     [],
   );
 
+
+
+  const setBlockInfo = useCallback(async () => {
+    const ethHead = await fetchEthHead();
+    const avlHead = await fetchAvlHead();
+    setEthHead(ethHead.data);
+    setAvlHead(avlHead.data);
+  },[()=>{
+
+  }]);
+
   const getAvailBalanceOnEth = useCallback(async () => {
     // Get AVAIL balance on Ethereum chain
     const balance = await readContract(ethConfig, {
@@ -57,6 +67,7 @@ export default function useBridge() {
     });
 
     if (!balance) return new BigNumber(0);
+    //@ts-ignore TODO: P2
     return new BigNumber(balance);
   }
     , [activeUserAddress, networks.ethereum.id]);
@@ -74,7 +85,7 @@ export default function useBridge() {
       });
 
       if (!allowance) return new BigNumber(0);
-
+    //@ts-ignore TODO: P2
       return new BigNumber(allowance);
     } catch (error) {
       throw new Error("error fetching allowance");
@@ -95,8 +106,6 @@ export default function useBridge() {
     txHash && console.log(txHash);
   }
     , []);
-
-
 
   const burnAvailOnEth = useCallback(async ({
     atomicAmount,
