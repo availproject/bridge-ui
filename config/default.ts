@@ -7,6 +7,7 @@ type AppConfig = {
     },
     bridgeApiBaseUrl: string,
     bridgeIndexerBaseUrl: string,
+    bridgeIndexerPollingInterval: number,
     contracts: {
         ethereum: {
             availToken: string,
@@ -25,6 +26,7 @@ export const appConfig: AppConfig = Object.freeze({
     },
     bridgeApiBaseUrl: 'https://hex-bridge-api.sandbox.avail.tools',
     bridgeIndexerBaseUrl: 'https://turing-bridge-indexer.fra.avail.so',
+    bridgeIndexerPollingInterval: 30, // in seconds
     contracts: {
         ethereum: {
             availToken: '0xb1C3Cb9b5e598d4E95a85870e7812B99f350982d',

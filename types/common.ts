@@ -9,7 +9,7 @@ export enum TransactionFlow {
     AVAIL_TO_ETH = "AVAIL_TO_ETH",
 }
 
-export enum Status {
+export enum TransactionStatus {
     INITIALIZED = "INITIALIZED",
     BRIDGED = "BRIDGED",
     READY_TO_CLAIM = "READY_TO_CLAIM",
