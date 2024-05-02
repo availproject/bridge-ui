@@ -17,10 +17,7 @@ import { encodeAbiParameters } from "viem";
 import { web3Enable } from "@polkadot/extension-dapp";
 import { ethers } from "ethers";
 import {
-  executeParams,
   merkleProof,
-  sendMessageParams,
-  TxnData,
 } from "@/types/transaction";
 import { Chain, ethBalance } from "@/types/common";
 import { bridgeContractAbi } from "@/constants/abi";

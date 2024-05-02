@@ -8,24 +8,14 @@ import {
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import { Chain } from "@/types/common";
-import { TxnData } from "@/types/transaction";
-import { getTransactionsFromIndexer } from "@/services/transactions";
-import useEthWallet from "@/hooks/useEthWallet";
+import useTransactions from "@/hooks/useTransactions";
+import { parseAvailAmount } from "@/utils/parseAmount";
+import { ChainLabel } from "../ui/chainLabel";
+import { parseDateTimeToMonthShort, parseDateTimeToDay} from "@/utils/parseDateTime";
 
 export default function LatestTransactions(props: { pending: boolean }) {
-  const { activeUserAddress } = useEthWallet()
-  const [latestTransactions, setLatestTransactions] = useState<TxnData[]>([]);
-
-  useEffect(() => {
-    (async () => {
-      if(!activeUserAddress) return;
-      const txnData = await getTransactionsFromIndexer(activeUserAddress, Chain.ETH, Chain.AVAIL,);
-      setLatestTransactions(txnData);
-    })();
-  }, [activeUserAddress]);
-
+  const { pendingTransactions, completedTransactions } = useTransactions()
 
   return (
     <div className="flex flex-col ">
@@ -33,22 +23,16 @@ export default function LatestTransactions(props: { pending: boolean }) {
         <Table>
           {props.pending ? (
             <TableBody>
-              {latestTransactions
-                .filter((txn) => txn.status !== "CLAIMED")
+              {pendingTransactions
                 .map((txn, index) => (
                   <TableRow key={index}>
                     <TableCell className="font-medium w-full flex flex-row space-x-2">
                       <p className="flex flex-col">
                         <p className="text-white text-opacity-60 flex flex-col items-center justify-center">
                           <p className="text-white text-md">
-                            {`${new Date(
-                              txn.sourceTransactionTimestamp
-                            ).toLocaleDateString("en-GB", { day: "numeric" })}
-   `}{" "}
+                            {parseDateTimeToDay(txn.sourceTransactionTimestamp)}
                           </p>
-                          <p>{` ${new Date(txn.sourceTransactionTimestamp)
-                            .toLocaleDateString("en-GB", { month: "short" })
-                            .toUpperCase()}`}</p>
+                          <p>{parseDateTimeToMonthShort(txn.sourceTransactionTimestamp)}</p>
                         </p>
                         {/* <p className="text-white text-opacity-60">{` ${new Date(
                         txn.sourceTransactionTimestamp
@@ -58,60 +42,14 @@ export default function LatestTransactions(props: { pending: boolean }) {
                       </p>
                       <p className="flex flex-col space-y-1 ">
                         <p className="flex flex-row w-full">
-                          {" "}
-                          {txn.sourceChain === Chain.ETH ? (
-                            <p className="flex flex-row space-x-1">
-                              {" "}
-                              <Image
-                                src="/images/eth.png"
-                                alt="eth"
-                                width={18}
-                                height={14}
-                              ></Image>
-                              <p>ETH</p>
-                            </p>
-                          ) : (
-                            <p className="flex flex-row space-x-1">
-                              {" "}
-                              <Image
-                                src="/images/logo.png"
-                                alt="avail"
-                                width={16}
-                                height={1}
-                              ></Image>
-                              <p>AVAIL</p>
-                            </p>
-                          )}{" "}
+                          <ChainLabel chain={txn.sourceChain} />
                           <p className="px-1">{` --> `}</p>{" "}
-                          {txn.destinationChain === Chain.ETH ? (
-                            <p className="flex flex-row space-x-1">
-                              {" "}
-                              <Image
-                                src="/images/eth.png"
-                                alt="eth"
-                                width={18}
-                                height={14}
-                              ></Image>
-                              <p>ETH</p>
-                            </p>
-                          ) : (
-                            <p className="flex flex-row space-x-1">
-                              {" "}
-                              <Image
-                                src="/images/logo.png"
-                                alt="avail"
-                                width={16}
-                                height={1}
-                              ></Image>
-                              <p>AVAIL</p>
-                            </p>
-                          )}{" "}
+                          <ChainLabel chain={txn.destinationChain} />
                         </p>
 
                         <p className="flex flex-row space-x-2">
                           <p className="text-white text-opacity-60 text-xs ml-2">
-                            {" "}
-                            Sent 1200 AVAIL
+                            {parseAvailAmount(txn.amount)} AVAIL
                           </p>
                         </p>
                       </p>
@@ -138,8 +76,7 @@ export default function LatestTransactions(props: { pending: boolean }) {
             </TableBody>
           ) : (
             <TableBody>
-              {latestTransactions
-                .filter((txn) => txn.status === "CLAIMED")
+              {completedTransactions
                 .map((txn, index) => (
                   <TableRow key={index}>
                     <TableCell className="font-medium w-full flex flex-row space-x-2">
