@@ -7,6 +7,8 @@ export interface LatestBlockInfo {
     timestamp: number;
     timestampDiff: number;
   };
+  latestBlockhash: string;
+  setLatestBlockhash: (latestBlockhash: string) => void;
   setEthHead: (ethHead: LatestBlockInfo["ethHead"]) => void;
   avlHead: {
     data: {
@@ -23,6 +25,8 @@ export const useLatestBlockInfo = create<LatestBlockInfo>((set) => ({
     timestamp: 0,
     timestampDiff: 0,
   },
+  latestBlockhash: "",
+  setLatestBlockhash: (latestBlockhash) => set({ latestBlockhash }),
   setEthHead: (ethHead) => set({ ethHead }),
   avlHead: {
     data: {

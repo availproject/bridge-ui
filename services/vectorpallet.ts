@@ -36,13 +36,11 @@ export async function sendMessage(props: sendMessageParams, account: WalletAccou
     "@polkadot/extension-dapp"
   );
   const injector = await web3FromSource(account.source);
-  console.log(account.source, injector, "sdf");
   const api = await initialize(substrateConfig.endpoint);
   const metadata = getInjectorMetadata(api);
   await injector?.metadata?.provide(metadata);
 
-  console.log(props.message, props.to, props.domain, "sdf")
-  console.log(injector.signer, "sdf");
+
   const result = await new Promise((resolve, reject) => {
     api.tx.vector
       .sendMessage(props.message, props.to, props.domain)
@@ -113,9 +111,16 @@ export async function sendMessage(props: sendMessageParams, account: WalletAccou
   return result;
 }
 
-export async function executeTransaction(props: executeParams) {
+export async function executeTransaction(props: executeParams, account: WalletAccount) {
+  const { web3Accounts, web3FromSource } = await import(
+    "@polkadot/extension-dapp"
+  );
+  const injector = await web3FromSource(account.source);
   const api = await initialize(substrateConfig.endpoint);
-  const keyring = getKeyringFromSeed(substrateConfig.seed);
+  const metadata = getInjectorMetadata(api);
+  await injector?.metadata?.provide(metadata);
+
+
   const result = await new Promise((resolve, reject) => {
     api.tx.vector
       .execute(
@@ -124,7 +129,9 @@ export async function executeTransaction(props: executeParams) {
         props.accountProof,
         props.storageProof
       )
-      .signAndSend(keyring, ({ status, events }) => {
+      .signAndSend(account.address,
+        { signer: injector.signer, app_id: 0 } as Partial<SignerOptions>, 
+        ({ status, events }) => {
         if (status.isInBlock) {
           console.log(`Transaction included at blockHash ${status.asInBlock}`);
           events.forEach(({ event }) => {
@@ -163,7 +170,8 @@ export async function executeTransaction(props: executeParams) {
         } else if (status.isFinalized) {
           reject(`Transaction failed. Status: ${status}`);
         }
-      });
+      }
+    );
   });
   return result;
 }

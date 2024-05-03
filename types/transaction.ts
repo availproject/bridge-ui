@@ -49,8 +49,8 @@ export interface executeParams {
         amount: number;
       };
     };
-    from: `0x${string}`;
-    to: `0x${string}`;
+    from: `${string}`;
+    to: `${string}`;
     originDomain: number;
     destinationDomain: number;
     id: number;

@@ -12,16 +12,16 @@ import { ethConfig } from "@/config/walletConfig";
 import { substrateAddressToPublicKey } from "@/utils/addressFormatting";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
-import { fetchAvlHead, fetchEthHead } from "@/services/api";
+import { fetchAvlHead, fetchEthHead, fetchLatestBlockhash } from "@/services/api";
 import { Chain } from "@/types/common";
 import { _getBalance } from "@/utils/common";
-import { sendMessage } from "@/services/vectorpallete";
+import { sendMessage } from "@/services/vectorpallet";
 
 export default function useBridge() {
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
   const { data: hash, isPending, writeContractAsync } = useWriteContract();
   const { selected } = useAvailAccount();
-  const { avlHead, ethHead, setAvlHead, setEthHead } = useLatestBlockInfo();
+  const { setAvlHead, setEthHead, setLatestBlockhash } = useLatestBlockInfo();
   const networks = appConfig.networks;
 
   /**
@@ -43,10 +43,12 @@ export default function useBridge() {
   useEffect(() => {
     setInterval(async () => {
       const ethHead = await fetchEthHead();
+      const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
+      setLatestBlockhash(LatestBlockhash.data);
       const avlHead = await fetchAvlHead();
       setEthHead(ethHead.data);
       setAvlHead(avlHead.data);
-    }, 500000);
+    }, 5000);
   }, []);
 
   const getAvailBalanceOnEth = useCallback(async () => {

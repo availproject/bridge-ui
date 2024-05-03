@@ -12,6 +12,7 @@ import {
 } from "@/utils/parseDateTime";
 import { ArrowRight } from "lucide-react";
 import useClaim from "@/hooks/useClaim";
+import { executeTransaction } from "@/services/vectorpallet";
 
 export default function LatestTransactions(props: { pending: boolean }) {
   const { pendingTransactions, completedTransactions } = useTransactions();
@@ -33,14 +34,13 @@ export default function LatestTransactions(props: { pending: boolean }) {
     try {
       if (chainFrom === Chain.AVAIL && blockhash && index) {
         console.log("Initiate ReceiveAvail()");
-
         await initClaimAvailToEth({
           blockhash: blockhash,
           index: index,
         });
 
       } else if (chainFrom === Chain.ETH && blockhash && executeParams ) {
-        console.log("Initiate Vector.SendMesage");
+        console.log("Initiate Vector.Execute");
         await initClaimEthtoAvail({
           blockhash: blockhash,
           executeParams: executeParams,

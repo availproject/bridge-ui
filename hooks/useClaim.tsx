@@ -7,14 +7,14 @@ import { bridgeContractAbi } from "@/constants/abi";
 import { config } from "@/app/providers";
 import { useCallback } from "react";
 import { getAccountStorageProofs, getMerkleProof } from "@/services/api";
-import { executeTransaction } from "@/services/vectorpallete";
+import { executeTransaction } from "@/services/vectorpallet";
 import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
+import { useAvailAccount } from "@/stores/availWalletHook";
 
 
 export default function useClaim() {
-
-  const {ethHead} = useLatestBlockInfo()
-
+  const {ethHead, latestBlockhash} = useLatestBlockInfo()
+  const {selected} = useAvailAccount()
 
 async function receiveAvail(merkleProof: merkleProof) {
     try {
@@ -78,7 +78,7 @@ const initClaimAvailToEth = useCallback(async ({
 
 const initClaimEthtoAvail = useCallback(async ({
   blockhash,
-executeParams,
+  executeParams,
 
 } : {
 blockhash: `0x${string}`,
@@ -91,32 +91,35 @@ destinationDomain: number,
 }
 
 }) =>{
+  if(!selected) throw new Error("Connect a Avail account")
 
-const proofs = await getAccountStorageProofs(blockhash, executeParams.messageid)
-console.log(proofs, "proofs") //test and remove
-console.log(executeParams, "executeParams") //test and remove
+//we have to use LatestBlockhash(the mapped one) here
+// const proofs = await getAccountStorageProofs(latestBlockhash, executeParams.messageid)
+// if(!proofs) throw new Error("Failed to fetch proofs from api")
+// console.log(proofs, "proofs") //test and remove
+// console.log(executeParams, "executeParams") //test and remove
+
 await executeTransaction({
-  //confirm with @0xSasaPrsic that if the indexer gives ready to claim, the slot i get from ethHead should be good to go?
   slot: ethHead.slot,
   addrMessage: {
     message: {
       FungibleToken: {
         assetId: "0x0000000000000000000000000000000000000000000000000000000000000000",
-        amount: 0
+        amount: executeParams.amount
       },
     },
-    from: proofs.accountProof[1],
-    to: proofs.accountProof[2],
-    originDomain: 0,
-    destinationDomain: 0,
+    from: executeParams.from,
+    to: executeParams.to,
+    originDomain: executeParams.originDomain,
+    destinationDomain: executeParams.destinationDomain,
     id: executeParams.messageid
   },
-  accountProof: proofs.accountProof,
-  storageProof: proofs.storageProof
-})
+  //to be replaced with proofs
+  accountProof: [],
+  storageProof: []
+}, selected!)
 
 }, [])
-
 
 return {initClaimAvailToEth, initClaimEthtoAvail}
 }
