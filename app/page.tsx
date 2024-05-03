@@ -16,15 +16,12 @@ export default function Home() {
   const appInit = async () => {
     if (!activeUserAddress) return;
 
-
     // Fetch all transactions
     // and keep polling
     pollWithDelay(
       fetchTransactions,
       [{
         userAddress: activeUserAddress,
-        sourceChain: Chain.ETH,
-        destinationChain: Chain.AVAIL
       }],
       appConfig.bridgeIndexerPollingInterval,
       () => true

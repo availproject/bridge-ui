@@ -10,11 +10,11 @@ const indexerInstance = axios.create({
 });
 
 // todo: will need pagination in near future
-export const getTransactionsFromIndexer = async (userAddress: string, sourceChain: string, destinationChain: string) => {
+export const getTransactionsFromIndexer = async (userAddress: string, sourceChain?: string, destinationChain?: string) => {
     const response = await indexerInstance
         .get(`/transactions`, {
             params: {
-                // userAddress: userAddress,
+                userAddress: userAddress,
                 sourceChain: sourceChain,
                 destinationChain: destinationChain,
                 limit: 100,
@@ -27,7 +27,7 @@ export const getTransactionsFromIndexer = async (userAddress: string, sourceChai
         });
 
     // todo: remove this filter once API is fixed
-    const result: Transaction[] = response.data.result.filter((tx: Transaction) => tx.depositorAddress.toLocaleLowerCase() === userAddress.toLowerCase());
+    const result: Transaction[] = response.data.result
 
     // mock transactions api
     /*

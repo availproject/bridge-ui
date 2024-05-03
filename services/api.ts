@@ -1,6 +1,6 @@
 import { appConfig } from "@/config/default";
 import { LatestBlockInfo } from "@/stores/lastestBlockInfo";
-import { merkleProof } from "@/types/transaction";
+import { AccountStorageProof, merkleProof } from "@/types/transaction";
 import axios from "axios";
 
 
@@ -29,7 +29,7 @@ export const getMerkleProof = async (blockhash: string, index: number) => {
 
 export async function fetchAvlHead(): Promise<{ data: LatestBlockInfo["avlHead"] }> {
   const response = await fetch(
-    `${appConfig.bridgeApiBaseUrl}/eth/head`
+    `${appConfig.bridgeApiBaseUrl}/avl/head`
   );
   const avlHead: LatestBlockInfo["avlHead"] = await response.json();
   return { data: avlHead };
@@ -41,4 +41,21 @@ export async function fetchEthHead(): Promise<{ data: LatestBlockInfo["ethHead"]
   );
   const ethHead: LatestBlockInfo["ethHead"]  = await response.json();
   return { data: ethHead};
+}
+
+
+export async function getAccountStorageProofs(blockhash: string, messageid: number) {
+  const response = await bridgeApiInstance
+      .get(`/avl/proof/${blockhash}`, {
+          params: {
+              messageid,
+          },
+      })
+      .catch((e) => {
+          console.log(e);
+          return { data: [] };
+      });
+
+  const result: AccountStorageProof = response.data;
+  return result;
 }

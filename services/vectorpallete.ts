@@ -31,11 +31,6 @@ const getInjectorMetadata = (api: ApiPromise) => {
   };
 };
 
-// export async function initializeApi() {
-//   const api = await initialize(substrateConfig.endpoint);
-//   setApi(api)
-// }
-
 export async function sendMessage(props: sendMessageParams, account: WalletAccount) {
   const { web3Accounts, web3FromSource } = await import(
     "@polkadot/extension-dapp"

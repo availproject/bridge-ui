@@ -27,12 +27,13 @@ type Message = {
   id: number;
   message: {
     fungibleToken: {
-      amount: number;
-      asset_id: string;
+      amount: bigint;
+      asset_id: `0x${string}`;
     };
   };
   originDomain: number;
   to: string;
+  messageType: string;
 };
 
 type DataRootProof = `0x${string}`[];
@@ -54,8 +55,13 @@ export interface executeParams {
     destinationDomain: number;
     id: number;
   };
-  accountProof: {};
-  storageProof: {};
+  accountProof: `0x${string}`[];
+  storageProof:`0x${string}`[];
+}
+
+export interface AccountStorageProof {
+  accountProof: `0x${string}`[];
+  storageProof: `0x${string}`[];
 }
 
 export interface sendMessageParams {
@@ -66,7 +72,7 @@ export interface sendMessageParams {
       amount: BigInt;
     };
   };
-  to: `0x${string}`;
+  to: `${string}`;
   domain: number;
 }
 
@@ -75,7 +81,7 @@ export interface Transaction {
   destinationChain: Chain,
   messageId: number,
   sourceChain: Chain,
-  amount: string,
+  amount: number,
   dataType: "ERC20",
   depositorAddress: string,
   receiverAddress: string,

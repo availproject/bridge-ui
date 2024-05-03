@@ -24,8 +24,8 @@ export const appConfig: AppConfig = Object.freeze({
     networks: {
         ethereum: sepolia,
     },
-    bridgeApiBaseUrl: 'http://localhost:8080',
-    bridgeIndexerBaseUrl: 'https://turing-bridge-indexer.fra.avail.so',
+    bridgeApiBaseUrl: 'http://0.0.0.0:8080',
+    bridgeIndexerBaseUrl: 'http://167.71.41.169:3000',
     bridgeIndexerPollingInterval: 30, // in seconds
     contracts: {
         ethereum: {

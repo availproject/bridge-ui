@@ -36,16 +36,14 @@ import { useCommonStore } from "@/stores/common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import LatestTransactions from "./latestransactionsection";
 import { Chain } from "@/types/common";
-import { receiveAvail } from "@/services/contract";
-import { sendMessage } from "@/services/vectorpallete";
-import { H256 } from "@polkadot/types/interfaces";
-import { u8aToU8a } from "@polkadot/util";
 import useBridge from "@/hooks/useBridge";
 import { toast } from "@/components/ui/use-toast";
-
 import { parseError } from "@/utils/parseError";
+import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
+import BigNumber from "bignumber.js";
+import { getMerkleProof } from "@/services/api";
 const formSchema = z.object({
-  fromAmount: z.number().positive("Enter a Valid Amount").or(z.string()),
+  fromAmount: z.number().or(z.string()),
   toAddress: z.string(),
 });
 
@@ -56,7 +54,8 @@ export default function BridgeSection() {
   const [ethBalance, setEthBalance] = useState<GLfloat>(0);
   const [availBalance, setAvailBalance] = useState<number>(0);
   const [transactionInProgress, setTransactionInProgress] = useState<boolean>(false);
-  const { initEthToAvailBridging } = useBridge()
+  const { initEthToAvailBridging, initAvailToEthBridging } = useBridge()
+  const { avlHead, ethHead } = useLatestBlockInfo()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -66,6 +65,11 @@ export default function BridgeSection() {
     },
   });
 
+  useEffect(() => {(async()=> {
+const a = await getMerkleProof("0x69f44931c1295be1c861ee98fc24a91a4d0db6ec33369f38254576db6266bb35",1)
+console.log(a, "bridge api cors")
+  })();},[])
+
   useEffect(() => {
     (async () => {
       if (account.address) {
@@ -74,6 +78,8 @@ export default function BridgeSection() {
           undefined,
           account.address
         );
+        console.log(result, "ooo")
+
         setEthBalance(result);
       }
       if (selected?.address) {
@@ -81,12 +87,18 @@ export default function BridgeSection() {
           Chain.AVAIL,
           selected?.address
         );
+        console.log(result, "sdfs")
         setAvailBalance(result);
       }
     })();
   }, [account.address, selected?.address]);
 
-  const showSuccessMessage = () => { };
+  const showSuccessMessage = () => {
+    toast({
+      title: "Transaction initiated successfully",
+      description: "Your transaction has been initiated successfully",
+    });
+   };
 
   const resetState = () => {
     form.reset();
@@ -94,15 +106,14 @@ export default function BridgeSection() {
 
   /////CUSTOM
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values, selected?.address);
+
     try {
       if (fromChain === Chain.ETH) {
-        const fromAmoutAtomic = "100"
-        // BigInt(values.fromAmount).multipliedBy(new BigInt(10).pow(18)).toString();
+        const fromAmountAtomic = new BigNumber(values.fromAmount).multipliedBy(new BigNumber(10).pow(18)).toString();
         const destinationAddress = selected?.address || values.toAddress;
 
         setTransactionInProgress(true);
-        await initEthToAvailBridging({ atomicAmount: fromAmoutAtomic, destinationAddress: destinationAddress })
+        await initEthToAvailBridging({ atomicAmount: fromAmountAtomic, destinationAddress: destinationAddress })
 
         // show success message
         showSuccessMessage();
@@ -111,7 +122,18 @@ export default function BridgeSection() {
         // reset state
         resetState();
       } else if (fromChain === Chain.AVAIL) {
-        // functions to bridge avail to eth
+        const fromAmountAtomic = new BigNumber(values.fromAmount).multipliedBy(new BigNumber(10).pow(18)).toString();
+        console.log(fromAmountAtomic, "fromAmountAtomic")
+        const destinationAddress = account?.address || values.toAddress;
+        setTransactionInProgress(true);
+        await initAvailToEthBridging({ atomicAmount: fromAmountAtomic, destinationAddress: destinationAddress })
+
+        // show success message
+        showSuccessMessage();
+        setTransactionInProgress(false);
+
+        // reset state
+        resetState();
       }
     } catch (error) {
       setTransactionInProgress(false);
@@ -159,7 +181,6 @@ export default function BridgeSection() {
                     <FormControl>
                       <>
                         <Input
-                          type="number"
                           min={0}
                           placeholder="23423 AVAIL"
                           {...field}
