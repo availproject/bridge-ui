@@ -51,8 +51,8 @@ export default function BridgeSection() {
   const account = useAccount();
   const { fromChain } = useCommonStore();
   const { selected } = useAvailAccount();
-  const [ethBalance, setEthBalance] = useState<GLfloat>(0);
-  const [availBalance, setAvailBalance] = useState<number>(0);
+  const [ethBalance, setEthBalance] = useState<GLfloat | undefined>(undefined);
+  const [availBalance, setAvailBalance] = useState<number | undefined>(undefined);
   const [transactionInProgress, setTransactionInProgress] = useState<boolean>(false);
   const { initEthToAvailBridging, initAvailToEthBridging } = useBridge()
   const { avlHead, ethHead } = useLatestBlockInfo()
@@ -76,14 +76,17 @@ export default function BridgeSection() {
         console.log(result, "ooo")
 
         setEthBalance(result);
+      } else {
+        setEthBalance(undefined);
       }
       if (selected?.address) {
         const result: number = await _getBalance(
           Chain.AVAIL,
           selected?.address
         );
-        console.log(result, "sdfs")
         setAvailBalance(result);
+      } else {
+        setAvailBalance(undefined);
       }
     })();
   }, [account.address, selected?.address]);
@@ -105,7 +108,7 @@ export default function BridgeSection() {
     form.reset();
   }
 
-  /////CUSTOM
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
 
     try {
@@ -198,14 +201,14 @@ export default function BridgeSection() {
                               <span className="font-ppmori text-white text-opacity-70">
                                 Balance{" "}
                                 <span className="text-[#3382E8]">
-                                  {ethBalance ? ethBalance : "--"}
+                                {account.address ?  ( ethBalance !== undefined ? ethBalance : <RiLoopLeftFill className={`h-3 w-3 animate-spin text-[#3FB5F8]`} />) : "Connect Wallet"}   
                                 </span>
                               </span>
                             ) : (
                               <span className="font-ppmori text-white text-opacity-70">
                                 Balance{" "}
                                 <span className="text-[#3382E8]">
-                                  {availBalance ? availBalance : "--"}
+                               {selected ?  ( availBalance !== undefined ? availBalance : <RiLoopLeftFill className={`h-3 w-3 animate-spin text-[#3FB5F8]`} />) : "Connect Wallet"}   
                                 </span>
                               </span>
                             )}

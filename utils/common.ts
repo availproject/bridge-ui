@@ -26,6 +26,7 @@ export async function _getBalance(chain: Chain, availAddress?: string, ethAddres
     if (!balance) return 0;
     //@ts-ignore to be fixed later
     const a: number = parseFloat((BigNumber(balance)/10**18).toFixed(3));
+    console.log(a, "oye")
     return a;
   } else {
     return 0;
