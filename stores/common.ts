@@ -14,6 +14,8 @@ interface CommonStore {
     setToChainBalance: (toChainBalance: number | undefined) => void
     api: ApiPromise
     setApi: (api: ApiPromise) => void
+    pendingTransactionsNumber: number
+    setPendingTransactionsNumber: (pendingTransactions: number) => void
 }
 
 export const useCommonStore = create<CommonStore>((set) => ({
@@ -27,6 +29,8 @@ export const useCommonStore = create<CommonStore>((set) => ({
     setToChainBalance: (toChainBalance) => set({ toChainBalance }),
     api: {} as ApiPromise,
     setApi: (api) => set({ api }),
+    pendingTransactionsNumber: 0,
+    setPendingTransactionsNumber: (pendingTransactionsNumber) => set({ pendingTransactionsNumber }),
 }));
 
  

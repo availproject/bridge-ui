@@ -128,7 +128,6 @@ export default function useBridge() {
     []
   );
 
-console.log(Date.now().toString(), "date now")
     /**
    * @description Initiates bridging from Ethereum to AVAIL, 
    * @steps Validates chain, Checks approval, Checks balance, Initiates bridging(sendAvail() on Eth)
@@ -168,7 +167,6 @@ console.log(Date.now().toString(), "date now")
 
     }
 
-
   const initAvailToEthBridging =
     async ({
       atomicAmount,
@@ -178,7 +176,6 @@ console.log(Date.now().toString(), "date now")
       destinationAddress: `${string}`;
     }) => {
 
-      console.log(selected, "selected account inside callback")
       if(selected === undefined || selected === null) {
         throw new Error("No account selected");
       }

@@ -46,7 +46,7 @@ export async function getAccountStorageProofs(
   blockhash: string,
   messageid: number
 ) {
-  const response = await fetch(`/avl/proof/${blockhash}/${messageid}`)
+  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/avl/proof/${blockhash}/${messageid}`)
     .catch((e) => {
       console.log(e);
       return Response.error();

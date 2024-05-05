@@ -72,7 +72,8 @@ const initClaimAvailToEth = async ({
 
   const a: merkleProof  = await getMerkleProof(blockhash, index)
   console.log(a,"merkle proof") //test and remove
-  await receiveAvail(a)
+  const receive = await receiveAvail(a)
+  return receive
 }
 
 const initClaimEthtoAvail = async ({
@@ -92,11 +93,13 @@ destinationDomain: number,
 
 }) =>{
 
-  if(!selected) throw new Error("Connect a Avail account")
-
-// we have to use LatestBlockhash(the mapped one) here
-const proofs = await getAccountStorageProofs(latestBlockhash, executeParams.messageid)
+if(!selected) throw new Error("Connect a Avail account")
+const proofs = await getAccountStorageProofs(latestBlockhash.blockHash, executeParams.messageid)
+// const proofs = await getAccountStorageProofs(blockhash, executeParams.messageid)
 if(!proofs) throw new Error("Failed to fetch proofs from api")
+
+  console.log(proofs, executeParams, "proofs")
+console.log(latestBlockhash.blockHash)
 
 await executeTransaction({
   slot: ethHead.slot,
@@ -113,9 +116,9 @@ await executeTransaction({
     destinationDomain: executeParams.destinationDomain,
     id: executeParams.messageid
   },
-  //to be replaced with proofs
-  accountProof: [],
-  storageProof: []
+
+  accountProof: proofs.accountProof,
+  storageProof: proofs.storageProof
 }, selected!)
 
 }

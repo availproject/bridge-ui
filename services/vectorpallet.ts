@@ -99,7 +99,11 @@ try{
   
 }
 
-export async function executeTransaction(props: executeParams, account: WalletAccount) {
+export async function executeTransaction(props: executeParams, account: WalletAccount) :  Promise <{
+  status: string;
+  message: string;
+  blockhash?: `${string}`
+}>  {
   const { web3Accounts, web3FromSource } = await import(
     "@polkadot/extension-dapp"
   );
@@ -108,59 +112,64 @@ export async function executeTransaction(props: executeParams, account: WalletAc
   const metadata = getInjectorMetadata(api);
   await injector?.metadata?.provide(metadata);
 
-  const result = await new Promise((resolve, reject) => {
-    api.tx.vector
-      .execute(
-        props.slot,
-        props.addrMessage,
-        props.accountProof,
-        props.storageProof
-      )
-      .signAndSend(account.address,
-        { signer: injector.signer, app_id: 0 } as Partial<SignerOptions>, 
-        ({ status, events }) => {
-        if (status.isInBlock) {
-          console.log(`Transaction included at blockHash ${status.asInBlock}`);
-          events.forEach(({ event }) => {
-            if (api.events.system.ExtrinsicFailed.is(event)) {
-              const [dispatchError] = event.data;
-              let errorInfo;
-              //@ts-ignore
-              if (dispatchError.isModule) {
-                const decoded = api.registry.findMetaError(
-                  //@ts-ignore
-                  dispatchError.asModule
-                );
-                errorInfo = `${decoded.section}.${decoded.name}`;
-              } else {
-                errorInfo = dispatchError.toString();
-              }
-              toast({
-                title: `Transaction failed. Status: ${status} with error: ${errorInfo}`,
-              });
-              reject(
-                `Transaction failed. Status: ${status} with error: ${errorInfo}`
-              );
-              console.log(`$:: ExtrinsicFailed:: ${errorInfo}`);
-            }
-            if (api.events.system.ExtrinsicSuccess.is(event)) {
-              console.log(
-                "Transaction successful with hash: ",
-                event.data.toString()
-              );
-              toast({
-                title: `Transaction Success. Status: ${status}`,
-              });
-            }
-          });
-          resolve(`Transaction successful with hash: ${status.asInBlock}`);
-        } else if (status.isFinalized) {
-          reject(`Transaction failed. Status: ${status}`);
-        }
-      }
-    );
-  });
-  return result;
+  try {
+    const result : `${string}` = await new Promise((resolve, reject) => {
+      api.tx.vector
+        .execute(
+          props.slot,
+          props.addrMessage,
+          props.accountProof,
+          props.storageProof
+        )
+        .signAndSend(account.address,
+          { signer: injector.signer, app_id: 0 } as Partial<SignerOptions>, 
+          ({ status, events }) => {
+            if (status.isInBlock) {
+              console.log(`Transaction included at blockHash ${status.asInBlock}`);
+               events.forEach(({ event }) => {
+                 if (api.events.system.ExtrinsicFailed.is(event)) {
+                   const [dispatchError] = event.data;
+                   let errorInfo;
+                   //@ts-ignore
+                   if (dispatchError.isModule) {
+                     const decoded = api.registry.findMetaError(
+                       //@ts-ignore
+                       dispatchError.asModule
+                     );
+                     errorInfo = `${decoded.section}.${decoded.name}`;
+                   } else {
+                     errorInfo = dispatchError.toString();
+                   }
+                   toast({
+                     title: `Transaction failed. Status: ${status} with error: ${errorInfo}`,
+                   });
+                   console.log(`$:: ExtrinsicFailed:: ${errorInfo}`);
+                 throw new Error(`Transaction failed. Status: ${status} with error: ${errorInfo}`); 
+                 }
+                 if (api.events.system.ExtrinsicSuccess.is(event)) {
+                   console.log(
+                     "Transaction successful with hash: ",
+                     event
+                   );
+                   console.log("successful txn")
+                   //@FIX: can't do 0xstring since this returns a string for some reason
+                   resolve(`${status.asInBlock}`);
+                 }
+               });
+             }
+           });
+     });
+     return {
+       status: "success",
+       message: "Transaction successful",
+       blockhash: result
+     };
+   } catch (e) {
+     return {
+       status: "failed",
+       message: "Transaction failed",
+     }
+   }
 }
 
 

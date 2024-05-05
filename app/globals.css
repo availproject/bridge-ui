@@ -42,6 +42,11 @@
     font-family: 'Thicccboi-semibold';
     src: url('/fonts/THICCCBOI-SemiBold.woff2');
   }
+
+  @font-face {
+    font-family: 'ppmori-semibold';
+    src: url('/fonts/PPMori-SemiBold.otf');
+  }
   
   
   .card_background{

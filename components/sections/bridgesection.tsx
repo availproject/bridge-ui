@@ -7,14 +7,6 @@ import { useForm } from "react-hook-form";
 import { FaHistory } from "react-icons/fa";
 import Image from "next/image";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
   Form,
   FormControl,
   FormField,
@@ -34,16 +26,16 @@ import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import LatestTransactions from "./latestransactionsection";
-import { Chain } from "@/types/common";
+import { Chain, TransactionStatus } from "@/types/common";
 import useBridge from "@/hooks/useBridge";
 import { toast } from "@/components/ui/use-toast";
 import { parseError } from "@/utils/parseError";
-import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
 import BigNumber from "bignumber.js";
-import { getMerkleProof } from "@/services/api";
 import { badgeVariants } from "../ui/badge";
+import { ArrowUpRight, Loader2 } from "lucide-react";
+import useTransactions from "@/hooks/useTransactions";
 const formSchema = z.object({
-  fromAmount: z.number().or(z.string()),
+  fromAmount: z.number(),
   toAddress: z.string(),
 });
 
@@ -52,14 +44,28 @@ export default function BridgeSection() {
   const { fromChain, setFromChain, toChain, setToChain } = useCommonStore();
   const { selected } = useAvailAccount();
   const [ethBalance, setEthBalance] = useState<GLfloat | undefined>(undefined);
-  const [availBalance, setAvailBalance] = useState<number | undefined>(undefined);
-  const [transactionInProgress, setTransactionInProgress] = useState<boolean>(false);
-  const { initEthToAvailBridging, initAvailToEthBridging } = useBridge()
+  const [availBalance, setAvailBalance] = useState<number | undefined>(
+    undefined
+  );
+  const [transactionInProgress, setTransactionInProgress] =
+    useState<boolean>(false);
+  const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
+  const { pendingTransactionsNumber, setPendingTransactionsNumber } =
+    useCommonStore();
+  const { pendingTransactions, completedTransactions } = useTransactions();
+
+  useEffect(() => {
+    setPendingTransactionsNumber(
+      pendingTransactions.filter(
+        (transaction) => transaction.status === TransactionStatus.READY_TO_CLAIM
+      ).length
+    );
+  }, [pendingTransactions]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fromAmount: "",
+      fromAmount: 0.0,
       toAddress: "",
     },
   });
@@ -72,8 +78,6 @@ export default function BridgeSection() {
           undefined,
           account.address
         );
-        console.log(result, "ooo")
-
         setEthBalance(result);
       } else {
         setEthBalance(undefined);
@@ -95,28 +99,32 @@ export default function BridgeSection() {
       title: "Transaction initiated successfully",
       description: blockhash,
     });
-   };
+  };
 
   const showFailedMessage = () => {
     toast({
       title: "Transaction failed",
       description: "Please try again",
-    }); }
+    });
+  };
 
   const resetState = () => {
     form.reset();
-  }
-
+  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-
     try {
       if (fromChain === Chain.ETH) {
-        const fromAmountAtomic = new BigNumber(values.fromAmount).multipliedBy(new BigNumber(10).pow(18)).toString();
+        const fromAmountAtomic = new BigNumber(values.fromAmount)
+          .multipliedBy(new BigNumber(10).pow(18))
+          .toString();
         const destinationAddress = selected?.address || values.toAddress;
 
         setTransactionInProgress(true);
-        const a = await initEthToAvailBridging({ atomicAmount: fromAmountAtomic, destinationAddress: destinationAddress })
+        const a = await initEthToAvailBridging({
+          atomicAmount: fromAmountAtomic,
+          destinationAddress: destinationAddress,
+        });
 
         // show success message
         showSuccessMessage("jkn");
@@ -125,13 +133,18 @@ export default function BridgeSection() {
         // reset state
         resetState();
       } else if (fromChain === Chain.AVAIL) {
-        const fromAmountAtomic = new BigNumber(values.fromAmount).multipliedBy(new BigNumber(10).pow(18)).toString();
+        const fromAmountAtomic = new BigNumber(values.fromAmount)
+          .multipliedBy(new BigNumber(10).pow(18))
+          .toString();
 
         const destinationAddress = account?.address || values.toAddress;
         setTransactionInProgress(true);
-        const init = await initAvailToEthBridging({ atomicAmount: fromAmountAtomic, destinationAddress: destinationAddress })
+        const init = await initAvailToEthBridging({
+          atomicAmount: fromAmountAtomic,
+          destinationAddress: destinationAddress,
+        });
 
-        if(init.blockhash === undefined) {
+        if (init.blockhash === undefined) {
           showFailedMessage();
           setTransactionInProgress(false);
         } else {
@@ -144,9 +157,54 @@ export default function BridgeSection() {
     } catch (error) {
       setTransactionInProgress(false);
       toast({
-        title: parseError(error)
-      })
+        title: parseError(error),
+      });
     }
+  }
+
+
+  function Balance() {
+    return <>
+                              <div className="flex flex-row items-end justify-start pl-1 font-ppmori ">
+                            {fromChain === Chain.ETH ? (
+                              <span className="font-ppmori flex flex-row items-center justify-center space-x-2 text-white text-opacity-70 pt-1">
+                                Balance{" "}
+                                <span className="text-white font-bold mx-1 flex flex-row">
+                                  {account.address ? (
+                                    ethBalance !== undefined ? (
+                                      ethBalance.toFixed(2)
+                                    ) : (
+                                      <RiLoopLeftFill
+                                        className={`h-4 w-4 animate-spin font-bold`}
+                                      />
+                                    )
+                                  ) : (
+                                    "--"
+                                  )}{" "}
+                                  <p className="pl-1">AVAIL</p>
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="font-ppmori flex flex-row text-white text-opacity-70">
+                                Balance{" "}
+                                <span className="text-white font-bold mx-1 flex flex-row">
+                                  {selected ? (
+                                    availBalance !== undefined ? (
+                                      availBalance.toFixed(2)
+                                    ) : (
+                                      <RiLoopLeftFill
+                                        className={`h-4 w-4 animate-spin font-bold`}
+                                      />
+                                    )
+                                  ) : (
+                                    "--"
+                                  )}{" "}
+                                  <p className="pl-1">AVAIL</p>
+                                </span>
+                              </span>
+                            )}
+                          </div>
+    </>
   }
 
   return (
@@ -157,7 +215,7 @@ export default function BridgeSection() {
       >
         <div className="flex flex-row pb-[4vh] items-center justify-between">
           <h1 className="font-ppmori items-center flex flex-row space-x-2 text-white text-opacity-80 text-2xl w-full ">
-            <p className="font-ppmori">Bridge</p>
+            <p className="font-ppmoribsemibold">Bridge</p>
           </h1>
         </div>
         <Form {...form}>
@@ -174,12 +232,12 @@ export default function BridgeSection() {
                   <FormItem>
                     <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end  ">
                       <span className="font-ppmori flex flex-row items-center space-x-2">
-                        <p>From</p>
-                        <div
-          className={badgeVariants({ variant: "avail" })}
-         
-        ><img src={`/images/${fromChain}small.png`}></img><p className="!text-left">{(fromChain)}</p></div>
-                        </span>
+                        <p className="text-opacity-80 text-white ">From</p>
+                        <div className={badgeVariants({ variant: "avail" })}>
+                          <img src={`/images/${fromChain}small.png`}></img>
+                          <p className="!text-left">{fromChain}</p>
+                        </div>
+                      </span>
 
                       <div className="flex flex-row items-center justify-center ">
                         {fromChain === Chain.ETH ? <Eth /> : <Avail />}
@@ -187,66 +245,63 @@ export default function BridgeSection() {
                     </FormLabel>
                     <FormControl>
                       <>
-                      <div className="card_background !rounded-xl p-2 flex flex-row items-center justify-between">
-                      <input
-                      className="!bg-inherit"
-                      style={{ border: 'none', background: 'none', padding: 0, margin: 0, outline: 'none' }}
-                          min={0}
-                          placeholder="0.0"
-                          {...field}
-                          onChange={(event) =>
-                            field.onChange(+event.target.value)
-                          }
-                        />
-                                  <Tabs
-          defaultValue="avail"
-          className=" flex flex-row items-center justify-center"
-        >
-         <TabsList className={`!bg-[#33384B] !border-0  `}>
-                            <TabsTrigger value="eth" onClick={()=>{
-                              setFromChain(Chain.ETH)
-                              setToChain(Chain.AVAIL)
-                            }}>
-                              <Image
-                                src="/images/eth.png"
-                                alt="eth"
-                                width={20}
-                                height={20}
-                              ></Image>
-                            </TabsTrigger>
-                            <TabsTrigger value="avail" onClick={()=>{
-                              setFromChain(Chain.AVAIL)
-                              setToChain(Chain.ETH)
-                            }}>
-                              <Image
-                                src="/images/logo.png"
-                                alt="eth"
-                                width={20}
-                                height={20}
-                              ></Image>{" "}
-                            </TabsTrigger>
-                          </TabsList>  
-                        </Tabs> 
-                      </div>
-                        
+                        <div className="card_background !rounded-xl p-2 flex flex-row items-center justify-between">
+                          <input
+                            className="!bg-inherit"
+                            style={{
+                              border: "none",
+                              background: "none",
+                              padding: 0,
+                              margin: 0,
+                              outline: "none",
+                            }}
+                            min={0}
+                            type="string"
+                            placeholder="0.0"
+                            {...field}
+                            onChange={(event) =>
+                              field.onChange(+event.target.value)
+                            }
+                          />
+                          <Tabs
+                            defaultValue="avail"
+                            className=" flex flex-row items-center justify-center"
+                          >
+                            <TabsList className={`!bg-[#33384B] !border-0  `}>
+                              <TabsTrigger
+                                value="eth"
+                                onClick={() => {
+                                  setFromChain(Chain.ETH);
+                                  setToChain(Chain.AVAIL);
+                                }}
+                              >
+                                <Image
+                                  src="/images/eth.png"
+                                  alt="eth"
+                                  width={20}
+                                  height={20}
+                                ></Image>
+                              </TabsTrigger>
+                              <TabsTrigger
+                                value="avail"
+                                onClick={() => {
+                                  setFromChain(Chain.AVAIL);
+                                  setToChain(Chain.ETH);
+                                }}
+                              >
+                                <Image
+                                  src="/images/logo.png"
+                                  alt="eth"
+                                  width={20}
+                                  height={20}
+                                ></Image>{" "}
+                              </TabsTrigger>
+                            </TabsList>
+                          </Tabs>
+                        </div>
+
                         <div className="flex flex-row items-center justify-between">
-                          <div className="flex flex-row items-end justify-start pl-1 font-ppmori ">
-                            {fromChain === Chain.ETH ? (
-                              <span className="font-ppmori flex flex-row items-center justify-center space-x-2 text-white text-opacity-70 pt-1">
-                                Balance{" "}
-                                <span className="text-white font-bold mx-1">
-                                {account.address ?  ( ethBalance !== undefined ? ethBalance.toFixed(2) : <RiLoopLeftFill className={`h-4 w-4 animate-spin font-bold`} />) : "--"}  AVAIL
-                                </span>
-                              </span>
-                            ) : (
-                              <span className="font-ppmori flex flex-row text-white text-opacity-70">
-                                Balance{" "}
-                                <span className="text-white font-bold mx-1">
-                               {selected ?  ( availBalance !== undefined ? availBalance.toFixed(2) : <RiLoopLeftFill className={`h-4 w-4 animate-spin font-bold`} />) : "--"}  AVAIL
-                                </span>
-                              </span>
-                            )}
-                          </div>
+<Balance/>
                           <div className="flex flex-row items-center justify-center ">
                             <button className="font-thicccboisemibold text-[#3FB5F8] text-sm">
                               MAX
@@ -271,10 +326,10 @@ export default function BridgeSection() {
                     <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end  ">
                       <span className="font-ppmori flex flex-row items-center space-x-2">
                         <p>To</p>
-                        <div
-          className={badgeVariants({ variant: "avail" })}
-         
-        ><img src={`/images/${toChain}small.png`}></img><p className="!text-left">{(toChain)}</p></div>
+                        <div className={badgeVariants({ variant: "avail" })}>
+                          <img src={`/images/${toChain}small.png`}></img>
+                          <p className="!text-left">{toChain}</p>
+                        </div>
                       </span>
                       {/* this will be opposite here since it's the To feild*/}
                       {fromChain === Chain.ETH ? <Avail /> : <Eth />}
@@ -297,20 +352,6 @@ export default function BridgeSection() {
                     </FormControl>
                     <div className="flex flex-row items-center justify-between">
                       <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70">
-                        {/* this will be opposite here since it's the To feild*/}
-                        {/* {fromChain === Chain.ETH ? (
-                          <span className="font-ppmori text-white text-opacity-70">
-                            Balance{" "}
-                            <span className="text-[#3382E8]">
-                              {availBalance}
-                            </span>
-                          </span>
-                        ) : (
-                          <span className="font-ppmori text-white text-opacity-70">
-                            Balance{" "}
-                            <span className="text-[#3382E8]">{ethBalance}</span>
-                          </span>
-                        )} */}
                       </div>
                       <div className="flex flex-row items-center justify-center ">
                         <button className="font-thicccboisemibold text-[#3FB5F8] text-sm">
@@ -326,11 +367,12 @@ export default function BridgeSection() {
             <Button
               variant={"primary"}
               type="submit"
-              className="!rounded-xl w-full items-end  font-ppmori"
+              className="!rounded-xl w-full !text-md !py-6 font-ppmoribsemibold"
               disabled={transactionInProgress}
             >
-              {transactionInProgress ? 'Transaction in progress' : 'Initiate Transaction'}
-             
+              {transactionInProgress
+                ? "Transaction in progress"
+                : "Initiate Transaction"}
             </Button>
           </form>
         </Form>
@@ -341,11 +383,17 @@ export default function BridgeSection() {
       >
         <div className="flex flex-row pb-[2vh] items-center justify-between">
           <h1 className="font-ppmori items-center flex flex-row space-x-2 text-white text-opacity-80 text-2xl w-full ">
-            <span className="relative"> 
-            <p className="font-ppmori">Transactions</p>
+            <span className="relative flex flex-row items-center justify-center">
+              <p className="font-ppmoribsemibold">Transactions</p>
+              <div className={badgeVariants({ variant: "avail" })}>
+                <Loader2 className={`h-4 w-4 animate-spin`} />
+
+                <p className="!text-left">
+                  {" "}
+                  {pendingTransactionsNumber} Claims Pending
+                </p>
+              </div>
             </span>
-           
-            <RiLoopLeftFill className={`h-5 w-5 text-[#3FB5F8]`} />
           </h1>
         </div>
         <Tabs defaultValue="pending" className="w-[95%] mx-auto">
@@ -357,7 +405,8 @@ export default function BridgeSection() {
               value="history"
               className="flex flex-row items-center justify-center space-x-1"
             >
-              <p>History</p> <FaHistory />
+              <p>History</p>
+              <FaHistory />
             </TabsTrigger>
           </TabsList>
           <TabsContent value="pending">
