@@ -16,7 +16,11 @@ export function parseError(error: unknown): string {
         return "You denied the network switch. Please allow the switching to continue.";
     } else if (errorMessageString.match(/walletConnect network switch not supported/i)) {
         return "You may need to manually switch it to the correct network.";
-    } else if (
+    }  else if (errorMessageString.match(/No account selected/i)) {
+        return "Please connect your accounts";
+    } 
+    
+    else if (
         errorMessageString.match(/denied transaction/i) || // Metamask browser message
         errorMessageString.match(/User rejected the transaction/i) || // Metamask mobile message
         errorMessageString.match(/User rejected the request/i) || // Rabby message

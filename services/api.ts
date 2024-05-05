@@ -5,30 +5,20 @@ import axios from "axios";
 
 const bridgeApiInstance = axios.create({
   baseURL: appConfig.bridgeApiBaseUrl,
-  headers: { "Access-Control-Allow-Origin": "*" },
-  withCredentials: false,
+  withCredentials: true,
 });
 
 export const getMerkleProof = async (blockhash: string, index: number) => {
-  const response = await bridgeApiInstance
-    .get(`/eth/proof/${blockhash}`, {
-      params: {
-        index,
-      },
-    })
-    .catch((e) => {
-      console.log(e);
-      return { data: [] };
-    });
-
-  const result: merkleProof = response.data;
-  return result;
+  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/eth/proof/${blockhash}?index=${index}`);
+  const proof: merkleProof = await response.json();
+  return proof;
 };
 
 export async function fetchAvlHead(): Promise<{
   data: LatestBlockInfo["avlHead"];
 }> {
   const response = await fetch(`${appConfig.bridgeApiBaseUrl}/avl/head`);
+
   const avlHead: LatestBlockInfo["avlHead"] = await response.json();
   return { data: avlHead };
 }
@@ -40,8 +30,6 @@ export async function fetchEthHead(): Promise<{
   const ethHead: LatestBlockInfo["ethHead"] = await response.json();
   return { data: ethHead };
 }
-
-
 
 export async function fetchLatestBlockhash(
   slot: LatestBlockInfo["ethHead"]["slot"]
@@ -58,17 +46,12 @@ export async function getAccountStorageProofs(
   blockhash: string,
   messageid: number
 ) {
-  const response = await bridgeApiInstance
-    .get(`/avl/proof/${blockhash}`, {
-      params: {
-        messageid,
-      },
-    })
+  const response = await fetch(`/avl/proof/${blockhash}/${messageid}`)
     .catch((e) => {
       console.log(e);
-      return { data: [] };
+      return Response.error();
     });
 
-  const result: AccountStorageProof = response.data;
+  const result: AccountStorageProof = await response.json();
   return result;
 }

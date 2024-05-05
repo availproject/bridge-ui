@@ -19,7 +19,6 @@ export default function useEthWallet() {
 
     const switchNetwork =
         async (chainId: number) => {
-            // Switch network logic
             await switchChainAsync({ chainId: chainId })
         }
 

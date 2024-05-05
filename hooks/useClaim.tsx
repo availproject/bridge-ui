@@ -1,11 +1,10 @@
-import { getBalance, writeContract } from "@wagmi/core";
+import { writeContract } from "@wagmi/core";
 import { encodeAbiParameters } from "viem";;
 import {
   merkleProof,
 } from "@/types/transaction";
 import { bridgeContractAbi } from "@/constants/abi";
 import { config } from "@/app/providers";
-import { useCallback } from "react";
 import { getAccountStorageProofs, getMerkleProof } from "@/services/api";
 import { executeTransaction } from "@/services/vectorpallet";
 import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
@@ -25,7 +24,7 @@ async function receiveAvail(merkleProof: merkleProof) {
         functionName: "receiveAVAIL",
         args: [
           [
-"0x02",
+            "0x02",
             merkleProof.message.from,
             merkleProof.message.to,
             merkleProof.message.originDomain,
@@ -66,7 +65,7 @@ merkleProof.dataRootProof,
     }
   }
 
-const initClaimAvailToEth = useCallback(async ({
+const initClaimAvailToEth = async ({
   blockhash,
   index,
 }:{blockhash: `0x${string}`, index: number}) => {
@@ -74,16 +73,17 @@ const initClaimAvailToEth = useCallback(async ({
   const a: merkleProof  = await getMerkleProof(blockhash, index)
   console.log(a,"merkle proof") //test and remove
   await receiveAvail(a)
-},[])
+}
 
-const initClaimEthtoAvail = useCallback(async ({
+const initClaimEthtoAvail = async ({
   blockhash,
   executeParams,
 
 } : {
 blockhash: `0x${string}`,
 executeParams: {
-messageid: number,amount: number,
+messageid: number,
+amount: number,
 from:`${string}` ,
 to: `${string}`,
 originDomain: number,
@@ -91,13 +91,12 @@ destinationDomain: number,
 }
 
 }) =>{
+
   if(!selected) throw new Error("Connect a Avail account")
 
-//we have to use LatestBlockhash(the mapped one) here
-// const proofs = await getAccountStorageProofs(latestBlockhash, executeParams.messageid)
-// if(!proofs) throw new Error("Failed to fetch proofs from api")
-// console.log(proofs, "proofs") //test and remove
-// console.log(executeParams, "executeParams") //test and remove
+// we have to use LatestBlockhash(the mapped one) here
+const proofs = await getAccountStorageProofs(latestBlockhash, executeParams.messageid)
+if(!proofs) throw new Error("Failed to fetch proofs from api")
 
 await executeTransaction({
   slot: ethHead.slot,
@@ -119,7 +118,7 @@ await executeTransaction({
   storageProof: []
 }, selected!)
 
-}, [])
+}
 
 return {initClaimAvailToEth, initClaimEthtoAvail}
 }

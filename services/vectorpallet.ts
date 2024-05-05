@@ -4,7 +4,6 @@ import { toast } from "@/components/ui/use-toast";
 import { isNumber } from "@polkadot/util";
 import {
   ApiPromise,
-  getKeyringFromSeed,
   initialize,
   types,
   signedExtensions,
@@ -31,24 +30,28 @@ const getInjectorMetadata = (api: ApiPromise) => {
   };
 };
 
-export async function sendMessage(props: sendMessageParams, account: WalletAccount) {
+export async function sendMessage(props: sendMessageParams, account: WalletAccount) : Promise <{
+  status: string;
+  message: string;
+  blockhash?: `${string}`
+}> {
   const { web3Accounts, web3FromSource } = await import(
     "@polkadot/extension-dapp"
   );
+  console.log(account.source);
   const injector = await web3FromSource(account.source);
   const api = await initialize(substrateConfig.endpoint);
   const metadata = getInjectorMetadata(api);
   await injector?.metadata?.provide(metadata);
 
-
-  const result = await new Promise((resolve, reject) => {
+try{
+  const result : `${string}` = await new Promise((resolve, reject) => {
     api.tx.vector
       .sendMessage(props.message, props.to, props.domain)
       .signAndSend(account.address,
         { signer: injector.signer, app_id: 0 } as Partial<SignerOptions>, ({ status, events }) => {
-
           if (status.isInBlock) {
-            console.log(`Transaction included at blockHash ${status.asInBlock}`);
+           console.log(`Transaction included at blockHash ${status.asInBlock}`);
             events.forEach(({ event }) => {
               if (api.events.system.ExtrinsicFailed.is(event)) {
                 const [dispatchError] = event.data;
@@ -66,49 +69,34 @@ export async function sendMessage(props: sendMessageParams, account: WalletAccou
                 toast({
                   title: `Transaction failed. Status: ${status} with error: ${errorInfo}`,
                 });
-                reject(
-                  `Transaction failed. Status: ${status} with error: ${errorInfo}`
-                );
                 console.log(`$:: ExtrinsicFailed:: ${errorInfo}`);
+              throw new Error(`Transaction failed. Status: ${status} with error: ${errorInfo}`); 
               }
               if (api.events.system.ExtrinsicSuccess.is(event)) {
-                if (status.isFinalized) {
-                  console.log(
-                    "Transaction successful with hash: ",
-                    event.data.toString()
-                  );
-                  toast({
-                    title: `Transaction Success. Status: ${status}`,
-                  });
-                  resolve(`Transaction successful with hash: ${status.asInBlock}`);
-                } else {
-                  //fix with @Leouarz if finality takes more than 4 minutes
-                  setTimeout(() => {
-                    if (status.isFinalized) {
-                      console.log(
-                        "Transaction successful with hash: ",
-                        event.data.toString()
-                      );
-                      toast({
-                        title: `Transaction Success. Status: ${status}`,
-                      });
-                      resolve(`Transaction successful with hash: ${status.asInBlock}`);
-                    } else {
-                      toast({
-                        title: `Block not finalised after 2 minutes`,
-                      });
-                      reject(`Block not finalised after 2 minutes`);
-                    }
-                  }, 2 * 60 * 1000);
-                }
+                console.log(
+                  "Transaction successful with hash: ",
+                  event
+                );
+                console.log("successful txn")
+                //@FIX: can't do 0xstring since this returns a string for some reason
+                resolve(`${status.asInBlock}`);
               }
             });
-          } else {
-            reject(`Transaction failed. Status: ${status}`);
           }
         });
   });
-  return result;
+  return {
+    status: "success",
+    message: "Transaction successful",
+    blockhash: result
+  };
+} catch (e) {
+  return {
+    status: "failed",
+    message: "Transaction failed",
+  }
+}
+  
 }
 
 export async function executeTransaction(props: executeParams, account: WalletAccount) {
@@ -119,7 +107,6 @@ export async function executeTransaction(props: executeParams, account: WalletAc
   const api = await initialize(substrateConfig.endpoint);
   const metadata = getInjectorMetadata(api);
   await injector?.metadata?.provide(metadata);
-
 
   const result = await new Promise((resolve, reject) => {
     api.tx.vector

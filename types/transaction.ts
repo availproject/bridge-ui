@@ -85,7 +85,7 @@ export interface Transaction {
   dataType: "ERC20",
   depositorAddress: string,
   receiverAddress: string,
-  sourceBlockHash: `0x${string}`,
+  sourceBlockHash: `${string}`,
   sourceTransactionBlockNumber: number,
   sourceTransactionHash: `0x${string}`,
   sourceTransactionIndex: number,

@@ -2,10 +2,10 @@
 import { useCallback, useEffect } from "react";
 import BigNumber from "bignumber.js";
 import { useWriteContract } from "wagmi";
-import { getBalance, readContract } from "@wagmi/core";
+import { readContract } from "@wagmi/core";
 import ethereumAvailTokenAbi from "@/constants/abis/ethereumAvailToken.json";
 import ethereumBridge from "@/constants/abis/ethereumBridge.json";
-import { TRANSACTION_TYPES } from "@/types/transaction";
+import { Transaction, TRANSACTION_TYPES } from "@/types/transaction";
 import useEthWallet from "@/hooks/useEthWallet";
 import { appConfig } from "@/config/default";
 import { ethConfig } from "@/config/walletConfig";
@@ -13,15 +13,18 @@ import { substrateAddressToPublicKey } from "@/utils/addressFormatting";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
 import { fetchAvlHead, fetchEthHead, fetchLatestBlockhash } from "@/services/api";
-import { Chain } from "@/types/common";
+import { Chain, TransactionStatus } from "@/types/common";
 import { _getBalance } from "@/utils/common";
 import { sendMessage } from "@/services/vectorpallet";
+import useTransactions from "./useTransactions";
 
 export default function useBridge() {
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
   const { data: hash, isPending, writeContractAsync } = useWriteContract();
   const { selected } = useAvailAccount();
   const { setAvlHead, setEthHead, setLatestBlockhash } = useLatestBlockInfo();
+  const { addToLocalTransaction } = useTransactions()
+
   const networks = appConfig.networks;
 
   /**
@@ -120,13 +123,17 @@ export default function useBridge() {
         chainId: networks.ethereum.id,
       });
 
-      txHash && console.log(txHash);
+      return txHash && console.log(txHash);
     },
     []
   );
 
-  const initEthToAvailBridging = useCallback(
-    async ({
+console.log(Date.now().toString(), "date now")
+    /**
+   * @description Initiates bridging from Ethereum to AVAIL, 
+   * @steps Validates chain, Checks approval, Checks balance, Initiates bridging(sendAvail() on Eth)
+   */
+  const initEthToAvailBridging = async ({ 
       atomicAmount,
       destinationAddress,
     }: {
@@ -140,7 +147,7 @@ export default function useBridge() {
           `Invalid network, please switch to ${networks.ethereum.name} network(id: ${networks.ethereum.id})`
         );
       }
-
+    
       // check approval
       const currentAllowance = await getCurrentAllowanceOnEth();
       if (new BigNumber(atomicAmount).gt(currentAllowance)) {
@@ -159,15 +166,10 @@ export default function useBridge() {
         destinationAddress,
       });
 
-      // todo:
-      // initiate bridging
-      // create contract instance for appConfig.contracts.ethereum.bridge
-      // call contract method
-    },
-    []
-  );
+    }
 
-  const initAvailToEthBridging = useCallback(
+
+  const initAvailToEthBridging =
     async ({
       atomicAmount,
       destinationAddress,
@@ -175,17 +177,18 @@ export default function useBridge() {
       atomicAmount: string;
       destinationAddress: `${string}`;
     }) => {
-      if(selected === undefined) {
+
+      console.log(selected, "selected account inside callback")
+      if(selected === undefined || selected === null) {
         throw new Error("No account selected");
       }
 
       const availBalance = await _getBalance(Chain.AVAIL, selected?.address);
-      console.log(availBalance, "availBalance");
       if (new BigNumber(atomicAmount).gt(new BigNumber(availBalance * 10**18))) {
-        console.log(new BigNumber(atomicAmount).toNumber() ,new BigNumber(availBalance * 10**18).toNumber() , "yeh kaise")
         throw new Error("insufficient balance");
       }
-      await sendMessage(
+
+     const send =  await sendMessage(
         {
           message: {
             FungibleToken: {
@@ -198,10 +201,32 @@ export default function useBridge() {
           domain: 2,
         },
         selected!
-      );
-      
-    },[]
-  );
+      )
+
+      if (send.blockhash !== undefined) {
+
+      const tempLocalTransaction: Transaction = {
+        "status": TransactionStatus.INITIALIZED,
+        "destinationChain": Chain.ETH,
+        "messageId": 0,
+        "sourceChain": Chain.AVAIL,
+        "amount": parseFloat(atomicAmount),
+        "dataType": "ERC20",
+        "depositorAddress": selected?.address,
+        "receiverAddress": "5HEt5VbgdoiKMJtmFfbtFLphw1yiuus6kf2PA39oukqhtUAQ",
+        "sourceBlockHash": send.blockhash,
+        "sourceTransactionBlockNumber": 5811152,
+        "sourceTransactionHash": "0xabc",
+        "sourceTransactionIndex": 66,
+        "sourceTransactionTimestamp": new Date().toISOString()
+      }
+  
+      await addToLocalTransaction(tempLocalTransaction)
+
+    }
+
+      return send;
+    }
 
   return { initEthToAvailBridging, initAvailToEthBridging };
 }

@@ -30,6 +30,8 @@ export default function Home() {
     // todo: remove demo code
     // this is how you add a local transaction
     /*
+
+    //add this at the end of a successfull init of txn
     const tempLocalTransaction: Transaction = {
       "status": TransactionStatus.INITIALIZED,
       "destinationChain": Chain.AVAIL,

@@ -65,11 +65,6 @@ export default function BridgeSection() {
     },
   });
 
-  useEffect(() => {(async()=> {
-const a = await getMerkleProof("0x69f44931c1295be1c861ee98fc24a91a4d0db6ec33369f38254576db6266bb35",1)
-console.log(a, "bridge api cors")
-  })();},[])
-
   useEffect(() => {
     (async () => {
       if (account.address) {
@@ -93,12 +88,18 @@ console.log(a, "bridge api cors")
     })();
   }, [account.address, selected?.address]);
 
-  const showSuccessMessage = () => {
+  const showSuccessMessage = (blockhash: `${string}`) => {
     toast({
       title: "Transaction initiated successfully",
-      description: "Your transaction has been initiated successfully",
+      description: blockhash,
     });
    };
+
+  const showFailedMessage = () => {
+    toast({
+      title: "Transaction failed",
+      description: "Please try again",
+    }); }
 
   const resetState = () => {
     form.reset();
@@ -113,26 +114,29 @@ console.log(a, "bridge api cors")
         const destinationAddress = selected?.address || values.toAddress;
 
         setTransactionInProgress(true);
-        await initEthToAvailBridging({ atomicAmount: fromAmountAtomic, destinationAddress: destinationAddress })
+        const a = await initEthToAvailBridging({ atomicAmount: fromAmountAtomic, destinationAddress: destinationAddress })
 
         // show success message
-        showSuccessMessage();
+        showSuccessMessage("jkn");
         setTransactionInProgress(false);
 
         // reset state
         resetState();
       } else if (fromChain === Chain.AVAIL) {
         const fromAmountAtomic = new BigNumber(values.fromAmount).multipliedBy(new BigNumber(10).pow(18)).toString();
-        console.log(fromAmountAtomic, "fromAmountAtomic")
+
         const destinationAddress = account?.address || values.toAddress;
         setTransactionInProgress(true);
-        await initAvailToEthBridging({ atomicAmount: fromAmountAtomic, destinationAddress: destinationAddress })
+        const init = await initAvailToEthBridging({ atomicAmount: fromAmountAtomic, destinationAddress: destinationAddress })
 
-        // show success message
-        showSuccessMessage();
-        setTransactionInProgress(false);
+        if(init.blockhash === undefined) {
+          showFailedMessage();
+          setTransactionInProgress(false);
+        } else {
+          showSuccessMessage(init.blockhash);
+          setTransactionInProgress(false);
+        }
 
-        // reset state
         resetState();
       }
     } catch (error) {
