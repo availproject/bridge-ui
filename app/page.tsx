@@ -86,7 +86,7 @@ export default function Home() {
 
                <p className="!text-center">
                  {" "}
-               Refer Docs
+               Refer Bridging Docs
                </p>
                <ArrowUpRight className="h-4 w-4"/>
              </div>

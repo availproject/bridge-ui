@@ -32,7 +32,7 @@ import { toast } from "@/components/ui/use-toast";
 import { parseError } from "@/utils/parseError";
 import BigNumber from "bignumber.js";
 import { badgeVariants } from "../ui/badge";
-import { ArrowUpRight, Loader2 } from "lucide-react";
+import { ArrowUpRight, CheckCheckIcon, CheckCircle, CheckCircle2, Loader2 } from "lucide-react";
 import useTransactions from "@/hooks/useTransactions";
 const formSchema = z.object({
   fromAmount: z.number(),
@@ -161,7 +161,6 @@ export default function BridgeSection() {
       });
     }
   }
-
 
   function Balance() {
     return <>
@@ -386,12 +385,21 @@ export default function BridgeSection() {
             <span className="relative flex flex-row items-center justify-center">
               <p className="font-ppmoribsemibold">Transactions</p>
               <div className={badgeVariants({ variant: "avail" })}>
-                <Loader2 className={`h-4 w-4 animate-spin`} />
+                {pendingTransactionsNumber > 0 ? <>
+                  <Loader2 className={`h-4 w-4 animate-spin`} />
 
-                <p className="!text-left">
-                  {" "}
-                  {pendingTransactionsNumber} Claims Pending
-                </p>
+<p className="!text-left">
+  {" "}
+  {pendingTransactionsNumber} Claims Pending
+</p>
+                </> :<>
+                <CheckCircle2 className={`h-4 w-4`} />
+
+<p className="!text-left">
+  {" "}
+  No Pending Claims
+</p></>}
+               
               </div>
             </span>
           </h1>

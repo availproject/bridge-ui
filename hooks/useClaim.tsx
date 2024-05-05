@@ -1,8 +1,6 @@
 import { writeContract } from "@wagmi/core";
-import { encodeAbiParameters } from "viem";;
-import {
-  merkleProof,
-} from "@/types/transaction";
+import { encodeAbiParameters } from "viem";
+import { merkleProof } from "@/types/transaction";
 import { bridgeContractAbi } from "@/constants/abi";
 import { config } from "@/app/providers";
 import { getAccountStorageProofs, getMerkleProof } from "@/services/api";
@@ -10,12 +8,11 @@ import { executeTransaction } from "@/services/vectorpallet";
 import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
 import { useAvailAccount } from "@/stores/availWalletHook";
 
-
 export default function useClaim() {
-  const {ethHead, latestBlockhash} = useLatestBlockInfo()
-  const {selected} = useAvailAccount()
+  const { ethHead, latestBlockhash } = useLatestBlockInfo();
+  const { selected } = useAvailAccount();
 
-async function receiveAvail(merkleProof: merkleProof) {
+  async function receiveAvail(merkleProof: merkleProof) {
     try {
       //@ts-ignore TODO: to be fixed later
       const result = await writeContract(config, {
@@ -48,7 +45,7 @@ async function receiveAvail(merkleProof: merkleProof) {
             merkleProof.message.id,
           ],
           [
-merkleProof.dataRootProof,
+            merkleProof.dataRootProof,
             merkleProof.leafProof,
             merkleProof.rangeHash,
             merkleProof.dataRootIndex,
@@ -60,68 +57,81 @@ merkleProof.dataRootProof,
         ],
       });
       console.log(result, "result");
+      return result;
     } catch (e) {
       throw new Error("Error while claiming AVAIL");
     }
   }
 
-const initClaimAvailToEth = async ({
-  blockhash,
-  index,
-}:{blockhash: `0x${string}`, index: number}) => {
+  const initClaimAvailToEth = async ({
+    blockhash,
+    index,
+  }: {
+    blockhash: `0x${string}`;
+    index: number;
+  }) => {
+    try {
+    const a: merkleProof = await getMerkleProof(blockhash, index);
+    if (!a) throw new Error("Failed to fetch proofs from api");
 
-  const a: merkleProof  = await getMerkleProof(blockhash, index)
-  console.log(a,"merkle proof") //test and remove
-  const receive = await receiveAvail(a)
-  return receive
-}
+    const receive = await receiveAvail(a);
+    return receive;
+    
+    } catch (e) {
+      throw new Error("Error while claiming AVAIL");
+    }
+   
+  };
 
-const initClaimEthtoAvail = async ({
-  blockhash,
-  executeParams,
+  const initClaimEthtoAvail = async ({
+    blockhash,
+    executeParams,
+  }: {
+    blockhash: `0x${string}`;
+    executeParams: {
+      messageid: number;
+      amount: number;
+      from: `${string}`;
+      to: `${string}`;
+      originDomain: number;
+      destinationDomain: number;
+    };
+  }) => {
+    if (!selected) throw new Error("Connect a Avail account");
+    const proofs = await getAccountStorageProofs(
+      latestBlockhash.blockHash,
+      executeParams.messageid
+    );
+    // const proofs = await getAccountStorageProofs(blockhash, executeParams.messageid)
+    if (!proofs) throw new Error("Failed to fetch proofs from api");
 
-} : {
-blockhash: `0x${string}`,
-executeParams: {
-messageid: number,
-amount: number,
-from:`${string}` ,
-to: `${string}`,
-originDomain: number,
-destinationDomain: number,
-}
+    console.log(proofs, executeParams, "proofs");
+    console.log(latestBlockhash.blockHash);
 
-}) =>{
+    await executeTransaction(
+      {
+        slot: ethHead.slot,
+        addrMessage: {
+          message: {
+            FungibleToken: {
+              assetId:
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+              amount: executeParams.amount,
+            },
+          },
+          from: executeParams.from,
+          to: executeParams.to,
+          originDomain: executeParams.originDomain,
+          destinationDomain: executeParams.destinationDomain,
+          id: executeParams.messageid,
+        },
 
-if(!selected) throw new Error("Connect a Avail account")
-const proofs = await getAccountStorageProofs(latestBlockhash.blockHash, executeParams.messageid)
-// const proofs = await getAccountStorageProofs(blockhash, executeParams.messageid)
-if(!proofs) throw new Error("Failed to fetch proofs from api")
-
-  console.log(proofs, executeParams, "proofs")
-console.log(latestBlockhash.blockHash)
-
-await executeTransaction({
-  slot: ethHead.slot,
-  addrMessage: {
-    message: {
-      FungibleToken: {
-        assetId: "0x0000000000000000000000000000000000000000000000000000000000000000",
-        amount: executeParams.amount
+        accountProof: proofs.accountProof,
+        storageProof: proofs.storageProof,
       },
-    },
-    from: executeParams.from,
-    to: executeParams.to,
-    originDomain: executeParams.originDomain,
-    destinationDomain: executeParams.destinationDomain,
-    id: executeParams.messageid
-  },
+      selected!
+    );
+  };
 
-  accountProof: proofs.accountProof,
-  storageProof: proofs.storageProof
-}, selected!)
-
-}
-
-return {initClaimAvailToEth, initClaimEthtoAvail}
+  return { initClaimAvailToEth, initClaimEthtoAvail };
 }

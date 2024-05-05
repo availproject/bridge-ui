@@ -5,6 +5,7 @@ import { Chain, ethBalance } from "@/types/common";
 import { appConfig } from "@/config/default";
 import ethereumAvailTokenAbi from "@/constants/abis/ethereumAvailToken.json";
 import BigNumber from "bignumber.js";
+import { toast } from "@/components/ui/use-toast";
 const networks = appConfig.networks;
 
 export async function _getBalance(chain: Chain, availAddress?: string, ethAddress?: `0x${string}`) : Promise<number> {
@@ -32,6 +33,21 @@ export async function _getBalance(chain: Chain, availAddress?: string, ethAddres
     return 0;
   }
 }
+
+
+export const showSuccessMessage = (blockhash: `${string}`) => {
+  toast({
+    title: "Transaction initiated successfully",
+    description: blockhash,
+  });
+};
+
+export const showFailedMessage = () => {
+  toast({
+    title: "Transaction failed",
+    description: "Please try again",
+  });
+};
 
 
 
