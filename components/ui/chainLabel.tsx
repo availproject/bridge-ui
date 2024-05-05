@@ -11,23 +11,23 @@ function ChainLabel({ chain }: ChainLabelProps) {
         chain === Chain.ETH ? (
             <p className="flex flex-row space-x-1">
                 {" "}
-                <Image
-                    src="/images/eth.png"
+                <img
+                    src="/images/ETHEREUMsmall.png"
                     alt="eth"
-                    width={18}
-                    height={14}
-                ></Image>
+                    className="object-contain"
+                  
+                ></img>
                 <p>ETH</p>
             </p>
         ) : (
             <p className="flex flex-row space-x-1">
                 {" "}
-                <Image
-                    src="/images/logo.png"
+                <img
+                    src="/images/AVAILsmall.png"
                     alt="avail"
-                    width={16}
-                    height={1}
-                ></Image>
+                    className="object-contain"
+                 
+                ></img>
                 <p>AVAIL</p>
             </p>
         )

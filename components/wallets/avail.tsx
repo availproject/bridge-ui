@@ -80,11 +80,12 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
     return (
       <>
         <div
-          className={badgeVariants({ variant: "default" })}
+          className={badgeVariants({ variant: "avail" })}
           onClick={() => {
             navigator.clipboard.writeText(selected.address);
           }}
         >
+          <img src="/images/Wallet.png" className="pr-1"></img>
           {selected.address.slice(0, 6) + "..." + selected.address?.slice(-4)}
           <button
             className="ml-2"

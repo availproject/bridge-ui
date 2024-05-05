@@ -99,11 +99,12 @@ export default function LatestTransactions(props: { pending: boolean }) {
 
                     <br />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-right items-end">
                     {txn.status === "READY_TO_CLAIM" ? (
                       <>
                         <Button
                           variant="primary"
+                          className="!px-4 !py-0"
                           onClick={() =>
                             onSubmit(
                               txn.sourceChain,
@@ -121,7 +122,7 @@ export default function LatestTransactions(props: { pending: boolean }) {
                           }
                         >
                           {txn.status === "READY_TO_CLAIM"
-                            ? "Claim"
+                            ? "CLAIM"
                             : txn.status}
                         </Button>
                       </>
