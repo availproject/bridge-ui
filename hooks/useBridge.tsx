@@ -188,7 +188,7 @@ export default function useBridge() {
       sourceBlockHash: "0x",
       sourceTransactionBlockNumber: 0,
       sourceTransactionIndex: 0,
-      sourceTransactionTimestamp: ""
+      sourceTransactionTimestamp: new Date().toISOString(),
     })
 
     Logger.debug(`Burn transaction hash: ${burnTxHash}`);

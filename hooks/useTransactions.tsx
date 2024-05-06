@@ -1,5 +1,6 @@
 import { getTransactionsFromIndexer } from "@/services/transactions"
 import { useTransactionsStore } from "@/stores/transactionsStore"
+import { Chain } from "@/types/common"
 import { Transaction } from "@/types/transaction"
 import { useMemo } from "react"
 
@@ -42,8 +43,13 @@ export default function useTransactions() {
         const allTransactions: Transaction[] = []
 
         localTransactions.forEach((localTxn) => {
-            const indexedTxn = indexedTransactions.find((indexedTxn) =>
-                indexedTxn.sourceTransactionHash.toLowerCase() === localTxn.sourceTransactionHash.toLowerCase()
+            const indexedTxn = indexedTransactions.find((indexedTxn) => {
+                if (indexedTxn.sourceChain === Chain.ETH) {
+                    return indexedTxn.sourceTransactionHash.toLowerCase() === localTxn.sourceTransactionHash.toLowerCase()
+                } else if (indexedTxn?.sourceChain === Chain.AVAIL) {
+                    return indexedTxn.sourceTransactionHash.toLowerCase() === localTxn.sourceTransactionHash.toLowerCase()
+                }
+            }
             )
             if (!indexedTxn) {
                 allTransactions.push(localTxn)
