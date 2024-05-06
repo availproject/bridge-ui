@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { badgeVariants } from "../ui/badge";
+import { Badge, badgeVariants } from "../ui/badge";
 import { IoMdClose } from "react-icons/io";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "../ui/button";
@@ -54,8 +54,8 @@ export default function Eth() {
                   }
                   if (chain.unsupported) {
                     return (
-                      <button onClick={openChainModal} type="button">
-                        Wrong network
+                      <button onClick={openChainModal}  type="button">
+                       <Badge>Wrong network</Badge>
                       </button>
                     );
                   }

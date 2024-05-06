@@ -20,7 +20,11 @@ import { useEffect, useState } from "react";
 import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
 import { Button } from "../ui/button";
-import { _getBalance, showFailedMessage, showSuccessMessage } from "@/utils/common";
+import {
+  _getBalance,
+  showFailedMessage,
+  showSuccessMessage,
+} from "@/utils/common";
 import { useAccount } from "wagmi";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
@@ -32,7 +36,13 @@ import { toast } from "@/components/ui/use-toast";
 import { parseError } from "@/utils/parseError";
 import BigNumber from "bignumber.js";
 import { badgeVariants } from "../ui/badge";
-import { ArrowUpRight, CheckCheckIcon, CheckCircle, CheckCircle2, Loader2 } from "lucide-react";
+import {
+  ArrowUpRight,
+  CheckCheckIcon,
+  CheckCircle,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
 import useTransactions from "@/hooks/useTransactions";
 const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -100,7 +110,6 @@ export default function BridgeSection() {
     })();
   }, [account.address, selected?.address]);
 
-
   const resetState = () => {
     form.reset();
   };
@@ -156,47 +165,49 @@ export default function BridgeSection() {
   }
 
   function Balance() {
-    return <>
-                              <div className="flex flex-row items-end justify-start pl-1 font-ppmori ">
-                            {fromChain === Chain.ETH ? (
-                              <span className="font-ppmori flex flex-row items-center justify-center space-x-2 text-white text-opacity-70 pt-1">
-                                Balance{" "}
-                                <span className="text-white font-bold mx-1 flex flex-row">
-                                  {account.address ? (
-                                    ethBalance !== undefined ? (
-                                      ethBalance.toFixed(2)
-                                    ) : (
-                                      <RiLoopLeftFill
-                                        className={`h-4 w-4 animate-spin font-bold`}
-                                      />
-                                    )
-                                  ) : (
-                                    "--"
-                                  )}{" "}
-                                  <p className="pl-1">AVAIL</p>
-                                </span>
-                              </span>
-                            ) : (
-                              <span className="font-ppmori flex flex-row text-white text-opacity-70">
-                                Balance{" "}
-                                <span className="text-white font-bold mx-1 flex flex-row">
-                                  {selected ? (
-                                    availBalance !== undefined ? (
-                                      availBalance.toFixed(2)
-                                    ) : (
-                                      <RiLoopLeftFill
-                                        className={`h-4 w-4 animate-spin font-bold`}
-                                      />
-                                    )
-                                  ) : (
-                                    "--"
-                                  )}{" "}
-                                  <p className="pl-1">AVAIL</p>
-                                </span>
-                              </span>
-                            )}
-                          </div>
-    </>
+    return (
+      <>
+        <div className="flex flex-row items-end justify-start pl-1 font-ppmori ">
+          {fromChain === Chain.ETH ? (
+            <span className="font-ppmori flex flex-row items-center justify-center space-x-2 text-white text-opacity-70 pt-1">
+              Balance{" "}
+              <span className="text-white font-bold mx-1 flex flex-row">
+                {account.address ? (
+                  ethBalance !== undefined ? (
+                    ethBalance.toFixed(2)
+                  ) : (
+                    <RiLoopLeftFill
+                      className={`h-4 w-4 animate-spin font-bold`}
+                    />
+                  )
+                ) : (
+                  "--"
+                )}{" "}
+                <p className="pl-1">AVAIL</p>
+              </span>
+            </span>
+          ) : (
+            <span className="font-ppmori flex flex-row text-white text-opacity-70">
+              Balance{" "}
+              <span className="text-white font-bold mx-1 flex flex-row">
+                {selected ? (
+                  availBalance !== undefined ? (
+                    availBalance.toFixed(2)
+                  ) : (
+                    <RiLoopLeftFill
+                      className={`h-4 w-4 animate-spin font-bold`}
+                    />
+                  )
+                ) : (
+                  "--"
+                )}{" "}
+                <p className="pl-1">AVAIL</p>
+              </span>
+            </span>
+          )}
+        </div>
+      </>
+    );
   }
 
   return (
@@ -247,7 +258,6 @@ export default function BridgeSection() {
                               margin: 0,
                               outline: "none",
                             }}
-                          
                             type="number"
                             placeholder="0.0"
                             {...field}
@@ -293,11 +303,21 @@ export default function BridgeSection() {
                         </div>
 
                         <div className="flex flex-row items-center justify-between">
-<Balance/>
+                          <Balance />
                           <div className="flex flex-row items-center justify-center ">
-                            <button className="font-thicccboisemibold text-[#3FB5F8] text-sm">
+                            <div
+                            
+                              onClick={() => {
+                                const value =
+                                  fromChain === Chain.ETH
+                                    ? ethBalance
+                                    : availBalance && parseInt(availBalance.toString());
+                                value && form.setValue("fromAmount", value);
+                              }}
+                              className="font-thicccboisemibold text-[#3FB5F8] text-sm cursor-pointer"
+                            >
                               MAX
-                            </button>
+                            </div>
                           </div>
                         </div>
                       </>
@@ -328,7 +348,6 @@ export default function BridgeSection() {
                     </FormLabel>
                     <FormControl>
                       <Input
-                      
                         disabled={true}
                         min={0}
                         placeholder={
@@ -343,8 +362,7 @@ export default function BridgeSection() {
                       />
                     </FormControl>
                     <div className="flex flex-row items-center justify-between">
-                      <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70">
-                      </div>
+                      <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70"></div>
                       <div className="flex flex-row items-center justify-center ">
                         <button className="font-thicccboisemibold text-[#3FB5F8] text-sm">
                           + Paste Address
@@ -378,21 +396,22 @@ export default function BridgeSection() {
             <span className="relative flex flex-row items-center justify-center">
               <p className="font-ppmoribsemibold">Transactions</p>
               <div className={badgeVariants({ variant: "avail" })}>
-                {pendingTransactionsNumber > 0 ? <>
-                  <Loader2 className={`h-4 w-4 animate-spin`} />
+                {pendingTransactionsNumber > 0 ? (
+                  <>
+                    <Loader2 className={`h-4 w-4 animate-spin`} />
 
-<p className="!text-left">
-  {" "}
-  {pendingTransactionsNumber} Claims Pending
-</p>
-                </> :<>
-                <CheckCircle2 className={`h-4 w-4`} />
+                    <p className="!text-left">
+                      {" "}
+                      {pendingTransactionsNumber} Claims Pending
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className={`h-4 w-4`} />
 
-<p className="!text-left">
-  {" "}
-  No Pending Claims
-</p></>}
-               
+                    <p className="!text-left"> No Pending Claims</p>
+                  </>
+                )}
               </div>
             </span>
           </h1>

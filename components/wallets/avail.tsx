@@ -1,3 +1,5 @@
+"use client"
+
 /* eslint-disable react/jsx-key */
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
@@ -100,6 +102,8 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
         </div>
       </>
     );
+
+
   }
 
   function SelectAccount() {

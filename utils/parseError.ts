@@ -19,7 +19,8 @@ export function parseError(error: unknown): string {
     }  else if (errorMessageString.match(/No account selected/i)) {
         return "Please connect your accounts";
     } 
-    
+    else if (errorMessageString.match(/invalid network/i)) {
+        return "You may need to manually switch it to the correct network."; }
     else if (
         errorMessageString.match(/denied transaction/i) || // Metamask browser message
         errorMessageString.match(/User rejected the transaction/i) || // Metamask mobile message

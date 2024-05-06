@@ -173,21 +173,4 @@ export async function executeTransaction(props: executeParams, account: WalletAc
 }
 
 
-
-export const hello = async () => {
-  const api = await initialize("wss://turing-rpc.avail.so/ws")
-  const message = {
-    FungibleToken: {
-      assetId: "0x0000000000000000000000000000000000000000000000000000000000000000",
-      amount: BigInt(4000000000000000000),
-    },
-  }
-  const to = "0x3942f3a6d7637d9f151b81063a9c5003b278231b000000000000000000000000"
-  const domain = 2
-
-  const tx = api.tx.vector.sendMessage(message, to, domain)
-  console.log(tx.toHuman())
-  console.log(tx.toHex())
-  await disconnect()
-  return tx.toHex()
-}
+//  await disconnect()
