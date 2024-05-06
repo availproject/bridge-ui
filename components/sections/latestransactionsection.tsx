@@ -1,3 +1,5 @@
+"use client"
+
 /* eslint-disable @next/next/no-img-element */
 import { Table, TableBody, TableCell, TableRow } from "../ui/table";
 import { Button } from "../ui/button";
@@ -18,6 +20,9 @@ import { useCommonStore } from "@/stores/common";
 import { useEffect, useState } from "react";
 import { showFailedMessage, showSuccessMessage } from "@/utils/common";
 import { LoadingButton } from "../ui/loadingbutton";
+import { useAvailAccount } from "@/stores/availWalletHook";
+import { pollWithDelay } from "@/utils/poller";
+import { appConfig } from "@/config/default";
 
 export default function LatestTransactions(props: { pending: boolean }) {
   const { pendingTransactions, completedTransactions } = useTransactions();
@@ -25,6 +30,27 @@ export default function LatestTransactions(props: { pending: boolean }) {
   const [inProcess, setInProcess] = useState<boolean[]>(
     Array(pendingTransactions.length).fill(false)
   );
+  const { selected } = useAvailAccount()
+  const { fetchTransactions, addToLocalTransaction } = useTransactions()
+
+  const appInit = async () => {
+    if (!selected) return;
+
+    // Fetch all transactions
+    // and keep polling
+    pollWithDelay(
+      fetchTransactions,
+      [{
+        userAddress: selected.address,
+      }],
+      appConfig.bridgeIndexerPollingInterval,
+      () => true
+    )
+  }
+
+  useEffect(() => {
+    appInit()
+  }, [selected])
 
   useEffect(() => {
       setInProcess(Array(pendingTransactions.length).fill(false));

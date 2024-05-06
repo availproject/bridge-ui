@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
 import { Button } from "../ui/button";
-import { _getBalance } from "@/utils/common";
+import { _getBalance, showFailedMessage, showSuccessMessage } from "@/utils/common";
 import { useAccount } from "wagmi";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
@@ -94,19 +94,6 @@ export default function BridgeSection() {
     })();
   }, [account.address, selected?.address]);
 
-  const showSuccessMessage = (blockhash: `${string}`) => {
-    toast({
-      title: "Transaction initiated successfully",
-      description: blockhash,
-    });
-  };
-
-  const showFailedMessage = () => {
-    toast({
-      title: "Transaction failed",
-      description: "Please try again",
-    });
-  };
 
   const resetState = () => {
     form.reset();
