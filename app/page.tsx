@@ -12,7 +12,7 @@ import { ArrowUpRight } from "lucide-react";
 import { useEffect } from "react";
 import { BiSupport } from "react-icons/bi";
 
-export default function Page() {
+export default function Home() {
 
   return (
     <main className="">

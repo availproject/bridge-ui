@@ -35,7 +35,13 @@ import { badgeVariants } from "../ui/badge";
 import { ArrowUpRight, CheckCheckIcon, CheckCircle, CheckCircle2, Loader2 } from "lucide-react";
 import useTransactions from "@/hooks/useTransactions";
 const formSchema = z.object({
-  fromAmount: z.number(),
+  fromAmount: z.preprocess(
+    //@ts-ignore - preprocess is not in the types
+    (a) => parseFloat(z.number().parse(a)),
+    z.number({
+      invalid_type_error: "Amount should be a number",
+    })
+  ),
   toAddress: z.string(),
 });
 
@@ -241,8 +247,8 @@ export default function BridgeSection() {
                               margin: 0,
                               outline: "none",
                             }}
-                            min={0}
-                            type="string"
+                          
+                            type="number"
                             placeholder="0.0"
                             {...field}
                             onChange={(event) =>
@@ -322,7 +328,7 @@ export default function BridgeSection() {
                     </FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
+                      
                         disabled={true}
                         min={0}
                         placeholder={
