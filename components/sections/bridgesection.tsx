@@ -157,6 +157,8 @@ export default function BridgeSection() {
         resetState();
       }
     } catch (error) {
+      console.error(error);
+      
       setTransactionInProgress(false);
       toast({
         title: parseError(error),

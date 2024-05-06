@@ -42,7 +42,9 @@ export default function useTransactions() {
         const allTransactions: Transaction[] = []
 
         localTransactions.forEach((localTxn) => {
-            const indexedTxn = indexedTransactions.find((indexedTxn) => indexedTxn.sourceTransactionHash === localTxn.sourceTransactionHash)
+            const indexedTxn = indexedTransactions.find((indexedTxn) =>
+                indexedTxn.sourceTransactionHash.toLowerCase() === localTxn.sourceTransactionHash.toLowerCase()
+            )
             if (!indexedTxn) {
                 allTransactions.push(localTxn)
             }

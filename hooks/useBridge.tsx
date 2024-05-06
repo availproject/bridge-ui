@@ -35,7 +35,7 @@ export default function useBridge() {
    * @description Validates chain according to transaction type, and changes chain if needed
    * @param txType Transaction type
    */
-  const validateChain = useCallback(async (txType: TRANSACTION_TYPES) => {
+  const validateChain = async (txType: TRANSACTION_TYPES) => {
     if (txType === TRANSACTION_TYPES.BRIDGE_AVAIL_TO_ETH) {
       // if (networks.avail.networkId !== await activeNetworkId()) {
       //   await switchNetwork(networks.avail.networkId);
@@ -45,7 +45,7 @@ export default function useBridge() {
         await switchNetwork(networks.ethereum.id);
       }
     }
-  }, []);
+  }
 
   useEffect(() => {
     setInterval(async () => {
