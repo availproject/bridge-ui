@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 /* eslint-disable @next/next/no-img-element */
 import { Table, TableBody, TableCell, TableRow } from "../ui/table";
@@ -13,7 +13,13 @@ import {
   parseDateTimeToMonthShort,
   parseDateTimeToDay,
 } from "@/utils/parseDateTime";
-import { ArrowRight, ArrowUpRight, CheckCircle, ExternalLink } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CheckCircle,
+  ExternalLink,
+  MoveRight,
+} from "lucide-react";
 import useClaim from "@/hooks/useClaim";
 import { executeTransaction } from "@/services/vectorpallet";
 import { useCommonStore } from "@/stores/common";
@@ -30,8 +36,8 @@ export default function LatestTransactions(props: { pending: boolean }) {
   const [inProcess, setInProcess] = useState<boolean[]>(
     Array(pendingTransactions.length).fill(false)
   );
-  const { selected } = useAvailAccount()
-  const { fetchTransactions, addToLocalTransaction } = useTransactions()
+  const { selected } = useAvailAccount();
+  const { fetchTransactions, addToLocalTransaction } = useTransactions();
 
   const appInit = async () => {
     if (!selected) return;
@@ -40,21 +46,23 @@ export default function LatestTransactions(props: { pending: boolean }) {
     // and keep polling
     pollWithDelay(
       fetchTransactions,
-      [{
-        userAddress: selected.address,
-      }],
+      [
+        {
+          userAddress: selected.address,
+        },
+      ],
       appConfig.bridgeIndexerPollingInterval,
       () => true
-    )
-  }
+    );
+  };
 
   useEffect(() => {
-    appInit()
-  }, [selected])
+    appInit();
+  }, [selected]);
 
   useEffect(() => {
-      setInProcess(Array(pendingTransactions.length).fill(false));
-  },[pendingTransactions])
+    setInProcess(Array(pendingTransactions.length).fill(false));
+  }, [pendingTransactions]);
 
   const onSubmit = async (
     chainFrom: Chain,
@@ -75,7 +83,6 @@ export default function LatestTransactions(props: { pending: boolean }) {
     );
 
     try {
-
       if (chainFrom === Chain.AVAIL && blockhash && index) {
         console.log("Initiate ReceiveAvail()");
         const successBlockhash = await initClaimAvailToEth({
@@ -111,7 +118,8 @@ export default function LatestTransactions(props: { pending: boolean }) {
     return (
       <>
         <TableBody>
-          {pendingTransactions.map((txn, index) => (
+          {pendingTransactions.sort((a, b) => {
+    return new Date(b.sourceTransactionTimestamp).getTime() - new Date(a.sourceTransactionTimestamp).getTime(); }).map((txn, index) => (
             <TableRow key={index}>
               <TableCell className="font-medium w-full flex flex-row space-x-2">
                 <p className="flex flex-col">
@@ -125,17 +133,12 @@ export default function LatestTransactions(props: { pending: boolean }) {
                       )}
                     </p>
                   </p>
-                  {/* <p className="text-white text-opacity-60">{` ${new Date(
-                        txn.sourceTransactionTimestamp
-                      ).getHours()}${new Date(
-                        txn.sourceTransactionTimestamp
-                      ).getMinutes()}`}</p> */}
                 </p>
                 <p className="flex flex-col space-y-1 ">
                   <p className="flex flex-row w-full">
                     <ChainLabel chain={txn.sourceChain} />
                     <p className="px-1">
-                      <ArrowRight />
+                    <MoveRight />
                     </p>{" "}
                     <ChainLabel chain={txn.destinationChain} />
                   </p>
@@ -146,8 +149,11 @@ export default function LatestTransactions(props: { pending: boolean }) {
                         //@ts-ignore look at this once @ankitboghra
                         parseAvailAmount(txn.amount)
                       }{" "}
-                      AVAIL
+                      AVAIL 
                     </p>
+                    <a href={txn.sourceChain === Chain.ETH ? `https://sepolia.etherscan.io/tx/${txn.sourceBlockHash}` : `https://explorer.avail.so/#/explorer/query/${txn.sourceBlockHash}`}>
+                      <ExternalLink className="w-3 h-3" />
+                      </a>
                   </p>
                 </p>
 
@@ -184,7 +190,13 @@ export default function LatestTransactions(props: { pending: boolean }) {
                   </>
                 ) : (
                   <>
-                    <Badge>{txn.status}</Badge>
+                    <Badge className=" flex flex-row items-center justify-center space-x-2">
+                      <p>{txn.status}</p>
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-600 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-600"></span>
+                      </span>
+                    </Badge>
                   </>
                 )}
               </TableCell>
@@ -223,7 +235,7 @@ export default function LatestTransactions(props: { pending: boolean }) {
                   <p className="flex flex-row w-full">
                     <ChainLabel chain={txn.sourceChain} />
                     <p className="px-1">
-                      <ArrowRight />
+                    <MoveRight />
                     </p>{" "}
                     <ChainLabel chain={txn.destinationChain} />
                   </p>
@@ -234,17 +246,20 @@ export default function LatestTransactions(props: { pending: boolean }) {
                         //@ts-ignore look at this once @ankitboghra
                         parseAvailAmount(txn.amount)
                       }{" "}
-                      AVAIL 
+                      AVAIL
                     </p>
                   </p>
                 </p>
                 <br />
               </TableCell>
               <TableCell className="text-right  items-end">
-                <div className="flex flex-row !text-xs justify-end text-white text-opacity-75">
-               View on Explorer <a href={`https://sepolia.etherscan.io/tx/${txn.destinationTransactionHash}`}><ArrowUpRight className="w-4 h-4"/></a> 
-                </div>
-              
+                <a
+                    href={txn.sourceChain === Chain.ETH ? `https://sepolia.etherscan.io/tx/${txn.sourceBlockHash}` : `https://explorer.avail.so/#/explorer/query/${txn.sourceBlockHash}`} className="flex flex-row !text-xs justify-end text-white text-opacity-75">
+                  View on Explorer{" "}
+                
+                    <ArrowUpRight className="w-4 h-4" />
+                  
+                </a>
               </TableCell>
             </TableRow>
           ))}
