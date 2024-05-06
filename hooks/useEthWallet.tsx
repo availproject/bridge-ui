@@ -35,7 +35,6 @@ export default function useEthWallet() {
         [chainId],
     );
 
-    // todo: critical: fix active network id, wagmi is not updating network change
     const activeNetworkId =
         async () => {
             return chainId
@@ -50,7 +49,6 @@ export default function useEthWallet() {
 
     const ethersProvider = useMemo(
         (): ethers.providers.JsonRpcProvider => {
-            // Get ethers provider logic
             return new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL);
         },
         [],

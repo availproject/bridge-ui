@@ -26,7 +26,6 @@ export const getTransactionsFromIndexer = async (userAddress: string, sourceChai
             return { data: { result: [] } };
         });
 
-    // todo: remove this filter once API is fixed
     const result: Transaction[] = response.data.result
 
     // mock transactions api

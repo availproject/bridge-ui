@@ -81,9 +81,9 @@ export interface Transaction {
   destinationChain: Chain,
   messageId: number,
   sourceChain: Chain,
-  amount: number,
+  amount: string,
   dataType: "ERC20",
-  depositorAddress: string,
+  depositorAddress: `0x${string}` | string,
   receiverAddress: string,
   sourceBlockHash: `${string}`,
   sourceTransactionBlockNumber: number,
@@ -91,7 +91,7 @@ export interface Transaction {
   sourceTransactionIndex: number,
   sourceTransactionTimestamp: string
   sourceTokenAddress?: `0x${string}`;
-  destinationTransactionHash?: `0x${string}`;
+  destinationTransactionHash?: `0x${string}` | string;
   destinationTransactionBlockNumber?: number;
   destinationTransactionTimestamp?: number;
   destinationTransactionIndex?: number;
