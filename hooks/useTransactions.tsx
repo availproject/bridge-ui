@@ -47,7 +47,7 @@ export default function useTransactions() {
                 if (indexedTxn.sourceChain === Chain.ETH) {
                     return indexedTxn.sourceTransactionHash.toLowerCase() === localTxn.sourceTransactionHash.toLowerCase()
                 } else if (indexedTxn?.sourceChain === Chain.AVAIL) {
-                    return indexedTxn.sourceTransactionHash.toLowerCase() === localTxn.sourceTransactionHash.toLowerCase()
+                    return indexedTxn.sourceBlockHash.toLowerCase() === localTxn.sourceBlockHash.toLowerCase()
                 }
             }
             )

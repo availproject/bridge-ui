@@ -129,7 +129,7 @@ export default function BridgeSection() {
         });
 
         // show success message
-        showSuccessMessage("jkn");
+        showSuccessMessage(a);
         setTransactionInProgress(false);
 
         // reset state

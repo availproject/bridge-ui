@@ -114,15 +114,14 @@ export async function executeTransaction(props: executeParams, account: WalletAc
 
   try {
     const result : `${string}` = await new Promise((resolve, reject) => {
-      api.tx.vector
-        .execute(
+      api.tx['vector']['execute'](
           props.slot,
           props.addrMessage,
           props.accountProof,
           props.storageProof
         )
         .signAndSend(account.address,
-          { signer: injector.signer, app_id: 0 } as Partial<SignerOptions>, 
+          { signer: injector.signer, app_id: 0,  nonce: -1  } as Partial<SignerOptions>, 
           ({ status, events }) => {
             if (status.isInBlock) {
               console.log(`Transaction included at blockHash ${status.asInBlock}`);

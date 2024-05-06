@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link'
 import footerStyle from './Footer.module.css'
-import { ROUTES } from '../../../../utils/routes'
+import { ROUTES } from '../../../utils/routes'
 import Image from 'next/image'
 import { useMemo } from 'react'
 import { useMobileView } from '@/hooks/useMobileView'
