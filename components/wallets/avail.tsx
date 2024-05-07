@@ -233,6 +233,7 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
   }
 
   return (
+    window === undefined ? <></> :
     <>
       {selected ? (
         <DisconnectWallet />

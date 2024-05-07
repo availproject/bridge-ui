@@ -56,7 +56,6 @@ export default function useClaim() {
           ],
         ],
       });
-      console.log(result, "result");
       return result;
     } catch (e) {
       throw new Error("Error while claiming AVAIL");

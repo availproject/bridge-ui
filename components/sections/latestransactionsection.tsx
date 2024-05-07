@@ -145,7 +145,7 @@ export default function LatestTransactions(props: { pending: boolean }) {
                       }{" "}
                       AVAIL 
                     </p>
-                    <a href={txn.sourceChain === Chain.ETH ? `https://sepolia.etherscan.io/tx/${txn.sourceBlockHash}` : `https://explorer.avail.so/#/explorer/query/${txn.sourceBlockHash}`}>
+                    <a target="_blank" href={txn.sourceChain === Chain.ETH ? `https://sepolia.etherscan.io/tx/${txn.sourceTransactionHash}` : `https://explorer.avail.so/#/explorer/query/${txn.sourceBlockHash}`}>
                       <ExternalLink className="w-3 h-3" />
                       </a>
                   </p>
