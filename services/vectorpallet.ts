@@ -35,9 +35,11 @@ export async function sendMessage(props: sendMessageParams, account: WalletAccou
   message: string;
   blockhash?: `${string}`
 }> {
-  const { web3Accounts, web3FromSource } = await import(
+
+  const { web3Accounts, web3FromSource, web3Enable } = await import(
     "@polkadot/extension-dapp"
   );
+  await web3Enable("bridge-ui")
   console.log(account.source);
   const injector = await web3FromSource(account.source);
   const api = await initialize(substrateConfig.endpoint);
@@ -104,9 +106,10 @@ export async function executeTransaction(props: executeParams, account: WalletAc
   message: string;
   blockhash?: `${string}`
 }>  {
-  const { web3Accounts, web3FromSource } = await import(
+  const { web3Accounts, web3FromSource, web3Enable } = await import(
     "@polkadot/extension-dapp"
   );
+  await web3Enable("bridge-ui")
   const injector = await web3FromSource(account.source);
   const api = await initialize(substrateConfig.endpoint);
   const metadata = getInjectorMetadata(api);
