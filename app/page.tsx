@@ -1,15 +1,7 @@
-
 /* eslint-disable @next/next/no-img-element */
 import BridgeSection from "@/components/sections/bridgesection";
 import { badgeVariants } from "@/components/ui/badge";
-import { appConfig } from "@/config/default";
-import useEthWallet from "@/hooks/useEthWallet";
-import useTransactions from "@/hooks/useTransactions";
-import { useAvailAccount } from "@/stores/availWalletHook";
-import { Chain } from "@/types/common";
-import { pollWithDelay } from "@/utils/poller";
 import { ArrowUpRight } from "lucide-react";
-import { useEffect } from "react";
 import { BiSupport } from "react-icons/bi";
 
 export default function Home() {

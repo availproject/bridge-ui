@@ -2,10 +2,8 @@
 
 /* eslint-disable @next/next/no-img-element */
 import { Table, TableBody, TableCell, TableRow } from "../ui/table";
-import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-import Image from "next/image";
-import { Chain, TransactionStatus } from "@/types/common";
+import { Chain } from "@/types/common";
 import useTransactions from "@/hooks/useTransactions";
 import { parseAvailAmount } from "@/utils/parseAmount";
 import { ChainLabel } from "../ui/chainLabel";
@@ -21,8 +19,6 @@ import {
   MoveRight,
 } from "lucide-react";
 import useClaim from "@/hooks/useClaim";
-import { executeTransaction } from "@/services/vectorpallet";
-import { useCommonStore } from "@/stores/common";
 import { useEffect, useState } from "react";
 import { showFailedMessage, showSuccessMessage } from "@/utils/common";
 import { LoadingButton } from "../ui/loadingbutton";
@@ -42,8 +38,6 @@ export default function LatestTransactions(props: { pending: boolean }) {
   const appInit = async () => {
     if (!selected) return;
 
-    // Fetch all transactions
-    // and keep polling
     pollWithDelay(
       fetchTransactions,
       [

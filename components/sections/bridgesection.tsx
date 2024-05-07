@@ -37,9 +37,6 @@ import { parseError } from "@/utils/parseError";
 import BigNumber from "bignumber.js";
 import { badgeVariants } from "../ui/badge";
 import {
-  ArrowUpRight,
-  CheckCheckIcon,
-  CheckCircle,
   CheckCircle2,
   Loader2,
 } from "lucide-react";
