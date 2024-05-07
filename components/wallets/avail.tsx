@@ -19,7 +19,6 @@ import { badgeVariants } from "../ui/badge";
 import { useCookies } from "react-cookie";
 import { ArrowDownCircle, ArrowLeft, InfoIcon } from "lucide-react";
 import { useAvailAccount } from "@/stores/availWalletHook";
-import { web3Enable } from "@polkadot/extension-dapp";
 
 export default function Avail() {
   const [open, setOpen] = useState(false);
@@ -32,7 +31,6 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
   const [enabledAccounts, setEnabledAccounts] = useState<WalletAccount[]>([]);
 
   useEffect(() => {(async()=>{
-    await web3Enable("bridge-ui")
     setSupportedWallets(getWallets());
     if (cookie.substrateAddress && cookie.substrateWallet) {
       const selectedWallet = getWallets().find((wallet) => {
