@@ -146,6 +146,7 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
                 <Button
                   onClick={() => {
                     setSelected(account);
+                    //do it here once
                     setCookie("substrateAddress", account?.address, {
                       path: "/",
                       sameSite: true,

@@ -10,9 +10,10 @@ import {
   disconnect
 } from "avail-js-sdk";
 import { substrateConfig } from "@/config/walletConfig";
-import { WalletAccount } from "@talismn/connect-wallets";
+import { getWalletBySource, WalletAccount } from "@talismn/connect-wallets";
 import { SignerOptions } from "@polkadot/api/types";
 import { executeParams, sendMessageParams } from "@/types/transaction";
+import { web3FromSource } from '@talisman-connect/components';
 
 
 const getInjectorMetadata = (api: ApiPromise) => {
@@ -35,15 +36,11 @@ export async function sendMessage(props: sendMessageParams, account: WalletAccou
   message: string;
   blockhash?: `${string}`
 }> {
-
-  const { web3Accounts, web3FromSource, web3Enable } = await import(
-    "@polkadot/extension-dapp"
-  );
-  await web3Enable("bridge-ui")
-  console.log(account.source);
-  const injector = await web3FromSource(account.source);
+  const injector = await getWalletBySource(account.source);
+  console.log(injector, "injector")
   const api = await initialize(substrateConfig.endpoint);
   const metadata = getInjectorMetadata(api);
+  //@ts-ignore
   await injector?.metadata?.provide(metadata);
 
 try{
@@ -51,6 +48,7 @@ try{
     api.tx.vector
       .sendMessage(props.message, props.to, props.domain)
       .signAndSend(account.address,
+          //@ts-ignore
         { signer: injector.signer, app_id: 0 } as Partial<SignerOptions>, ({ status, events }) => {
           if (status.isInBlock) {
            console.log(`Transaction included at blockHash ${status.asInBlock}`);
@@ -106,13 +104,12 @@ export async function executeTransaction(props: executeParams, account: WalletAc
   message: string;
   blockhash?: `${string}`
 }>  {
-  const { web3Accounts, web3FromSource, web3Enable } = await import(
-    "@polkadot/extension-dapp"
-  );
-  await web3Enable("bridge-ui")
-  const injector = await web3FromSource(account.source);
+
+  const injector = await getWalletBySource(account.source);
+  console.log(injector, "injector")
   const api = await initialize(substrateConfig.endpoint);
   const metadata = getInjectorMetadata(api);
+    //@ts-ignore
   await injector?.metadata?.provide(metadata);
 
   try {
@@ -124,6 +121,7 @@ export async function executeTransaction(props: executeParams, account: WalletAc
           props.storageProof
         )
         .signAndSend(account.address,
+            //@ts-ignore
           { signer: injector.signer, app_id: 0,  nonce: -1  } as Partial<SignerOptions>, 
           ({ status, events }) => {
             if (status.isInBlock) {

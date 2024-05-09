@@ -14,7 +14,6 @@ import { getBalance, writeContract } from "@wagmi/core";
 import { WalletAccount } from "@talismn/connect-wallets";
 import { SignerOptions } from "@polkadot/api/types";
 import { encodeAbiParameters } from "viem";
-import { web3Enable } from "@polkadot/extension-dapp";
 import { ethers } from "ethers";
 import {
   merkleProof,
