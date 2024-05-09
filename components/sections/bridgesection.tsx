@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -65,7 +66,7 @@ export default function BridgeSection() {
   const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
   const { pendingTransactionsNumber, setPendingTransactionsNumber } =
     useCommonStore();
-  const { pendingTransactions, completedTransactions } = useTransactions();
+  const { pendingTransactions } = useTransactions();
 
   useEffect(() => {
     setPendingTransactionsNumber(
@@ -236,7 +237,7 @@ export default function BridgeSection() {
                       <span className="font-ppmori flex flex-row items-center space-x-2">
                         <p className="text-opacity-80 text-white ">From</p>
                         <div className={badgeVariants({ variant: "avail" })}>
-                          <img src={`/images/${fromChain}small.png`}></img>
+                          <img src={`/images/${fromChain}small.png`} alt="logo"></img>
                           <p className="!text-left">{fromChain}</p>
                         </div>
                       </span>
@@ -338,7 +339,7 @@ export default function BridgeSection() {
                       <span className="font-ppmori flex flex-row items-center space-x-2">
                         <p>To</p>
                         <div className={badgeVariants({ variant: "avail" })}>
-                          <img src={`/images/${toChain}small.png`}></img>
+                          <img src={`/images/${toChain}small.png`} alt="logo"></img>
                           <p className="!text-left">{toChain}</p>
                         </div>
                       </span>
@@ -363,9 +364,12 @@ export default function BridgeSection() {
                     <div className="flex flex-row items-center justify-between">
                       <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70"></div>
                       <div className="flex flex-row items-center justify-center ">
-                        <button className="font-thicccboisemibold text-[#3FB5F8] text-sm">
+                        <div onClick={async ()=>{
+                          const address = await navigator.clipboard.readText();
+                          form.setValue("toAddress",address )
+                        }} className="font-thicccboisemibold text-[#3FB5F8] text-sm">
                           + Paste Address
-                        </button>
+                        </div>
                       </div>
                     </div>
                     <FormMessage />

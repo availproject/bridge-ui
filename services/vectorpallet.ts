@@ -76,10 +76,10 @@ try{
               }
               if (api.events.system.ExtrinsicSuccess.is(event)) {
                 console.log(
-                  "Transaction successful with hash: ",
-                  event
+                  "Transaction successful with hash:  ",
                 );
-                console.log("successful txn")
+                console.log("successful extrisic hash",  status.asInBlock
+              )
                 //@FIX: can't do 0xstring since this returns a string for some reason
                 resolve(`${status.asInBlock}`);
               }
@@ -159,7 +159,7 @@ export async function executeTransaction(props: executeParams, account: WalletAc
                  }
                });
              }
-           });
+           });     
      });
      return {
        status: "success",
@@ -167,6 +167,7 @@ export async function executeTransaction(props: executeParams, account: WalletAc
        blockhash: result
      };
    } catch (e) {
+    console.log(e, "error in executeTransaction");
      return {
        status: "failed",
        message: "Transaction failed",

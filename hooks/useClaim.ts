@@ -3,10 +3,12 @@ import { encodeAbiParameters } from "viem";
 import { merkleProof } from "@/types/transaction";
 import { bridgeContractAbi } from "@/constants/abi";
 import { config } from "@/app/providers";
-import { getAccountStorageProofs, getMerkleProof } from "@/services/api";
+import { fetchLatestBlockhash, getAccountStorageProofs, getMerkleProof } from "@/services/api";
 import { executeTransaction } from "@/services/vectorpallet";
 import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
 import { useAvailAccount } from "@/stores/availWalletHook";
+import { decodeAddress } from "@polkadot/util-crypto";
+import { u8aToHex } from "@polkadot/util";
 
 export default function useClaim() {
   const { ethHead, latestBlockhash } = useLatestBlockInfo();
@@ -64,13 +66,14 @@ export default function useClaim() {
 
   const initClaimAvailToEth = async ({
     blockhash,
-    index,
+    sourceTransactionIndex,
   }: {
     blockhash: `0x${string}`;
-    index: number;
+    sourceTransactionIndex: number;
   }) => {
     try {
-    const a: merkleProof = await getMerkleProof(blockhash, index);
+      //ask sasa about this index, can we get this from indexer?
+    const a: merkleProof = await getMerkleProof(blockhash, sourceTransactionIndex);
     if (!a) throw new Error("Failed to fetch proofs from api");
 
     const receive = await receiveAvail(a);
@@ -101,13 +104,12 @@ export default function useClaim() {
       latestBlockhash.blockHash,
       executeParams.messageid
     );
-    // const proofs = await getAccountStorageProofs(blockhash, executeParams.messageid)
-    if (!proofs) throw new Error("Failed to fetch proofs from api");
+    
+    if (!proofs) { 
+      throw new Error("Failed to fetch proofs from api") 
+  }
 
-    console.log(proofs, executeParams, "proofs");
-    console.log(latestBlockhash.blockHash);
-
-    await executeTransaction(
+    const execute =  await executeTransaction(
       {
         slot: ethHead.slot,
         addrMessage: {
@@ -118,18 +120,21 @@ export default function useClaim() {
               amount: executeParams.amount,
             },
           },
-          from: executeParams.from,
-          to: executeParams.to,
-          originDomain: executeParams.originDomain,
-          destinationDomain: executeParams.destinationDomain,
+          from: `${executeParams.from.padEnd(66, "0")}`,
+          to: u8aToHex(decodeAddress(executeParams.to)),
+
+          //@rac-sri we need to change this in the indexer
+          originDomain: executeParams.destinationDomain,
+          destinationDomain: executeParams.originDomain,
           id: executeParams.messageid,
         },
-
         accountProof: proofs.accountProof,
         storageProof: proofs.storageProof,
       },
       selected!
     );
+    console.log(execute)
+    return execute;
   };
 
   return { initClaimAvailToEth, initClaimEthtoAvail };

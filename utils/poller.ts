@@ -13,7 +13,7 @@ export async function pollWithDelay<T>(
     delay = 1000,
     condition: PollerCondition<T> = () => true
 ) {
-    const delayInMs = delay * 1000;
+    const delayInMs = delay * 10000;
 
     let result: T | undefined;
     while (condition(result)) {
