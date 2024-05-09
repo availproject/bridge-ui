@@ -25,7 +25,7 @@ export const appConfig: AppConfig = Object.freeze({
         ethereum: sepolia,
     },
     bridgeApiBaseUrl: process.env.NEXT_PUBLIC_BRIDGE_API_URL || 'http://0.0.0.0:8080',
-    bridgeIndexerBaseUrl: process.env.NEXT_PUBLIC_BRIDGE_INDEXER_URL_2 ||'http://167.71.41.169:3000',
+    bridgeIndexerBaseUrl: process.env.NEXT_PUBLIC_BRIDGE_INDEXER_URL ||'http://167.71.41.169:3000',
     bridgeIndexerPollingInterval: 30, // in seconds
     contracts: {
         ethereum: {
