@@ -112,6 +112,7 @@ export default function BridgeSection() {
     form.reset();
   };
 
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       if (fromChain === Chain.ETH) {
@@ -127,7 +128,10 @@ export default function BridgeSection() {
         });
 
         // show success message
-        showSuccessMessage(a);
+        showSuccessMessage({
+          blockhash: a, 
+          chain: Chain.ETH
+        });
         setTransactionInProgress(false);
 
         // reset state
@@ -148,7 +152,10 @@ export default function BridgeSection() {
           showFailedMessage();
           setTransactionInProgress(false);
         } else {
-          showSuccessMessage(init.blockhash);
+          showSuccessMessage({
+            blockhash: init.blockhash,
+            chain: Chain.AVAIL
+          });
           setTransactionInProgress(false);
         }
 

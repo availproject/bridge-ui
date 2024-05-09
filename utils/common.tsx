@@ -6,6 +6,8 @@ import { appConfig } from "@/config/default";
 import ethereumAvailTokenAbi from "@/constants/abis/ethereumAvailToken.json";
 import BigNumber from "bignumber.js";
 import { toast } from "@/components/ui/use-toast";
+import { FaCheckCircle } from "react-icons/fa";
+import { CheckCheckIcon, CheckCircle, CheckCircle2Icon, CheckCircleIcon, CheckIcon, ExternalLink } from "lucide-react";
 const networks = appConfig.networks;
 
 export async function _getBalance(chain: Chain, availAddress?: string, ethAddress?: `0x${string}`) : Promise<number> {
@@ -35,10 +37,22 @@ export async function _getBalance(chain: Chain, availAddress?: string, ethAddres
 }
 
 
-export const showSuccessMessage = (blockhash: `${string}`) => {
+export const showSuccessMessage = ({blockhash, chain}: {
+  blockhash: `${string}`,
+  chain: Chain
+}) => {
   toast({
-    title: "Transaction initiated successfully",
-    description: blockhash,
+    title: (
+      <div className="flex flex-row items-center justify-center !space-x-3 ">
+        <FaCheckCircle className="mr-2"/>
+          <p className="mr-2" >Transaction Initiated Successfully</p>
+          <a target="_blank"  href={
+   chain === Chain.ETH
+   ? `https://sepolia.etherscan.io/tx/${blockhash}`
+   : `https://explorer.avail.so/#/explorer/query/${blockhash}`
+  } ><ExternalLink className="w-4 h-4 text-white text-opacity-75"/></a>
+      </div>
+    ),
   });
 };
 

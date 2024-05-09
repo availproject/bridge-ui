@@ -54,7 +54,7 @@ export default function useTransactions() {
      * but deleting will create circular dependency, hence leave it as it is
      */
     const allTransactions: Transaction[] = [];
-console.log(localTransactions, "local txns this it it")
+
     localTransactions.forEach((localTxn) => {
       const indexedTxn = indexedTransactions.find((indexedTxn) => {
         if (indexedTxn.sourceChain === Chain.ETH) {

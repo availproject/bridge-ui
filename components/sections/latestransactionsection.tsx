@@ -89,7 +89,10 @@ export default function LatestTransactions(props: { pending: boolean }) {
         });
 
         if (successBlockhash) {
-          showSuccessMessage(successBlockhash);
+          showSuccessMessage({
+            blockhash: successBlockhash,
+            chain: Chain.ETH
+          });
           setComplete((prevState) =>
             prevState.map((state, idx) => (idx === index ? true : state))
           );
@@ -105,7 +108,10 @@ export default function LatestTransactions(props: { pending: boolean }) {
           executeParams: executeParams,
         });
         if (successBlockhash.blockhash) {
-          showSuccessMessage(successBlockhash.blockhash);
+          showSuccessMessage({
+            blockhash: successBlockhash.blockhash, 
+            chain: Chain.AVAIL
+          });
           setComplete((prevState) =>
             prevState.map((state, idx) => (idx === index ? true : state))
           );
