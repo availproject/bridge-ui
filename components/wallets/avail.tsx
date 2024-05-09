@@ -45,7 +45,12 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
       selectedWallet.enable("bridge-ui").then(() => {
         selectedWallet.getAccounts().then((accounts) => {
           // Now you can work with the enabledAccounts
-          const enabledAccounts = accounts;
+          console.log(accounts, "accounts")
+          const enabledAccounts = accounts.filter(account =>{
+            //@ts-ignore WalletAccount object dosen't have the types right
+            return account.type! !== "ethereum"
+          });
+          console.log(enabledAccounts, "enabled accounts")
           const selected = enabledAccounts.find(
             (account) => account.address == cookie.substrateAddress
           );
@@ -68,8 +73,11 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
 
   async function updateEnabledAccounts(wallet: Wallet): Promise<undefined> {
     const accounts = await wallet.getAccounts();
-    setEnabledAccounts(accounts);
-
+    const substrateAccounts = accounts.filter(account =>{
+      //@ts-ignore WalletAccount object dosen't have the types right
+      return account.type! !== "ethereum"
+    });
+    setEnabledAccounts(substrateAccounts);
     return;
   }
 
