@@ -25,12 +25,10 @@ export default async function RootLayout({
      
       <body className={inter.className}>
 
-        <Providers>
-        
+        <Providers>  
           <NavBar/>
             {children}
-            
-          <Toaster />
+           <Toaster />
           <FooterSection title={"Accelerating the unification of web3"} description={"Mainnet is coming soon!"}/>
           <Footer />
           </Providers>

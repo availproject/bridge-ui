@@ -37,18 +37,16 @@ import { toast } from "@/components/ui/use-toast";
 import { parseError } from "@/utils/parseError";
 import BigNumber from "bignumber.js";
 import { badgeVariants } from "../ui/badge";
-import {
-  CheckCircle2,
-  Loader2,
-} from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import useTransactions from "@/hooks/useTransactions";
+
 const formSchema = z.object({
   fromAmount: z.preprocess(
     //@ts-ignore - preprocess is not in the types
     (a) => parseFloat(z.number().parse(a)),
     z.number({
       invalid_type_error: "Amount should be a number",
-    })
+    }),
   ),
   toAddress: z.string(),
 });
@@ -59,7 +57,7 @@ export default function BridgeSection() {
   const { selected } = useAvailAccount();
   const [ethBalance, setEthBalance] = useState<GLfloat | undefined>(undefined);
   const [availBalance, setAvailBalance] = useState<number | undefined>(
-    undefined
+    undefined,
   );
   const [transactionInProgress, setTransactionInProgress] =
     useState<boolean>(false);
@@ -71,8 +69,9 @@ export default function BridgeSection() {
   useEffect(() => {
     setPendingTransactionsNumber(
       pendingTransactions.filter(
-        (transaction) => transaction.status === TransactionStatus.READY_TO_CLAIM
-      ).length
+        (transaction) =>
+          transaction.status === TransactionStatus.READY_TO_CLAIM,
+      ).length,
     );
   }, [pendingTransactions]);
 
@@ -90,7 +89,7 @@ export default function BridgeSection() {
         const result: number = await _getBalance(
           Chain.ETH,
           undefined,
-          account.address
+          account.address,
         );
         setEthBalance(result);
       } else {
@@ -99,7 +98,7 @@ export default function BridgeSection() {
       if (selected?.address) {
         const result: number = await _getBalance(
           Chain.AVAIL,
-          selected?.address
+          selected?.address,
         );
         setAvailBalance(result);
       } else {
@@ -108,10 +107,25 @@ export default function BridgeSection() {
     })();
   }, [account.address, selected?.address]);
 
-  const resetState = () => {
+  const resetState = async () => {
     form.reset();
+    if (account.address) {
+      const result: number = await _getBalance(
+        Chain.ETH,
+        undefined,
+        account.address,
+      );
+      setEthBalance(result);
+    } else {
+      setEthBalance(undefined);
+    }
+    if (selected?.address) {
+      const result: number = await _getBalance(Chain.AVAIL, selected?.address);
+      setAvailBalance(result);
+    } else {
+      setAvailBalance(undefined);
+    }
   };
-
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -129,8 +143,8 @@ export default function BridgeSection() {
 
         // show success message
         showSuccessMessage({
-          blockhash: a, 
-          chain: Chain.ETH
+          blockhash: a,
+          chain: Chain.ETH,
         });
         setTransactionInProgress(false);
 
@@ -154,7 +168,7 @@ export default function BridgeSection() {
         } else {
           showSuccessMessage({
             blockhash: init.blockhash,
-            chain: Chain.AVAIL
+            chain: Chain.AVAIL,
           });
           setTransactionInProgress(false);
         }
@@ -163,7 +177,7 @@ export default function BridgeSection() {
       }
     } catch (error) {
       console.error(error);
-      
+
       setTransactionInProgress(false);
       toast({
         title: parseError(error),
@@ -244,7 +258,10 @@ export default function BridgeSection() {
                       <span className="font-ppmori flex flex-row items-center space-x-2">
                         <p className="text-opacity-80 text-white ">From</p>
                         <div className={badgeVariants({ variant: "avail" })}>
-                          <img src={`/images/${fromChain}small.png`} alt="logo"></img>
+                          <img
+                            src={`/images/${fromChain}small.png`}
+                            alt="logo"
+                          ></img>
                           <p className="!text-left">{fromChain}</p>
                         </div>
                       </span>
@@ -313,12 +330,12 @@ export default function BridgeSection() {
                           <Balance />
                           <div className="flex flex-row items-center justify-center ">
                             <div
-                            
                               onClick={() => {
                                 const value =
                                   fromChain === Chain.ETH
                                     ? ethBalance
-                                    : availBalance && parseInt(availBalance.toString());
+                                    : availBalance &&
+                                      parseInt(availBalance.toString());
                                 value && form.setValue("fromAmount", value);
                               }}
                               className="font-thicccboisemibold text-[#3FB5F8] text-sm cursor-pointer"
@@ -346,7 +363,10 @@ export default function BridgeSection() {
                       <span className="font-ppmori flex flex-row items-center space-x-2">
                         <p>To</p>
                         <div className={badgeVariants({ variant: "avail" })}>
-                          <img src={`/images/${toChain}small.png`} alt="logo"></img>
+                          <img
+                            src={`/images/${toChain}small.png`}
+                            alt="logo"
+                          ></img>
                           <p className="!text-left">{toChain}</p>
                         </div>
                       </span>
@@ -371,10 +391,14 @@ export default function BridgeSection() {
                     <div className="flex flex-row items-center justify-between">
                       <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70"></div>
                       <div className="flex flex-row items-center justify-center ">
-                        <div onClick={async ()=>{
-                          const address = await navigator.clipboard.readText();
-                          form.setValue("toAddress",address )
-                        }} className="font-thicccboisemibold text-[#3FB5F8] text-sm">
+                        <div
+                          onClick={async () => {
+                            const address =
+                              await navigator.clipboard.readText();
+                            form.setValue("toAddress", address);
+                          }}
+                          className="font-thicccboisemibold text-[#3FB5F8] text-sm"
+                        >
                           + Paste Address
                         </div>
                       </div>

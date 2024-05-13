@@ -32,10 +32,10 @@ export default function LatestTransactions(props: { pending: boolean }) {
   const { fetchTransactions } = useTransactions();
   const { initClaimAvailToEth, initClaimEthtoAvail } = useClaim();
   const [complete, setComplete] = useState<boolean[]>(
-    Array(pendingTransactions.length).fill(false)
+    Array(pendingTransactions.length).fill(false),
   );
   const [inProcess, setInProcess] = useState<boolean[]>(
-    Array(pendingTransactions.length).fill(false)
+    Array(pendingTransactions.length).fill(false),
   );
 
   const appInit = async () => {
@@ -48,7 +48,7 @@ export default function LatestTransactions(props: { pending: boolean }) {
         },
       ],
       appConfig.bridgeIndexerPollingInterval,
-      () => true
+      () => true,
     );
   };
 
@@ -74,10 +74,10 @@ export default function LatestTransactions(props: { pending: boolean }) {
       to: `${string}`;
       originDomain: number;
       destinationDomain: number;
-    }
+    },
   ) => {
     setInProcess((prevState) =>
-      prevState.map((state, idx) => (idx === index ? true : state))
+      prevState.map((state, idx) => (idx === index ? true : state)),
     );
 
     try {
@@ -91,10 +91,10 @@ export default function LatestTransactions(props: { pending: boolean }) {
         if (successBlockhash) {
           showSuccessMessage({
             blockhash: successBlockhash,
-            chain: Chain.ETH
+            chain: Chain.ETH,
           });
           setComplete((prevState) =>
-            prevState.map((state, idx) => (idx === index ? true : state))
+            prevState.map((state, idx) => (idx === index ? true : state)),
           );
           console.log("Claimed AVAIL");
           console.log(complete, "complete index", index);
@@ -109,11 +109,11 @@ export default function LatestTransactions(props: { pending: boolean }) {
         });
         if (successBlockhash.blockhash) {
           showSuccessMessage({
-            blockhash: successBlockhash.blockhash, 
-            chain: Chain.AVAIL
+            blockhash: successBlockhash.blockhash,
+            chain: Chain.AVAIL,
           });
           setComplete((prevState) =>
-            prevState.map((state, idx) => (idx === index ? true : state))
+            prevState.map((state, idx) => (idx === index ? true : state)),
           );
           console.log("Claimed AVAIL on AVAIL");
           console.log(complete, "complete index", index);
@@ -122,7 +122,7 @@ export default function LatestTransactions(props: { pending: boolean }) {
         }
 
         setComplete((prevState) =>
-          prevState.map((state, idx) => (idx === index ? true : state))
+          prevState.map((state, idx) => (idx === index ? true : state)),
         );
         console.log("Claimed AVAIL on ETH");
       } else {
@@ -133,7 +133,7 @@ export default function LatestTransactions(props: { pending: boolean }) {
       showFailedMessage();
     } finally {
       setInProcess((prevState) =>
-        prevState.map((state, idx) => (idx === index ? false : state))
+        prevState.map((state, idx) => (idx === index ? false : state)),
       );
     }
   };
@@ -142,7 +142,7 @@ export default function LatestTransactions(props: { pending: boolean }) {
     if (complete[index]) {
       return (
         <div className="flex flex-row items-center justify-center">
-          <CheckCircle/>
+          <CheckCircle />
         </div>
       );
     }
@@ -167,7 +167,7 @@ export default function LatestTransactions(props: { pending: boolean }) {
                 to: txn.receiverAddress,
                 originDomain: 1,
                 destinationDomain: 2,
-              }
+              },
             )
           }
         >
@@ -198,7 +198,7 @@ export default function LatestTransactions(props: { pending: boolean }) {
                       </p>
                       <p>
                         {parseDateTimeToMonthShort(
-                          txn.sourceTransactionTimestamp
+                          txn.sourceTransactionTimestamp,
                         )}
                       </p>
                     </p>
@@ -225,7 +225,7 @@ export default function LatestTransactions(props: { pending: boolean }) {
                         href={
                           txn.sourceChain === Chain.ETH
                             ? `https://sepolia.etherscan.io/tx/${txn.sourceTransactionHash}`
-                            : `https://explorer.avail.so/#/explorer/query/${txn.sourceBlockHash}`
+                            : `https://avail-turing.subscan.io/extrinsic/${txn.sourceBlockHash}-${txn.sourceTransactionIndex}}`
                         }
                       >
                         <ExternalLink className="w-3 h-3" />
@@ -311,7 +311,7 @@ export default function LatestTransactions(props: { pending: boolean }) {
                     </p>
                     <p>
                       {parseDateTimeToMonthShort(
-                        txn.sourceTransactionTimestamp
+                        txn.sourceTransactionTimestamp,
                       )}
                     </p>
                   </p>
