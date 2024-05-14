@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { getTransactionsFromIndexer } from "@/services/transactions";
 import { useTransactionsStore } from "@/stores/transactionsStore";
-import { Chain } from "@/types/common";
+import { Chain, TransactionStatus } from "@/types/common";
 import { Transaction } from "@/types/transaction";
 import { useEffect, useMemo } from "react";
 
@@ -18,13 +18,12 @@ export default function useTransactions() {
 
   useEffect(() => {
     (async () => {
-      const _localtxns = (await JSON.parse( 
-        localStorage.getItem("localTransactions") || "[]" )) as Transaction[];
-        console.log(_localtxns, "local txns from local storage")
-        localTransactions.push(..._localtxns);      
+      const _localtxns = (await JSON.parse(
+        localStorage.getItem("localTransactions") || "[]",
+      )) as Transaction[];
+      localTransactions.push(..._localtxns);
     })();
   }, []);
-
 
   // Fetch transactions from indexer
   const fetchTransactions = async ({
@@ -40,7 +39,7 @@ export default function useTransactions() {
     const indexedTransactions = await getTransactionsFromIndexer(
       userAddress,
       sourceChain,
-      destinationChain
+      destinationChain,
     );
     setIndexedTransactions(indexedTransactions);
   };
@@ -54,29 +53,57 @@ export default function useTransactions() {
      * but deleting will create circular dependency, hence leave it as it is
      */
     const allTransactions: Transaction[] = [];
-
+    //IMPORTANT TODO: this logic would break if one there's more than one txn in the same block in case of avail, since we're comparing with sourceBlockhash which will be the case, so change it.
     localTransactions.forEach((localTxn) => {
-      const indexedTxn = indexedTransactions.find((indexedTxn) => {
-        if (indexedTxn.sourceChain === Chain.ETH) {
-          return (
-            indexedTxn.sourceTransactionHash.toLowerCase() ===
-            localTxn.sourceTransactionHash.toLowerCase()
-          );
-        } else if (indexedTxn?.sourceChain === Chain.AVAIL) {
-          return (
-            indexedTxn.sourceBlockHash.toLowerCase() ===
-            localTxn.sourceBlockHash.toLowerCase()
-          );
+      if (localTxn.status === TransactionStatus.CLAIM_PENDING) {
+        const pendingTxn = indexedTransactions.find((indexedTxn) => {
+          if (indexedTxn.status === TransactionStatus.READY_TO_CLAIM) {
+            return (
+              indexedTxn.sourceTransactionHash.toLowerCase() ===
+              localTxn.sourceTransactionHash.toLowerCase()
+            );
+          }
+          return false;
+        });
+        const isUniqueTxn = !allTransactions.some(
+          (txn) =>
+            txn.sourceTransactionHash.toLowerCase() ===
+            localTxn.sourceTransactionHash.toLowerCase(),
+        );
+
+        if (pendingTxn && isUniqueTxn) {
+          indexedTransactions.find((txn) => {
+            if (
+              txn.sourceTransactionHash.toLowerCase() ===
+              localTxn.sourceTransactionHash.toLowerCase()
+            ) {
+              txn.status = TransactionStatus.CLAIM_PENDING;
+              return txn;
+            }
+          });
         }
-      });
-      const isUniqueTxn = !allTransactions.some((txn) => 
-        txn.sourceTransactionHash.toLowerCase() === localTxn.sourceTransactionHash.toLowerCase()
-    );
-      if (!indexedTxn && isUniqueTxn) { 
-        allTransactions.push(localTxn);
       } else {
-        // 
-        // localStorage.removeItem("localTransactions");
+        const indexedTxn = indexedTransactions.find((indexedTxn) => {
+          if (indexedTxn.sourceChain === Chain.ETH) {
+            return (
+              indexedTxn.sourceTransactionHash.toLowerCase() ===
+              localTxn.sourceTransactionHash.toLowerCase()
+            );
+          } else if (indexedTxn?.sourceChain === Chain.AVAIL) {
+            return (
+              indexedTxn.sourceBlockHash.toLowerCase() ===
+              localTxn.sourceBlockHash.toLowerCase()
+            );
+          }
+        });
+        const isUniqueTxn = !allTransactions.some(
+          (txn) =>
+            txn.sourceTransactionHash.toLowerCase() ===
+            localTxn.sourceTransactionHash.toLowerCase(),
+        );
+        if (!indexedTxn && isUniqueTxn) {
+          allTransactions.push(localTxn);
+        }
       }
     });
 
@@ -100,16 +127,15 @@ export default function useTransactions() {
       JSON.stringify([
         ...JSON.parse(localStorage.getItem("localTransactions") || "[]"),
         transaction,
-      ])
+      ]),
     );
-    console.log(localStorage.getItem("localTransactions"), "add specific txn to local storage ");
   };
 
   return {
     allTransactions,
     pendingTransactions,
     completedTransactions,
-    fetchTransactions,  
+    fetchTransactions,
     addToLocalTransaction,
   };
 }

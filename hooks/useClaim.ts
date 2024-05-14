@@ -3,16 +3,23 @@ import { encodeAbiParameters } from "viem";
 import { merkleProof } from "@/types/transaction";
 import { bridgeContractAbi } from "@/constants/abi";
 import { config } from "@/app/providers";
-import { fetchLatestBlockhash, getAccountStorageProofs, getMerkleProof } from "@/services/api";
+import {
+  fetchLatestBlockhash,
+  getAccountStorageProofs,
+  getMerkleProof,
+} from "@/services/api";
 import { executeTransaction } from "@/services/vectorpallet";
 import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { decodeAddress } from "@polkadot/util-crypto";
 import { u8aToHex } from "@polkadot/util";
+import { Chain, TransactionStatus } from "@/types/common";
+import useTransactions from "./useTransactions";
 
 export default function useClaim() {
   const { ethHead, latestBlockhash } = useLatestBlockInfo();
   const { selected } = useAvailAccount();
+  const { addToLocalTransaction } = useTransactions();
 
   async function receiveAvail(merkleProof: merkleProof) {
     try {
@@ -42,7 +49,7 @@ export default function useClaim() {
               [
                 merkleProof.message.message.fungibleToken.asset_id,
                 merkleProof.message.message.fungibleToken.amount,
-              ]
+              ],
             ),
             merkleProof.message.id,
           ],
@@ -66,30 +73,65 @@ export default function useClaim() {
 
   const initClaimAvailToEth = async ({
     blockhash,
+    sourceTransactionHash,
     sourceTransactionIndex,
+    sourceTransactionTimestamp,
+    atomicAmount,
   }: {
     blockhash: `0x${string}`;
+    sourceTransactionHash: `0x${string}`;
     sourceTransactionIndex: number;
+    sourceTransactionTimestamp: string;
+    atomicAmount: string;
   }) => {
     try {
-      //ask sasa about this index, can we get this from indexer?
-    const a: merkleProof = await getMerkleProof(blockhash, sourceTransactionIndex);
-    if (!a) throw new Error("Failed to fetch proofs from api");
+      const a: merkleProof = await getMerkleProof(
+        blockhash,
+        sourceTransactionIndex,
+      );
+      if (!a) throw new Error("Failed to fetch proofs from api");
 
-    const receive = await receiveAvail(a);
-    return receive;
-    
+      const receive = await receiveAvail(a);
+      if (receive) {
+        console.log(
+          "source txn hash of the txn to be added locally",
+          sourceTransactionHash,
+        );
+        addToLocalTransaction({
+          sourceChain: Chain.AVAIL,
+          destinationChain: Chain.ETH,
+          sourceTransactionHash: sourceTransactionHash,
+          destinationTransactionHash: receive,
+          amount: atomicAmount,
+          status: TransactionStatus.CLAIM_PENDING,
+          messageId: 0,
+          dataType: "ERC20",
+          depositorAddress: "",
+          receiverAddress: "",
+          sourceBlockHash: "0x",
+          sourceTransactionBlockNumber: 0,
+          sourceTransactionIndex: 0,
+          sourceTransactionTimestamp: sourceTransactionTimestamp,
+        });
+      }
+      console.log("added txn to local storage");
+      return receive;
     } catch (e) {
       throw new Error("Error while claiming AVAIL");
     }
-   
   };
 
   const initClaimEthtoAvail = async ({
     blockhash,
     executeParams,
+    sourceTransactionHash,
+    sourceTransactionTimestamp,
+    atomicAmount,
   }: {
     blockhash: `0x${string}`;
+    sourceTransactionHash: `0x${string}`;
+    sourceTransactionTimestamp: string;
+    atomicAmount: string;
     executeParams: {
       messageid: number;
       amount: number;
@@ -102,14 +144,14 @@ export default function useClaim() {
     if (!selected) throw new Error("Connect a Avail account");
     const proofs = await getAccountStorageProofs(
       latestBlockhash.blockHash,
-      executeParams.messageid
+      executeParams.messageid,
     );
-    
-    if (!proofs) { 
-      throw new Error("Failed to fetch proofs from api") 
-  }
 
-    const execute =  await executeTransaction(
+    if (!proofs) {
+      throw new Error("Failed to fetch proofs from api");
+    }
+
+    const execute = await executeTransaction(
       {
         slot: ethHead.slot,
         addrMessage: {
@@ -131,9 +173,25 @@ export default function useClaim() {
         accountProof: proofs.accountProof,
         storageProof: proofs.storageProof,
       },
-      selected!
+      selected!,
     );
-    console.log(execute)
+    console.log(execute);
+    addToLocalTransaction({
+      sourceChain: Chain.ETH,
+      destinationChain: Chain.AVAIL,
+      sourceTransactionHash: sourceTransactionHash,
+      destinationTransactionHash: execute.blockhash,
+      amount: atomicAmount,
+      status: TransactionStatus.CLAIM_PENDING,
+      messageId: 0,
+      dataType: "ERC20",
+      depositorAddress: "",
+      receiverAddress: "",
+      sourceBlockHash: "0x",
+      sourceTransactionBlockNumber: 0,
+      sourceTransactionIndex: 0,
+      sourceTransactionTimestamp: sourceTransactionTimestamp,
+    });
     return execute;
   };
 

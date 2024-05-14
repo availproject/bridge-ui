@@ -66,6 +66,9 @@ export default function LatestTransactions(props: { pending: boolean }) {
     chainFrom: Chain,
     blockhash: `0x${string}`,
     index: number,
+    sourceTransactionHash: `0x${string}`,
+    sourceTransactionTimestamp: string,
+    atomicAmount: string,
     sourceTransactionIndex?: number,
     executeParams?: {
       messageid: number;
@@ -81,11 +84,19 @@ export default function LatestTransactions(props: { pending: boolean }) {
     );
 
     try {
-      if (chainFrom === Chain.AVAIL && blockhash && sourceTransactionIndex) {
+      if (
+        chainFrom === Chain.AVAIL &&
+        blockhash &&
+        sourceTransactionIndex &&
+        sourceTransactionHash
+      ) {
         console.log("Initiate ReceiveAvail()");
         const successBlockhash = await initClaimAvailToEth({
           blockhash: blockhash,
           sourceTransactionIndex: sourceTransactionIndex,
+          sourceTransactionHash: sourceTransactionHash,
+          sourceTransactionTimestamp: sourceTransactionTimestamp,
+          atomicAmount: atomicAmount,
         });
 
         if (successBlockhash) {
@@ -105,6 +116,9 @@ export default function LatestTransactions(props: { pending: boolean }) {
         console.log("Initiate Vector.Execute");
         const successBlockhash = await initClaimEthtoAvail({
           blockhash: blockhash,
+          sourceTransactionHash: sourceTransactionHash,
+          sourceTransactionTimestamp: sourceTransactionTimestamp,
+          atomicAmount: atomicAmount,
           executeParams: executeParams,
         });
         if (successBlockhash.blockhash) {
@@ -139,13 +153,6 @@ export default function LatestTransactions(props: { pending: boolean }) {
   };
 
   function SubmitClaim({ txn, index }: { txn: Transaction; index: number }) {
-    if (complete[index]) {
-      return (
-        <div className="flex flex-row items-center justify-center">
-          <CheckCircle />
-        </div>
-      );
-    }
     return (
       <>
         <LoadingButton
@@ -159,6 +166,9 @@ export default function LatestTransactions(props: { pending: boolean }) {
               //@ts-ignore to be fixed later
               txn.sourceBlockHash,
               index,
+              txn.sourceTransactionHash,
+              txn.sourceTransactionTimestamp,
+              txn.amount,
               txn.sourceTransactionIndex,
               {
                 messageid: txn.messageId,
@@ -191,8 +201,8 @@ export default function LatestTransactions(props: { pending: boolean }) {
             .map((txn, index) => (
               <TableRow key={index}>
                 <TableCell className="font-medium w-full flex flex-row space-x-2">
-                  <p className="flex flex-col">
-                    <p className="text-white text-opacity-60 flex flex-col items-center justify-center">
+                  <span className="flex flex-col">
+                    <span className="text-white text-opacity-60 flex flex-col items-center justify-center">
                       <p className="text-white text-md">
                         {parseDateTimeToDay(txn.sourceTransactionTimestamp)}
                       </p>
@@ -201,18 +211,18 @@ export default function LatestTransactions(props: { pending: boolean }) {
                           txn.sourceTransactionTimestamp,
                         )}
                       </p>
-                    </p>
-                  </p>
-                  <p className="flex flex-col space-y-1 ">
-                    <p className="flex flex-row w-full">
+                    </span>
+                  </span>
+                  <span className="flex flex-col space-y-1 ">
+                    <span className="flex flex-row w-full">
                       <ChainLabel chain={txn.sourceChain} />
                       <p className="px-1">
                         <MoveRight />
                       </p>{" "}
                       <ChainLabel chain={txn.destinationChain} />
-                    </p>
+                    </span>
 
-                    <p className="flex flex-row space-x-2">
+                    <span className="flex flex-row space-x-2">
                       <p className="text-white text-opacity-60 text-xs ml-2">
                         {
                           //@ts-ignore look at this once @ankitboghra
@@ -225,45 +235,19 @@ export default function LatestTransactions(props: { pending: boolean }) {
                         href={
                           txn.sourceChain === Chain.ETH
                             ? `https://sepolia.etherscan.io/tx/${txn.sourceTransactionHash}`
-                            : `https://avail-turing.subscan.io/extrinsic/${txn.sourceBlockHash}-${txn.sourceTransactionIndex}}`
+                            : `https://avail-turing.subscan.io/extrinsic/${txn.sourceTransactionBlockNumber}-${txn.sourceTransactionIndex}`
                         }
                       >
                         <ExternalLink className="w-3 h-3" />
                       </a>
-                    </p>
-                  </p>
+                    </span>
+                  </span>
 
                   <br />
                 </TableCell>
                 <TableCell className="text-right items-end">
                   {txn.status === "READY_TO_CLAIM" ? (
                     <>
-                      {/* <LoadingButton
-                      key={index}
-                      variant="primary"
-                      loading={inProcess[index]}
-                      className="!px-4 !py-0"
-                      onClick={() =>
-                        onSubmit(
-                          txn.sourceChain,
-                          //@ts-ignore to be fixed later
-                          txn.sourceBlockHash,
-                          index,
-                          1,
-                          {
-                            messageid: txn.messageId,
-                            amount: txn.amount,
-                            from: txn.depositorAddress,
-                            to: txn.receiverAddress,
-                            originDomain: 1,
-                            destinationDomain: 2,
-                          }
-                        )
-                      }
-                    >
-                      {txn.status === "READY_TO_CLAIM" ? "CLAIM" : txn.status}
-                    </LoadingButton> */}
-
                       <SubmitClaim txn={txn} index={index} />
                     </>
                   ) : (
@@ -304,8 +288,8 @@ export default function LatestTransactions(props: { pending: boolean }) {
           {completedTransactions.map((txn, index) => (
             <TableRow key={index}>
               <TableCell className="font-medium w-full flex flex-row space-x-2">
-                <p className="flex flex-col">
-                  <p className="text-white text-opacity-60 flex flex-col items-center justify-center">
+                <span className="flex flex-col">
+                  <span className="text-white text-opacity-60 flex flex-col items-center justify-center">
                     <p className="text-white text-md">
                       {parseDateTimeToDay(txn.sourceTransactionTimestamp)}
                     </p>
@@ -314,23 +298,23 @@ export default function LatestTransactions(props: { pending: boolean }) {
                         txn.sourceTransactionTimestamp,
                       )}
                     </p>
-                  </p>
+                  </span>
                   {/* <p className="text-white text-opacity-60">{` ${new Date(
                         txn.sourceTransactionTimestamp
                       ).getHours()}${new Date(
                         txn.sourceTransactionTimestamp
                       ).getMinutes()}`}</p> */}
-                </p>
-                <p className="flex flex-col space-y-1 ">
-                  <p className="flex flex-row w-full">
+                </span>
+                <span className="flex flex-col space-y-1 ">
+                  <span className="flex flex-row w-full">
                     <ChainLabel chain={txn.sourceChain} />
                     <p className="px-1">
                       <MoveRight />
                     </p>{" "}
                     <ChainLabel chain={txn.destinationChain} />
-                  </p>
+                  </span>
 
-                  <p className="flex flex-row space-x-2">
+                  <span className="flex flex-row space-x-2">
                     <p className="text-white text-opacity-60 text-xs ml-2">
                       {
                         //@ts-ignore look at this once @ankitboghra
@@ -338,8 +322,8 @@ export default function LatestTransactions(props: { pending: boolean }) {
                       }{" "}
                       AVAIL
                     </p>
-                  </p>
-                </p>
+                  </span>
+                </span>
                 <br />
               </TableCell>
               <TableCell className="text-right  items-end">

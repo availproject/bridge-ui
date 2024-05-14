@@ -293,7 +293,7 @@ export default function BridgeSection() {
                             defaultValue="avail"
                             className=" flex flex-row items-center justify-center"
                           >
-                            <TabsList className={`!bg-[#33384B] !border-0  `}>
+                            <TabsList className={`!bg-[#33384B] !border-0`}>
                               <TabsTrigger
                                 value="eth"
                                 onClick={() => {
@@ -320,7 +320,7 @@ export default function BridgeSection() {
                                   alt="eth"
                                   width={20}
                                   height={20}
-                                ></Image>{" "}
+                                ></Image>
                               </TabsTrigger>
                             </TabsList>
                           </Tabs>
