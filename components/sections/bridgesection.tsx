@@ -40,6 +40,7 @@ import BigNumber from "bignumber.js";
 import { badgeVariants } from "../ui/badge";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import useTransactions from "@/hooks/useTransactions";
+import { parseAmount } from "@/utils/parseAmount";
 
 const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -56,9 +57,10 @@ export default function BridgeSection() {
   const account = useAccount();
   const { fromChain, setFromChain, toChain, setToChain } = useCommonStore();
   const { selected } = useAvailAccount();
-  const [ethBalance, setEthBalance] = useState<GLfloat | undefined>(undefined);
-  const [availBalance, setAvailBalance] = useState<number | undefined>(
-    undefined
+  // todo: @abheek show loader on null, NA on undefined, balance on string
+  const [ethBalance, setEthBalance] = useState<string | undefined | null>(null);
+  const [availBalance, setAvailBalance] = useState<string | undefined | null>(
+    null,
   );
   const [transactionInProgress, setTransactionInProgress] =
     useState<boolean>(false);
@@ -85,7 +87,7 @@ export default function BridgeSection() {
   useEffect(() => {
     (async () => {
       if (account.address) {
-        const result: number = await _getBalance(
+        const result = await _getBalance(
           Chain.ETH,
           undefined,
           account.address
@@ -95,7 +97,7 @@ export default function BridgeSection() {
         setEthBalance(undefined);
       }
       if (selected?.address) {
-        const result: number = await _getBalance(
+        const result = await _getBalance(
           Chain.AVAIL,
           selected?.address
         );
@@ -118,7 +120,7 @@ export default function BridgeSection() {
   const resetState = async () => {
     form.reset();
     if (account.address) {
-      const result: number = await _getBalance(
+      const result = await _getBalance(
         Chain.ETH,
         undefined,
         account.address
@@ -128,7 +130,7 @@ export default function BridgeSection() {
       setEthBalance(undefined);
     }
     if (selected?.address) {
-      const result: number = await _getBalance(Chain.AVAIL, selected?.address);
+      const result = await _getBalance(Chain.AVAIL, selected?.address);
       setAvailBalance(result);
     } else {
       setAvailBalance(undefined);
@@ -202,8 +204,8 @@ export default function BridgeSection() {
               Balance{" "}
               <span className="text-white font-bold mx-1 flex flex-row">
                 {account.address ? (
-                  ethBalance !== undefined ? (
-                    ethBalance.toFixed(2)
+                  ethBalance ? (
+                    parseFloat(parseAmount(ethBalance, 18)).toFixed(2)
                   ) : (
                     <RiLoopLeftFill
                       className={`h-4 w-4 animate-spin font-bold`}
@@ -220,8 +222,8 @@ export default function BridgeSection() {
               Balance{" "}
               <span className="text-white font-bold mx-1 flex flex-row">
                 {selected ? (
-                  availBalance !== undefined ? (
-                    availBalance.toFixed(2)
+                  availBalance ? (
+                    parseFloat(parseAmount(availBalance, 18)).toFixed(2)
                   ) : (
                     <RiLoopLeftFill
                       className={`h-4 w-4 animate-spin font-bold`}
@@ -401,27 +403,26 @@ export default function BridgeSection() {
                                 </Tabs>
                               </div>
 
-                              <div className="flex flex-row items-center justify-between">
-                                <Balance />
-                                <div className="flex flex-row items-center justify-center ">
-                                  <div
-                                    onClick={() => {
-                                      const value =
-                                        fromChain === Chain.ETH
-                                          ? ethBalance
-                                          : availBalance &&
-                                            parseInt(availBalance.toString());
-                                      value &&
-                                        form.setValue("fromAmount", value);
-                                    }}
-                                    className="font-thicccboisemibold text-[#3FB5F8] text-sm cursor-pointer"
-                                  >
-                                    MAX
-                                  </div>
-                                </div>
-                              </div>
-                            </>
-                          </FormControl>
+                        <div className="flex flex-row items-center justify-between">
+                          <Balance />
+                          <div className="flex flex-row items-center justify-center ">
+                            <div
+                              onClick={() => {
+                                const value =
+                                  fromChain === Chain.ETH
+                                    ? ethBalance
+                                    : availBalance &&
+                                    parseInt(availBalance.toString());
+                                value && form.setValue("fromAmount", value);
+                              }}
+                              className="font-thicccboisemibold text-[#3FB5F8] text-sm cursor-pointer"
+                            >
+                              MAX
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    </FormControl>
 
                           <FormMessage />
                         </FormItem>
