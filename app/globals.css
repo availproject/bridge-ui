@@ -29,6 +29,12 @@ input[type=number]::-webkit-outer-spin-button {
     }
   }
 
+  ::-webkit-scrollbar-track {
+    background: none;
+  }
+  html {
+    scrollbar-color: #666 transparent;
+  }
 
 
 @font-face {
