@@ -17,7 +17,7 @@ type AppConfig = {
             availToken: string,
             bridge: string,
         }
-    }
+    },
 }
 
 export const appConfig: AppConfig = Object.freeze({
