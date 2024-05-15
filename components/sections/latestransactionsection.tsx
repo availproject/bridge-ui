@@ -12,6 +12,9 @@ import {
   parseDateTimeToDay,
 } from "@/utils/parseDateTime";
 import {
+  ArrowLeft,
+  ArrowLeftSquare,
+  ArrowRight,
   ArrowUpRight,
   CheckCircle,
   ExternalLink,
@@ -25,9 +28,21 @@ import { useAvailAccount } from "@/stores/availWalletHook";
 import { pollWithDelay } from "@/utils/poller";
 import { appConfig } from "@/config/default";
 import { Transaction } from "@/types/transaction";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 export default function LatestTransactions(props: { pending: boolean }) {
   const { pendingTransactions, completedTransactions } = useTransactions();
+  const [paginatedTransactionArray, setPaginatedTransactionArray] = useState<Transaction[][]>([]);
+  const [paginatedCompletedTransactionArray, setPaginatedCompletedTransactionArray] = useState<Transaction[][]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(0);
   const { selected } = useAvailAccount();
   const { fetchTransactions } = useTransactions();
   const { initClaimAvailToEth, initClaimEthtoAvail } = useClaim();
@@ -51,6 +66,28 @@ export default function LatestTransactions(props: { pending: boolean }) {
       () => true,
     );
   };
+
+  useEffect(() => {
+    if (pendingTransactions && pendingTransactions.length > 0) {
+      const chunkSize = 4;
+      const chunks = [];
+      for (let i = 0; i < pendingTransactions.length; i += chunkSize) {
+        chunks.push(pendingTransactions.slice(i, i + chunkSize));
+      }
+      setPaginatedTransactionArray(chunks);
+    }
+  },[pendingTransactions])
+
+  useEffect(() => {
+    if (completedTransactions && completedTransactions.length > 0) {
+      const chunkSize = 4;
+      const chunks = [];
+      for (let i = 0; i < completedTransactions.length; i += chunkSize) {
+        chunks.push(completedTransactions.slice(i, i + chunkSize));
+      }
+      setPaginatedCompletedTransactionArray(chunks);
+    }
+  },[completedTransactions])
 
   useEffect(() => {
     appInit();
@@ -181,18 +218,22 @@ export default function LatestTransactions(props: { pending: boolean }) {
             )
           }
         >
-          {txn.status === "READY_TO_CLAIM" ? "CLAIM" : txn.status}
+          {txn.status === "READY_TO_CLAIM" ? "Claim" : txn.status}
         </LoadingButton>
       </>
     );
   }
 
-  function PendingTransactions() {
+  function PendingTransactions({
+    pendingTransactions,
+  }: {
+    pendingTransactions: Transaction[];
+  }) {
     return (
       <>
         <TableBody>
           {pendingTransactions
-            .sort((a, b) => {
+            ?.sort((a, b) => {
               return (
                 new Date(b.sourceTransactionTimestamp).getTime() -
                 new Date(a.sourceTransactionTimestamp).getTime()
@@ -252,7 +293,7 @@ export default function LatestTransactions(props: { pending: boolean }) {
                     </>
                   ) : (
                     <>
-                      <Badge className=" flex flex-row items-center justify-center space-x-2">
+                      <Badge className="flex-row items-center justify-center space-x-2">
                         <p>{txn.status}</p>
                         <span className="relative flex h-2 w-2">
                           <span
@@ -277,15 +318,20 @@ export default function LatestTransactions(props: { pending: boolean }) {
               </TableRow>
             ))}
         </TableBody>
+       
       </>
     );
   }
 
-  function CompletedTransactions() {
+  function CompletedTransactions({
+    completedTransactions,
+  }: {
+    completedTransactions: Transaction[];
+  }) {
     return (
       <>
         <TableBody>
-          {completedTransactions.map((txn, index) => (
+          {completedTransactions?.map((txn, index) => (
             <TableRow key={index}>
               <TableCell className="font-medium w-full flex flex-row space-x-2">
                 <span className="flex flex-col">
@@ -349,14 +395,14 @@ export default function LatestTransactions(props: { pending: boolean }) {
   function NoTransactions() {
     return (
       <>
-        <div className="flex flex-col items-center justify-center !h-[35vh] space-y-4">
+        <div className="flex pt-[30%] md:pt-[25%] lg:pt-[20%] xl:pt-[15%] flex-col items-center justify-center space-y-4">
           <img
             src="/images/notransactions.svg"
             alt="no transactions"
             className="text-opacity-80"
           ></img>
-          <h2 className="font-ppmoribsemibold text-center w-[70%] mx-auto text-white text-opacity-90">
-            You don&apos;t have any transactions with the connected accounts
+          <h2 className="font-ppmoribsemibold text-center w-[70%] md:text-lg mx-auto text-white text-opacity-90">
+            You don&apos;t have any transactions<br/> with the connected accounts
           </h2>
         </div>
       </>
@@ -365,21 +411,53 @@ export default function LatestTransactions(props: { pending: boolean }) {
 
   return (
     <div className="flex flex-col">
-      <div className="rounded-xl overflow-scroll-y max-h-[35vh]">
+      <div className="relative rounded-xl overflow-scroll-y ">
         <Table>
           {props.pending ? (
             pendingTransactions.length > 0 ? (
-              <PendingTransactions />
+<>
+              <PendingTransactions pendingTransactions={paginatedTransactionArray[currentPage]}  />
+              <Pagination className="absolute bottom-0 right-0">
+                <PaginationContent>
+                  <button
+                    disabled={currentPage === 0}
+                    onClick={() => setCurrentPage((prev) => prev - 1)}
+                    className={`rounded-lg bg-[#484C5D] ${currentPage === 0 ? 'cursor-not-allowed bg-opacity-30 text-opacity-40  text-white ' :" text-white"} p-2`}
+                  ><ArrowLeft/></button>
+                  <button
+                    disabled={currentPage === paginatedTransactionArray.length - 1}
+                    onClick={() => setCurrentPage((prev) => prev + 1)}
+                    className={`rounded-lg bg-[#484C5D] ${currentPage === paginatedTransactionArray.length - 1 ? 'cursor-not-allowed bg-opacity-30 text-opacity-40  text-white ' :" text-white"} p-2`}
+                  ><ArrowRight/></button>
+                </PaginationContent>
+              </Pagination>
+              </>
             ) : (
               <NoTransactions />
             )
           ) : completedTransactions.length > 0 ? (
-            <CompletedTransactions />
+            <>
+            <CompletedTransactions completedTransactions={paginatedCompletedTransactionArray[currentPage]} />
+            <Pagination className="absolute bottom-0 right-0">
+                <PaginationContent>
+                  <button
+                    disabled={currentPage === 0}
+                    onClick={() => setCurrentPage((prev) => prev - 1)}
+                    className={`rounded-lg bg-[#484C5D] ${currentPage === 0 ? 'cursor-not-allowed bg-opacity-30 text-opacity-40  text-white ' :" text-white"} p-2`}
+                  ><ArrowLeft/></button>
+                  <button
+                    disabled={currentPage === paginatedCompletedTransactionArray.length - 1}
+                    onClick={() => setCurrentPage((prev) => prev + 1)}
+                    className={`rounded-lg bg-[#484C5D] ${currentPage === paginatedCompletedTransactionArray.length - 1 ? 'cursor-not-allowed bg-opacity-30 text-opacity-40  text-white ' :" text-white"} p-2`}
+                  ><ArrowRight/></button>
+                </PaginationContent>
+              </Pagination></>
           ) : (
             <NoTransactions />
           )}
         </Table>
       </div>
+    
     </div>
   );
 }

@@ -38,7 +38,7 @@ import { toast } from "@/components/ui/use-toast";
 import { parseError } from "@/utils/parseError";
 import BigNumber from "bignumber.js";
 import { badgeVariants } from "../ui/badge";
-import { ArrowDownCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import useTransactions from "@/hooks/useTransactions";
 
 const formSchema = z.object({
@@ -105,6 +105,15 @@ export default function BridgeSection() {
       }
     })();
   }, [account.address, selected?.address]);
+
+  useEffect(() => {
+    document
+      .getElementById("transactions")
+      ?.setAttribute(
+        "style",
+        `height:${document.getElementById("bridge")?.clientHeight}px`
+      );
+  }, []);
 
   const resetState = async () => {
     form.reset();
@@ -230,10 +239,13 @@ export default function BridgeSection() {
     );
   }
 
-
   return (
-    <div className="text-white w-full m-4 min-w-[55vw] max-w-[55vw] xl:w-[]  ">
-      <Tabs defaultValue="bridge" className="section_bg p-2">
+    <div className="text-white w-full m-4">
+      <Tabs
+        defaultValue="bridge"
+        id="container"
+        className="section_bg p-2 w-[90vw] sm:w-[70vw] lg:w-[55vw] xl:w-[45vw] "
+      >
         <TabsList className="flex flex-row items-start justify-start bg-transparent !border-0 p-2 mb-6 mx-2 mt-1">
           <TabsTrigger
             value="bridge"
@@ -246,18 +258,24 @@ export default function BridgeSection() {
               <span className="relative flex flex-row items-center justify-center">
                 <TabsTrigger
                   value="transactions"
-                  className="font-ppmorib text-lg data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 data-[state=active]:border-b !rounded-none"
+                  className="relative font-ppmori text-lg data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 data-[state=active]:border-b !rounded-none"
                 >
-                  Transactions
+                  <p>Transactions</p>
+                  {pendingTransactionsNumber > 0 && (
+                    <span className="absolute top-1 right-1 flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                    </span>
+                  )}
                 </TabsTrigger>
-                <div className={badgeVariants({ variant: "avail" })}>
+                {window.screen.width > 768 &&  <div className={badgeVariants({ variant: "avail" })}>
                   {pendingTransactionsNumber > 0 ? (
                     <>
                       <Loader2 className={`h-4 w-4 animate-spin`} />
 
                       <p className="!text-left">
                         {" "}
-                        {pendingTransactionsNumber} Claims Pending
+                        {pendingTransactionsNumber} Pending  <span className="mx-2">|</span> {pendingTransactionsNumber} Ready to Claim
                       </p>
                     </>
                   ) : (
@@ -267,233 +285,261 @@ export default function BridgeSection() {
                       <p className="!text-left"> No Pending Claims</p>
                     </>
                   )}
-                </div>
+                </div>}
               </span>
             </h1>
           </div>
         </TabsList>
-        <TabsContent value="bridge">
-          <div
-            id="bridge"
-            className="p-4"
-          >
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4 w-full"
-              >
-                {/* FROM FIELD*/}
-                <FormField
-                  control={form.control}
-                  name="fromAmount"
-                  render={({ field }) => (
+        {window.screen.width < 768 &&  <div className={badgeVariants({ variant: "avail" })}>
+                  {pendingTransactionsNumber > 0 ? (
                     <>
-                      <FormItem>
-                        <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end  ">
-                          <span className="font-ppmori flex flex-row items-center space-x-2">
-                            <p className="text-opacity-80 text-white ">From</p>
-                            <div
-                              className={badgeVariants({ variant: "avail" })}
-                            >
-                              <img
-                                src={`/images/${fromChain}small.png`}
-                                alt="logo"
-                              ></img>
-                              <p className="!text-left">{fromChain}</p>
-                            </div>
-                          </span>
+                      <Loader2 className={`h-4 w-4 animate-spin`} />
 
-                          <div className="flex flex-row items-center justify-center ">
-                            {fromChain === Chain.ETH ? <Eth /> : <Avail />}
-                          </div>
-                        </FormLabel>
-                        <FormControl>
-                          <>
-                            <div className="card_background !rounded-xl p-2 flex flex-row items-center justify-between">
-                              <input
-                                className="!bg-inherit"
-                                style={{
-                                  border: "none",
-                                  background: "none",
-                                  padding: 0,
-                                  margin: 0,
-                                  outline: "none",
-                                }}
-                                defaultValue={""}
-                                type="number"
-                                placeholder="0.0"
-                                {...field}
-                                onChange={(event) =>
-                                  field.onChange(+event.target.value)
-                                }
-                              />
-                              <Tabs
-                                defaultValue="avail"
-                                className=" flex flex-row items-center justify-center"
+                      <p className="!text-left">
+                        {" "}
+                        {pendingTransactionsNumber} Pending | {pendingTransactionsNumber} Ready to Claim
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className={`h-4 w-4`} />
+
+                      <p className="!text-left"> No Pending Claims</p>
+                    </>
+                  )}
+                </div>}
+          <TabsContent id="bridge" value="bridge" className="flex-1 ">
+            <div className="lg:p-4 p-2">
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4 w-full"
+                >
+                  {/* FROM FIELD*/}
+                  <FormField
+                    control={form.control}
+                    name="fromAmount"
+                    render={({ field }) => (
+                      <>
+                        <FormItem>
+                          <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end  ">
+                            <span className="font-ppmori flex flex-row items-center space-x-2">
+                              <p className="text-opacity-80 text-white ">
+                                From
+                              </p>
+                              <div
+                                className={badgeVariants({ variant: "avail" })}
                               >
-                                <TabsList className={`!bg-[#33384B] !border-0`}>
-                                  <TabsTrigger
-                                    value="eth"
-                                    onClick={() => {
-                                      setFromChain(Chain.ETH);
-                                      setToChain(Chain.AVAIL);
-                                    }}
-                                  >
-                                    <Image
-                                      src="/images/eth.png"
-                                      alt="eth"
-                                      width={20}
-                                      height={20}
-                                    ></Image>
-                                  </TabsTrigger>
-                                  <TabsTrigger
-                                    value="avail"
-                                    onClick={() => {
-                                      setFromChain(Chain.AVAIL);
-                                      setToChain(Chain.ETH);
-                                    }}
-                                  >
-                                    <Image
-                                      src="/images/logo.png"
-                                      alt="eth"
-                                      width={20}
-                                      height={20}
-                                    ></Image>
-                                  </TabsTrigger>
-                                </TabsList>
-                              </Tabs>
-                            </div>
+                                <img
+                                  src={`/images/${fromChain}small.png`}
+                                  alt="logo"
+                                ></img>
+                                <p className="!text-left">{fromChain}</p>
+                              </div>
+                            </span>
 
-                            <div className="flex flex-row items-center justify-between">
-                              <Balance />
-                              <div className="flex flex-row items-center justify-center ">
-                                <div
-                                  onClick={() => {
-                                    const value =
-                                      fromChain === Chain.ETH
-                                        ? ethBalance
-                                        : availBalance &&
-                                          parseInt(availBalance.toString());
-                                    value && form.setValue("fromAmount", value);
+                            <div className="flex flex-row items-center justify-center ">
+                              {fromChain === Chain.ETH ? <Eth /> : <Avail />}
+                            </div>
+                          </FormLabel>
+                          <FormControl>
+                            <>
+                              <div className="card_background !rounded-xl p-2 flex flex-row items-center justify-between">
+                                <input
+                                  className="!bg-inherit"
+                                  style={{
+                                    border: "none",
+                                    background: "none",
+                                    padding: 0,
+                                    margin: 0,
+                                    outline: "none",
                                   }}
-                                  className="font-thicccboisemibold text-[#3FB5F8] text-sm cursor-pointer"
+                                  defaultValue={""}
+                                  type="number"
+                                  placeholder="0.0 AVAIL"
+                                  {...field}
+                                  onChange={(event) =>
+                                    field.onChange(+event.target.value)
+                                  }
+                                />
+                                <Tabs
+                                  defaultValue="avail"
+                                  className=" flex flex-row items-center justify-center"
                                 >
-                                  MAX
+                                  <TabsList
+                                    className={`!bg-[#33384B] !border-0`}
+                                  >
+                                    <TabsTrigger
+                                      value="eth"
+                                      onClick={() => {
+                                        setFromChain(Chain.ETH);
+                                        setToChain(Chain.AVAIL);
+                                      }}
+                                    >
+                                      <Image
+                                        src="/images/eth.png"
+                                        alt="eth"
+                                        width={20}
+                                        height={20}
+                                      ></Image>
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                      value="avail"
+                                      onClick={() => {
+                                        setFromChain(Chain.AVAIL);
+                                        setToChain(Chain.ETH);
+                                      }}
+                                    >
+                                      <Image
+                                        src="/images/logo.png"
+                                        alt="eth"
+                                        width={20}
+                                        height={20}
+                                      ></Image>
+                                    </TabsTrigger>
+                                  </TabsList>
+                                </Tabs>
+                              </div>
+
+                              <div className="flex flex-row items-center justify-between">
+                                <Balance />
+                                <div className="flex flex-row items-center justify-center ">
+                                  <div
+                                    onClick={() => {
+                                      const value =
+                                        fromChain === Chain.ETH
+                                          ? ethBalance
+                                          : availBalance &&
+                                            parseInt(availBalance.toString());
+                                      value &&
+                                        form.setValue("fromAmount", value);
+                                    }}
+                                    className="font-thicccboisemibold text-[#3FB5F8] text-sm cursor-pointer"
+                                  >
+                                    MAX
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </>
-                        </FormControl>
+                            </>
+                          </FormControl>
 
-                        <FormMessage />
-                      </FormItem>
-                    </>
-                  )}
-                />
-                <div>
-                  <HiOutlineSwitchVertical onClick={()=>{
-                    setFromChain(toChain)
-                    setToChain(fromChain)
-                  }} className="h-6 w-6 mx-auto cursor-pointer " />
-                </div>
-                {/* TO FIELD*/}
-                <FormField
-                  control={form.control}
-                  name="toAddress"
-                  render={({ field }) => (
-                    <>
-                      <FormItem>
-                        <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end  ">
-                          <span className="font-ppmori flex flex-row items-center space-x-2">
-                          <p className="text-opacity-80 text-white ">To</p>
-                            <div
-                              className={badgeVariants({ variant: "avail" })}
-                            >
-                              <img
-                                src={`/images/${toChain}small.png`}
-                                alt="logo"
-                              ></img>
-                              <p className="!text-left">{toChain}</p>
-                            </div>
-                          </span>
-                          {/* this will be opposite here since it's the To feild*/}
-                          {fromChain === Chain.ETH ? <Avail /> : <Eth />}
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            disabled={true}
-                            min={0}
-                            placeholder={
-                              fromChain === Chain.ETH
-                                ? selected?.address
-                                : account?.address
-                            }
-                            {...field}
-                            onChange={(event) =>
-                              field.onChange(+event.target.value)
-                            }
-                          />
-                        </FormControl>
-                        <div className="flex flex-row items-center justify-between">
-                          <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70"></div>
-                          <div className="flex flex-row items-center justify-center ">
-                            <div
-                              onClick={async () => {
-                                const address =
-                                  await navigator.clipboard.readText();
-                                form.setValue("toAddress", address);
-                              }}
-                              className="font-thicccboisemibold text-[#3FB5F8] text-sm"
-                            >
-                              + Paste Address
+                          <FormMessage />
+                        </FormItem>
+                      </>
+                    )}
+                  />
+                  <div>
+                    <HiOutlineSwitchVertical
+                      onClick={() => {
+                        setFromChain(toChain);
+                        setToChain(fromChain);
+                      }}
+                      className="h-6 w-6 mx-auto cursor-pointer "
+                    />
+                  </div>
+                  {/* TO FIELD*/}
+                  <FormField
+                    control={form.control}
+                    name="toAddress"
+                    render={({ field }) => (
+                      <>
+                        <FormItem>
+                          <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end  ">
+                            <span className="font-ppmori flex flex-row items-center space-x-2">
+                              <p className="text-opacity-80 text-white ">To</p>
+                              <div
+                                className={badgeVariants({ variant: "avail" })}
+                              >
+                                <img
+                                  src={`/images/${toChain}small.png`}
+                                  alt="logo"
+                                ></img>
+                                <p className="!text-left">{toChain}</p>
+                              </div>
+                            </span>
+                            {/* this will be opposite here since it's the To feild*/}
+                            {fromChain === Chain.ETH ? <Avail /> : <Eth />}
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              disabled={true}
+                              min={0}
+                              placeholder={
+                                fromChain === Chain.ETH
+                                  ? selected?.address
+                                  : account?.address
+                              }
+                              {...field}
+                              onChange={(event) =>
+                                field.onChange(+event.target.value)
+                              }
+                            />
+                          </FormControl>
+                          <div className="flex flex-row items-center justify-between">
+                            <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70"></div>
+                            <div className="flex flex-row items-center justify-center ">
+                              <div
+                                onClick={async () => {
+                                  const address =
+                                    await navigator.clipboard.readText();
+                                  form.setValue("toAddress", address);
+                                }}
+                                className="font-thicccboisemibold text-[#3FB5F8] text-sm"
+                              >
+                                + Paste Address
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    </>
-                  )}
-                />
-                <Button
-                  variant={"primary"}
-                  type="submit"
-                  className="!rounded-xl w-full !text-md !py-7 font-ppmoribsemibold"
-                  disabled={transactionInProgress}
+                          <FormMessage />
+                        </FormItem>
+                      </>
+                    )}
+                  />
+                  <Button
+                    variant={"primary"}
+                    type="submit"
+                    className="!rounded-xl w-full !text-md !py-7 font-ppmoribsemibold"
+                    disabled={transactionInProgress}
+                  >
+                    {transactionInProgress
+                      ? "Transaction in progress"
+                      : "Initiate Transaction"}
+                  </Button>
+                </form>
+              </Form>
+            </div>
+          </TabsContent>
+          <TabsContent
+            id="transactions"
+            value="transactions"
+            className="text-white flex-1  overflow-scroll"
+          >
+            <Tabs defaultValue="pending" className="w-[95%] mx-auto mt-2 ">
+              <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-4">
+                <TabsTrigger value="pending" className="">
+                  Pending
+                </TabsTrigger>
+                <TabsTrigger
+                  value="history"
+                  className="flex flex-row items-center justify-center space-x-1"
                 >
-                  {transactionInProgress
-                    ? "Transaction in progress"
-                    : "Initiate Transaction"}
-                </Button>
-              </form>
-            </Form>
-          </div>
-        </TabsContent>
-        <TabsContent value="transactions" className="text-white">
-          <Tabs defaultValue="pending" className="w-[95%] mx-auto">
-            <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-4">
-              <TabsTrigger value="pending" className="">
-                Pending
-              </TabsTrigger>
-              <TabsTrigger
-                value="history"
-                className="flex flex-row items-center justify-center space-x-1"
-              >
-                <p>History</p>
-                <FaHistory />
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="pending">
-              <div className="overflow-y-scroll">
-                <LatestTransactions pending={true} />
-              </div>
-            </TabsContent>
-            <TabsContent value="history">
-              <div className="overflow-y-scroll">
-                <LatestTransactions pending={false} />
-              </div>
-            </TabsContent>
-          </Tabs>
-        </TabsContent>
+                  <p>History</p>
+                  <FaHistory />
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="pending">
+                <div className="overflow-y-scroll">
+                  <LatestTransactions pending={true} />
+                </div>
+              </TabsContent>
+              <TabsContent value="history">
+                <div className="overflow-y-scroll">
+                  <LatestTransactions pending={false} />
+                </div>
+              </TabsContent>
+            </Tabs>
+          </TabsContent>
+      
       </Tabs>
     </div>
   );

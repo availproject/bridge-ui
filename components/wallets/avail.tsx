@@ -100,6 +100,7 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
             onClick={() => {
               removeCookie("substrateAddress");
               removeCookie("substrateWallet");
+              localStorage.removeItem("localTransactions")
               setSelected(null);
             }}
           >
