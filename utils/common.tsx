@@ -33,9 +33,9 @@ export async function _getBalance(chain: Chain, availAddress?: string, ethAddres
     if (!balance) return undefined;
     
     console.log(balance)
-    return balance;
+    return balance as string;
   } else {
-    return 0;
+    return 0 as unknown as string;
   }
 }
 

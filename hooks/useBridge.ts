@@ -216,7 +216,6 @@ export default function useBridge() {
     if (selected === undefined || selected === null) {
       throw new Error("No account selected");
     }
-
     const availBalance = await _getBalance(Chain.AVAIL, selected?.address);
     // if (!availBalance) {
     // note: product decision here was to allow the user

@@ -142,7 +142,7 @@ export default function BridgeSection() {
       if (fromChain === Chain.ETH) {
         const fromAmountAtomic = new BigNumber(values.fromAmount)
           .multipliedBy(new BigNumber(10).pow(18))
-          .toString();
+          .toString(10);
         const destinationAddress = selected?.address || values.toAddress;
 
         setTransactionInProgress(true);
@@ -163,7 +163,9 @@ export default function BridgeSection() {
       } else if (fromChain === Chain.AVAIL) {
         const fromAmountAtomic = new BigNumber(values.fromAmount)
           .multipliedBy(new BigNumber(10).pow(18))
-          .toString();
+          .toString(10);
+
+          console.log(fromAmountAtomic, values.fromAmount, "fromAmountAtomic")
 
         const destinationAddress = account?.address || values.toAddress;
         setTransactionInProgress(true);
@@ -411,9 +413,9 @@ export default function BridgeSection() {
                                 const value =
                                   fromChain === Chain.ETH
                                     ? ethBalance
-                                    : availBalance &&
-                                    parseInt(availBalance.toString());
-                                value && form.setValue("fromAmount", value);
+                                    : availBalance && parseAmount(availBalance, 18)
+                                    //TODO: we need to cut a percentage for gas here, need to ask @vthunder
+                                value && form.setValue("fromAmount", value as unknown as number);
                               }}
                               className="font-thicccboisemibold text-[#3FB5F8] text-sm cursor-pointer"
                             >
