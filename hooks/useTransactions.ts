@@ -32,10 +32,6 @@ export default function useTransactions() {
     })();
   }, [selected?.address]);
 
-  useEffect(() => {
-    updateLocalStorageTransactions(localTransactions)
-  }, [localTransactions])
-
   // Fetch transactions from indexer
   const fetchTransactions = async ({
     userAddress,
