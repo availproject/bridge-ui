@@ -358,12 +358,11 @@ export default function BridgeSection() {
                                     margin: 0,
                                     outline: "none",
                                   }}
-                                  defaultValue={""}
                                   type="number"
                                   placeholder="0.0 AVAIL"
                                   {...field}
                                   onChange={(event) =>
-                                    field.onChange(+event.target.value)
+                                    field.onChange(parseFloat(event.target.value))
                                   }
                                 />
                                 <Tabs

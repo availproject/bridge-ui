@@ -7,7 +7,7 @@ import ethereumAvailTokenAbi from "@/constants/abis/ethereumAvailToken.json";
 import BigNumber from "bignumber.js";
 import { toast } from "@/components/ui/use-toast";
 import { FaCheckCircle } from "react-icons/fa";
-import { CheckCheckIcon, CheckCircle, CheckCircle2Icon, CheckCircleIcon, CheckIcon, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 const networks = appConfig.networks;
 
 export async function _getBalance(chain: Chain, availAddress?: string, ethAddress?: `0x${string}`) : Promise<string | undefined> {
