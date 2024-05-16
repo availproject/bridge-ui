@@ -25,6 +25,7 @@ import {
 import { sendMessage } from "@/services/vectorpallet";
 import { _getBalance } from "@/utils/common";
 import { Logger } from "@/utils/logger";
+import { ONE_POWER_EIGHTEEN } from "@/constants/bigNumber";
 
 export default function useBridge() {
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
@@ -215,10 +216,15 @@ export default function useBridge() {
     if (selected === undefined || selected === null) {
       throw new Error("No account selected");
     }
-
     const availBalance = await _getBalance(Chain.AVAIL, selected?.address);
+    // if (!availBalance) {
+    // note: product decision here was to allow the user
+    // to go ahead with tx when we are unable to fetch the balance
+    // }
+
     if (
-      new BigNumber(atomicAmount).gt(new BigNumber(availBalance * 10 ** 18))
+      availBalance &&
+      new BigNumber(atomicAmount).gt(new BigNumber(availBalance).times(ONE_POWER_EIGHTEEN))
     ) {
       throw new Error("insufficient balance");
     }
@@ -229,7 +235,7 @@ export default function useBridge() {
           FungibleToken: {
             assetId:
               "0x0000000000000000000000000000000000000000000000000000000000000000",
-            amount: BigInt(atomicAmount),
+            amount: atomicAmount as unknown as BigInt,
           },
         },
         to: `${destinationAddress.padEnd(66, "0")}`,
