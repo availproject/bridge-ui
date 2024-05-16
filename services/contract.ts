@@ -18,7 +18,7 @@ import { ethers } from "ethers";
 import {
   merkleProof,
 } from "@/types/transaction";
-import { Chain, ethBalance } from "@/types/common";
+import { Chain } from "@/types/common";
 import { bridgeContractAbi } from "@/constants/abi";
 import { config } from "@/app/providers";
 

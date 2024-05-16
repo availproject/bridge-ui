@@ -1,7 +1,7 @@
 import { initialize } from "avail-js-sdk";
 import { substrateConfig, ethConfig } from "@/config/walletConfig";
 import { getBalance, readContract } from "@wagmi/core";
-import { Chain, ethBalance } from "@/types/common";
+import { Chain } from "@/types/common";
 import { appConfig } from "@/config/default";
 import ethereumAvailTokenAbi from "@/constants/abis/ethereumAvailToken.json";
 import BigNumber from "bignumber.js";

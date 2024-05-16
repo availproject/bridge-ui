@@ -218,13 +218,13 @@ export default function useBridge() {
     }
 
     const availBalance = await _getBalance(Chain.AVAIL, selected?.address);
-    if (!availBalance) {
-      // note: product decision here was to allow the user
-      // to go ahead with tx when we are unable to fetch the balance
-      return true;
-    }
+    // if (!availBalance) {
+    // note: product decision here was to allow the user
+    // to go ahead with tx when we are unable to fetch the balance
+    // }
 
     if (
+      availBalance &&
       new BigNumber(atomicAmount).gt(new BigNumber(availBalance).times(ONE_POWER_EIGHTEEN))
     ) {
       throw new Error("insufficient balance");
