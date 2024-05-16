@@ -4,6 +4,7 @@ import { useTransactionsStore } from "@/stores/transactionsStore";
 import { Chain, TransactionStatus } from "@/types/common";
 import { Transaction } from "@/types/transaction";
 import { useEffect, useMemo } from "react";
+import { useAvailAccount } from "@/stores/availWalletHook";
 
 /**
  * @description All the functionalities related to substrate wallet such as connecting, switching network, etc
@@ -16,14 +17,24 @@ export default function useTransactions() {
     addLocalTransaction,
   } = useTransactionsStore();
 
+  const { selected } = useAvailAccount()
+
   useEffect(() => {
+    if (!selected?.address) {
+      return
+    }
+
     (async () => {
       const _localtxns = (await JSON.parse(
-        localStorage.getItem("localTransactions") || "[]",
+        localStorage.getItem(`localTransactions:${selected?.address}`) || "[]",
       )) as Transaction[];
       localTransactions.push(..._localtxns);
     })();
-  }, []);
+  }, [selected?.address]);
+
+  useEffect(() => {
+    updateLocalStorageTransactions(localTransactions)
+  }, [localTransactions])
 
   // Fetch transactions from indexer
   const fetchTransactions = async ({
@@ -121,15 +132,25 @@ export default function useTransactions() {
   }, [allTransactions]);
 
   const addToLocalTransaction = (transaction: Transaction) => {
-    addLocalTransaction(transaction);
+    addLocalTransaction(transaction); // store
+
     localStorage.setItem(
-      "localTransactions",
+      `localTransactions:${selected?.address}`,
       JSON.stringify([
-        ...JSON.parse(localStorage.getItem("localTransactions") || "[]"),
+        ...localTransactions,
         transaction,
       ]),
     );
   };
+
+  const deleteLocalTransaction = (transaction: Transaction) => {
+    deleteLocalTransaction(transaction)
+    updateLocalStorageTransactions(localTransactions);
+  }
+
+  const updateLocalStorageTransactions = (transactions: Transaction[]) => {
+    localStorage.setItem(`localTransactions:${selected?.address}`, JSON.stringify(transactions));
+  }
 
   return {
     allTransactions,
