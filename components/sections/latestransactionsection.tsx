@@ -38,6 +38,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 
+
 export default function LatestTransactions(props: { pending: boolean }) {
   const { pendingTransactions, completedTransactions } = useTransactions();
   const [paginatedTransactionArray, setPaginatedTransactionArray] = useState<Transaction[][]>([]);

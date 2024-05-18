@@ -29,8 +29,8 @@ export async function _getBalance(chain: Chain, availAddress?: string, ethAddres
       args: [ethAddress],
       chainId: networks.ethereum.id,
     });
-
-    if (!balance) return undefined;
+  
+    if (balance === undefined) return undefined;
     
     console.log(balance)
     return balance as string;

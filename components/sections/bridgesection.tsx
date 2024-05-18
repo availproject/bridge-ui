@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { RiLoopLeftFill } from "react-icons/ri";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
 import { Button } from "../ui/button";
@@ -41,6 +41,8 @@ import { badgeVariants } from "../ui/badge";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import useTransactions from "@/hooks/useTransactions";
 import { parseAmount } from "@/utils/parseAmount";
+import { LoadingButton } from "../ui/loadingbutton";
+import useTransactionButtonState from "@/hooks/useTransactionButtonState";
 
 const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -55,19 +57,35 @@ const formSchema = z.object({
 
 export default function BridgeSection() {
   const account = useAccount();
-  const { fromChain, setFromChain, toChain, setToChain } = useCommonStore();
+  const { fromChain, setFromChain, toChain, setToChain, setFromAmount, setToAddress } = useCommonStore();
   const { selected } = useAvailAccount();
-  // todo: @abheek show loader on null, NA on undefined, balance on string
-  const [ethBalance, setEthBalance] = useState<string | undefined | null>(null);
-  const [availBalance, setAvailBalance] = useState<string | undefined | null>(
-    null,
-  );
-  const [transactionInProgress, setTransactionInProgress] =
-    useState<boolean>(false);
   const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
   const { pendingTransactionsNumber, setPendingTransactionsNumber } =
     useCommonStore();
   const { pendingTransactions } = useTransactions();
+  const [ethBalance, setEthBalance] = useState<string | undefined | null>(null);
+  const [availBalance, setAvailBalance] = useState<string | undefined | null>(
+    null
+  );
+
+  const [transactionInProgress, setTransactionInProgress] =
+    useState<boolean>(false);
+ 
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      toAddress: "",
+    },
+  });
+
+
+  const { buttonStatus, isDisabled } = useTransactionButtonState(
+    ethBalance,
+    availBalance,
+    transactionInProgress
+  );
+  
+  /////  USE EFFECT HOOKS
 
   useEffect(() => {
     setPendingTransactionsNumber(
@@ -77,30 +95,16 @@ export default function BridgeSection() {
     );
   }, [pendingTransactions]);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      toAddress: "",
-    },
-  });
-
   useEffect(() => {
     (async () => {
       if (account.address) {
-        const result = await _getBalance(
-          Chain.ETH,
-          undefined,
-          account.address
-        );
+        const result = await _getBalance(Chain.ETH, undefined, account.address);
         setEthBalance(result);
       } else {
         setEthBalance(undefined);
       }
       if (selected?.address) {
-        const result = await _getBalance(
-          Chain.AVAIL,
-          selected?.address
-        );
+        const result = await _getBalance(Chain.AVAIL, selected?.address);
         setAvailBalance(result);
       } else {
         setAvailBalance(undefined);
@@ -117,14 +121,12 @@ export default function BridgeSection() {
       );
   }, []);
 
+  ///// FUNCTIONS
+
   const resetState = async () => {
-    form.reset();
+    // form.reset();
     if (account.address) {
-      const result = await _getBalance(
-        Chain.ETH,
-        undefined,
-        account.address
-      );
+      const result = await _getBalance(Chain.ETH, undefined, account.address);
       setEthBalance(result);
     } else {
       setEthBalance(undefined);
@@ -165,8 +167,6 @@ export default function BridgeSection() {
           .multipliedBy(new BigNumber(10).pow(18))
           .toString(10);
 
-          console.log(fromAmountAtomic, values.fromAmount, "fromAmountAtomic")
-
         const destinationAddress = account?.address || values.toAddress;
         setTransactionInProgress(true);
         const init = await initAvailToEthBridging({
@@ -206,7 +206,7 @@ export default function BridgeSection() {
               Balance{" "}
               <span className="text-white font-bold mx-1 flex flex-row">
                 {account.address ? (
-                  ethBalance ? (
+                  ethBalance !== undefined && ethBalance !== null ? (
                     parseFloat(parseAmount(ethBalance, 18)).toFixed(2)
                   ) : (
                     <RiLoopLeftFill
@@ -272,276 +272,284 @@ export default function BridgeSection() {
                     </span>
                   )}
                 </TabsTrigger>
-                {window.screen.width > 768 &&  <div className={badgeVariants({ variant: "avail" })}>
-                  {pendingTransactionsNumber > 0 ? (
-                    <>
-                      <Loader2 className={`h-4 w-4 animate-spin`} />
+                {window.screen.width > 768 && (
+                  <div className={badgeVariants({ variant: "avail" })}>
+                    {pendingTransactionsNumber > 0 ? (
+                      <>
+                        <Loader2 className={`h-4 w-4 animate-spin`} />
 
-                      <p className="!text-left">
-                        {" "}
-                        {pendingTransactionsNumber} Pending  <span className="mx-2">|</span> {pendingTransactionsNumber} Ready to Claim
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className={`h-4 w-4`} />
+                        <p className="!text-left">
+                          {" "}
+                          {pendingTransactionsNumber} Pending{" "}
+                          <span className="mx-2">|</span>{" "}
+                          {pendingTransactionsNumber} Ready to Claim
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className={`h-4 w-4`} />
 
-                      <p className="!text-left"> No Pending Claims</p>
-                    </>
-                  )}
-                </div>}
+                        <p className="!text-left"> No Pending Claims</p>
+                      </>
+                    )}
+                  </div>
+                )}
               </span>
             </h1>
           </div>
         </TabsList>
-        {window.screen.width < 768 &&  <div className={badgeVariants({ variant: "avail" })}>
-                  {pendingTransactionsNumber > 0 ? (
-                    <>
-                      <Loader2 className={`h-4 w-4 animate-spin`} />
+        {window.screen.width < 768 && (
+          <div className={badgeVariants({ variant: "avail" })}>
+            {pendingTransactionsNumber > 0 ? (
+              <>
+                <Loader2 className={`h-4 w-4 animate-spin`} />
 
-                      <p className="!text-left">
-                        {" "}
-                        {pendingTransactionsNumber} Pending | {pendingTransactionsNumber} Ready to Claim
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className={`h-4 w-4`} />
+                <p className="!text-left">
+                  {" "}
+                  {pendingTransactionsNumber} Pending |{" "}
+                  {pendingTransactionsNumber} Ready to Claim
+                </p>
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className={`h-4 w-4`} />
 
-                      <p className="!text-left"> No Pending Claims</p>
+                <p className="!text-left"> No Pending Claims</p>
+              </>
+            )}
+          </div>
+        )}
+        <TabsContent id="bridge" value="bridge" className="flex-1 ">
+          <div className="lg:p-4 p-2">
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4 w-full"
+              >
+                {/* FROM FIELD*/}
+                <FormField
+                  control={form.control}
+                  name="fromAmount"
+                  render={({ field }) => (
+                    <>
+                      <FormItem>
+                        <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end  ">
+                          <span className="font-ppmori flex flex-row items-center space-x-2">
+                            <p className="text-opacity-80 text-white ">From</p>
+                            <div
+                              className={badgeVariants({ variant: "avail" })}
+                            >
+                              <img
+                                src={`/images/${fromChain}small.png`}
+                                alt="logo"
+                              ></img>
+                              <p className="!text-left">{fromChain}</p>
+                            </div>
+                          </span>
+
+                          <div className="flex flex-row items-center justify-center ">
+                            {fromChain === Chain.ETH ? <Eth /> : <Avail />}
+                          </div>
+                        </FormLabel>
+                        <FormControl>
+                          <>
+                            <div className="card_background !rounded-xl p-2 flex flex-row items-center justify-between">
+                              <input
+                                className="!bg-inherit"
+                                style={{
+                                  border: "none",
+                                  background: "none",
+                                  padding: 0,
+                                  margin: 0,
+                                  outline: "none",
+                                }}
+                                type="number"
+                                placeholder="0.0 AVAIL"
+                                {...field}
+                                onChange={(event) => {
+                                  field.onChange(parseFloat(event.target.value))
+                                  setFromAmount(parseFloat(event.target.value)) }
+                                }
+                              />
+                              <Tabs
+                                defaultValue="avail"
+                                className=" flex flex-row items-center justify-center"
+                              >
+                                <TabsList className={`!bg-[#33384B] !border-0`}>
+                                  <TabsTrigger
+                                    value="eth"
+                                    onClick={() => {
+                                      setFromChain(Chain.ETH);
+                                      setToChain(Chain.AVAIL);
+                                    }}
+                                  >
+                                    <Image
+                                      src="/images/eth.png"
+                                      alt="eth"
+                                      width={20}
+                                      height={20}
+                                    ></Image>
+                                  </TabsTrigger>
+                                  <TabsTrigger
+                                    value="avail"
+                                    onClick={() => {
+                                      setFromChain(Chain.AVAIL);
+                                      setToChain(Chain.ETH);
+                                    }}
+                                  >
+                                    <Image
+                                      src="/images/logo.png"
+                                      alt="eth"
+                                      width={20}
+                                      height={20}
+                                    ></Image>
+                                  </TabsTrigger>
+                                </TabsList>
+                              </Tabs>
+                            </div>
+
+                            <div className="flex flex-row items-center justify-between">
+                              <Balance />
+                              <div className="flex flex-row items-center justify-center ">
+                                <div
+                                  onClick={() => {
+                                    const value =
+                                      fromChain === Chain.ETH
+                                        ? ethBalance
+                                        : availBalance &&
+                                          parseAmount(availBalance, 18);
+                                    //TODO: we need to cut a percentage for gas here, need to ask @vthunder
+                                    value &&
+                                      form.setValue(
+                                        "fromAmount",
+                                        value as unknown as number
+                                      );
+                                  }}
+                                  className="font-thicccboisemibold text-[#3FB5F8] text-sm cursor-pointer"
+                                >
+                                  MAX
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        </FormControl>
+
+                        <FormMessage />
+                      </FormItem>
                     </>
                   )}
-                </div>}
-          <TabsContent id="bridge" value="bridge" className="flex-1 ">
-            <div className="lg:p-4 p-2">
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-4 w-full"
-                >
-                  {/* FROM FIELD*/}
-                  <FormField
-                    control={form.control}
-                    name="fromAmount"
-                    render={({ field }) => (
-                      <>
-                        <FormItem>
-                          <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end  ">
-                            <span className="font-ppmori flex flex-row items-center space-x-2">
-                              <p className="text-opacity-80 text-white ">
-                                From
-                              </p>
-                              <div
-                                className={badgeVariants({ variant: "avail" })}
-                              >
-                                <img
-                                  src={`/images/${fromChain}small.png`}
-                                  alt="logo"
-                                ></img>
-                                <p className="!text-left">{fromChain}</p>
-                              </div>
-                            </span>
-
-                            <div className="flex flex-row items-center justify-center ">
-                              {fromChain === Chain.ETH ? <Eth /> : <Avail />}
+                />
+                <div>
+                  <HiOutlineSwitchVertical
+                    onClick={() => {
+                      setFromChain(toChain);
+                      setToChain(fromChain);
+                    }}
+                    className="h-6 w-6 mx-auto cursor-pointer "
+                  />
+                </div>
+                {/* TO FIELD*/}
+                <FormField
+                  control={form.control}
+                  name="toAddress"
+                  render={({ field }) => (
+                    <>
+                      <FormItem>
+                        <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end  ">
+                          <span className="font-ppmori flex flex-row items-center space-x-2">
+                            <p className="text-opacity-80 text-white ">To</p>
+                            <div
+                              className={badgeVariants({ variant: "avail" })}
+                            >
+                              <img
+                                src={`/images/${toChain}small.png`}
+                                alt="logo"
+                              ></img>
+                              <p className="!text-left">{toChain}</p>
                             </div>
-                          </FormLabel>
-                          <FormControl>
-                            <>
-                              <div className="card_background !rounded-xl p-2 flex flex-row items-center justify-between">
-                                <input
-                                  className="!bg-inherit"
-                                  style={{
-                                    border: "none",
-                                    background: "none",
-                                    padding: 0,
-                                    margin: 0,
-                                    outline: "none",
-                                  }}
-                                  type="number"
-                                  placeholder="0.0 AVAIL"
-                                  {...field}
-                                  onChange={(event) =>
-                                    field.onChange(parseFloat(event.target.value))
-                                  }
-                                />
-                                <Tabs
-                                  defaultValue="avail"
-                                  className=" flex flex-row items-center justify-center"
-                                >
-                                  <TabsList
-                                    className={`!bg-[#33384B] !border-0`}
-                                  >
-                                    <TabsTrigger
-                                      value="eth"
-                                      onClick={() => {
-                                        setFromChain(Chain.ETH);
-                                        setToChain(Chain.AVAIL);
-                                      }}
-                                    >
-                                      <Image
-                                        src="/images/eth.png"
-                                        alt="eth"
-                                        width={20}
-                                        height={20}
-                                      ></Image>
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                      value="avail"
-                                      onClick={() => {
-                                        setFromChain(Chain.AVAIL);
-                                        setToChain(Chain.ETH);
-                                      }}
-                                    >
-                                      <Image
-                                        src="/images/logo.png"
-                                        alt="eth"
-                                        width={20}
-                                        height={20}
-                                      ></Image>
-                                    </TabsTrigger>
-                                  </TabsList>
-                                </Tabs>
-                              </div>
-
+                          </span>
+                          {/* this will be opposite here since it's the To feild*/}
+                          {fromChain === Chain.ETH ? <Avail /> : <Eth />}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            disabled={true}
+                            min={0}
+                            placeholder={
+                              fromChain === Chain.ETH
+                                ? selected?.address
+                                : account?.address
+                            }
+                            {...field}
+                            onChange={(event) => {
+                              field.onChange(+event.target.value)
+                              setToAddress(event.target.value)}
+                            }
+                          />
+                        </FormControl>
                         <div className="flex flex-row items-center justify-between">
-                          <Balance />
+                          <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70"></div>
                           <div className="flex flex-row items-center justify-center ">
                             <div
-                              onClick={() => {
-                                const value =
-                                  fromChain === Chain.ETH
-                                    ? ethBalance
-                                    : availBalance && parseAmount(availBalance, 18)
-                                    //TODO: we need to cut a percentage for gas here, need to ask @vthunder
-                                value && form.setValue("fromAmount", value as unknown as number);
+                              onClick={async () => {
+                                const address =
+                                  await navigator.clipboard.readText();
+                                form.setValue("toAddress", address);
                               }}
-                              className="font-thicccboisemibold text-[#3FB5F8] text-sm cursor-pointer"
+                              className="font-thicccboisemibold text-[#3FB5F8] text-sm"
                             >
-                              MAX
+                              + Paste Address
                             </div>
                           </div>
                         </div>
-                      </>
-                    </FormControl>
-
-                          <FormMessage />
-                        </FormItem>
-                      </>
-                    )}
-                  />
-                  <div>
-                    <HiOutlineSwitchVertical
-                      onClick={() => {
-                        setFromChain(toChain);
-                        setToChain(fromChain);
-                      }}
-                      className="h-6 w-6 mx-auto cursor-pointer "
-                    />
-                  </div>
-                  {/* TO FIELD*/}
-                  <FormField
-                    control={form.control}
-                    name="toAddress"
-                    render={({ field }) => (
-                      <>
-                        <FormItem>
-                          <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end  ">
-                            <span className="font-ppmori flex flex-row items-center space-x-2">
-                              <p className="text-opacity-80 text-white ">To</p>
-                              <div
-                                className={badgeVariants({ variant: "avail" })}
-                              >
-                                <img
-                                  src={`/images/${toChain}small.png`}
-                                  alt="logo"
-                                ></img>
-                                <p className="!text-left">{toChain}</p>
-                              </div>
-                            </span>
-                            {/* this will be opposite here since it's the To feild*/}
-                            {fromChain === Chain.ETH ? <Avail /> : <Eth />}
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              disabled={true}
-                              min={0}
-                              placeholder={
-                                fromChain === Chain.ETH
-                                  ? selected?.address
-                                  : account?.address
-                              }
-                              {...field}
-                              onChange={(event) =>
-                                field.onChange(+event.target.value)
-                              }
-                            />
-                          </FormControl>
-                          <div className="flex flex-row items-center justify-between">
-                            <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70"></div>
-                            <div className="flex flex-row items-center justify-center ">
-                              <div
-                                onClick={async () => {
-                                  const address =
-                                    await navigator.clipboard.readText();
-                                  form.setValue("toAddress", address);
-                                }}
-                                className="font-thicccboisemibold text-[#3FB5F8] text-sm"
-                              >
-                                + Paste Address
-                              </div>
-                            </div>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      </>
-                    )}
-                  />
-                  <Button
-                    variant={"primary"}
-                    type="submit"
-                    className="!rounded-xl w-full !text-md !py-7 font-ppmoribsemibold"
-                    disabled={transactionInProgress}
-                  >
-                    {transactionInProgress
-                      ? "Transaction in progress"
-                      : "Initiate Transaction"}
-                  </Button>
-                </form>
-              </Form>
-            </div>
-          </TabsContent>
-          <TabsContent
-            id="transactions"
-            value="transactions"
-            className="text-white flex-1  overflow-scroll"
-          >
-            <Tabs defaultValue="pending" className="w-[95%] mx-auto mt-2 ">
-              <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-4">
-                <TabsTrigger value="pending" className="">
-                  Pending
-                </TabsTrigger>
-                <TabsTrigger
-                  value="history"
-                  className="flex flex-row items-center justify-center space-x-1"
+                        <FormMessage />
+                      </FormItem>
+                    </>
+                  )}
+                />
+                <LoadingButton
+                  variant={"primary"}
+                  loading={transactionInProgress}
+                  type="submit"
+                  className="!rounded-xl w-full !text-md !py-7 font-ppmoribsemibold"
+                  disabled={isDisabled}
                 >
-                  <p>History</p>
-                  <FaHistory />
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="pending">
-                <div className="overflow-y-scroll">
-                  <LatestTransactions pending={true} />
-                </div>
-              </TabsContent>
-              <TabsContent value="history">
-                <div className="overflow-y-scroll">
-                  <LatestTransactions pending={false} />
-                </div>
-              </TabsContent>
-            </Tabs>
-          </TabsContent>
-      
+                  {buttonStatus}
+                </LoadingButton>
+              </form>
+            </Form>
+          </div>
+        </TabsContent>
+        <TabsContent
+          id="transactions"
+          value="transactions"
+          className="text-white flex-1  overflow-scroll"
+        >
+          <Tabs defaultValue="pending" className="w-[95%] mx-auto mt-2 ">
+            <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-4">
+              <TabsTrigger value="pending" className="">
+                Pending
+              </TabsTrigger>
+              <TabsTrigger
+                value="history"
+                className="flex flex-row items-center justify-center space-x-1"
+              >
+                <p>History</p>
+                <FaHistory />
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="pending">
+              <div className="overflow-y-scroll">
+                <LatestTransactions pending={true} />
+              </div>
+            </TabsContent>
+            <TabsContent value="history">
+              <div className="overflow-y-scroll">
+                <LatestTransactions pending={false} />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </TabsContent>
       </Tabs>
     </div>
   );

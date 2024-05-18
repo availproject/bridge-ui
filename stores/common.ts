@@ -16,6 +16,10 @@ interface CommonStore {
     setApi: (api: ApiPromise) => void
     pendingTransactionsNumber: number
     setPendingTransactionsNumber: (pendingTransactions: number) => void
+    fromAmount: number
+    setFromAmount: (fromAmount: number) => void
+    toAddress: string | undefined
+    setToAddress: (toAddress: string) => void
 }
 
 export const useCommonStore = create<CommonStore>((set) => ({
@@ -31,6 +35,10 @@ export const useCommonStore = create<CommonStore>((set) => ({
     setApi: (api) => set({ api }),
     pendingTransactionsNumber: 0,
     setPendingTransactionsNumber: (pendingTransactionsNumber) => set({ pendingTransactionsNumber }),
+    fromAmount: 0,
+    setFromAmount: (fromAmount) => set({ fromAmount }),
+    toAddress: undefined,
+    setToAddress: (toAddress) => set({ toAddress }),
 }));
 
  
