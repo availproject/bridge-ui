@@ -26,24 +26,32 @@ export default function Home() {
           className="-z-50 object-cover select-none absolute top-0 left-0 h-full  w-full"
           alt=""
         />
-        <div className="absolute bottom-4 right-4 flex flex-row space-x-2">
-        <div className={badgeVariants({ variant: "avail" })}>
+        <div className="absolute bottom-4 left-8 flex flex-row space-x-4 text-opacity-80 text-white">
+        
+             <div className="flex flex-row justify-center items-center space-x-2 ">
                
 
-               <p className="!text-center">
+               <p className="text-center  font-ppmoribsemibold   ">
+                 {" "}
+              Docs
+               </p>
+             </div>
+             <div className="flex flex-row justify-center items-center space-x-2 ">
+               
+
+               <p className="text-center  font-ppmoribsemibold   ">
+                 {" "}
+              Privacy Policy
+               </p>
+             </div>
+              <div className="flex flex-row justify-center items-center space-x-2 ">
+               
+
+               <p className="text-center  font-ppmoribsemibold   ">
                  {" "}
                Contact Support
                </p>
-               <BiSupport  className="h-4 w-4"/>
-             </div>
-             <div className={badgeVariants({ variant: "avail" })}>
-               
-
-               <p className="!text-center">
-                 {" "}
-               Refer Bridging Docs
-               </p>
-               <ArrowUpRight className="h-4 w-4"/>
+               <ArrowUpRight className="h-4 w-4 text-white"/>
              </div>
         </div>
       </div>

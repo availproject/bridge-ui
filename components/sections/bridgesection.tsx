@@ -57,7 +57,14 @@ const formSchema = z.object({
 
 export default function BridgeSection() {
   const account = useAccount();
-  const { fromChain, setFromChain, toChain, setToChain, setFromAmount, setToAddress } = useCommonStore();
+  const {
+    fromChain,
+    setFromChain,
+    toChain,
+    setToChain,
+    setFromAmount,
+    setToAddress,
+  } = useCommonStore();
   const { selected } = useAvailAccount();
   const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
   const { pendingTransactionsNumber, setPendingTransactionsNumber } =
@@ -70,7 +77,7 @@ export default function BridgeSection() {
 
   const [transactionInProgress, setTransactionInProgress] =
     useState<boolean>(false);
- 
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -78,13 +85,12 @@ export default function BridgeSection() {
     },
   });
 
-
   const { buttonStatus, isDisabled } = useTransactionButtonState(
     ethBalance,
     availBalance,
     transactionInProgress
   );
-  
+
   /////  USE EFFECT HOOKS
 
   useEffect(() => {
@@ -353,9 +359,12 @@ export default function BridgeSection() {
                         </FormLabel>
                         <FormControl>
                           <>
-                            <div className="card_background !rounded-xl p-2 flex flex-row items-center justify-between">
+                            <div  className="!mt-3 card_background pl-2 !rounded-xl !space-y-2 p-2 flex flex-col items-start justify-start">
+                              <p className="text-white font-ppmori text-sm text-opacity-60">
+                                You send
+                              </p>
                               <input
-                                className="!bg-inherit"
+                                className="!bg-inherit placeholder:text-white text-white placeholder:text-2xl text-2xl p-2 !h-8"
                                 style={{
                                   border: "none",
                                   background: "none",
@@ -364,48 +373,15 @@ export default function BridgeSection() {
                                   outline: "none",
                                 }}
                                 type="number"
-                                placeholder="0.0 AVAIL"
+                                placeholder="0.0"
                                 {...field}
                                 onChange={(event) => {
-                                  field.onChange(parseFloat(event.target.value))
-                                  setFromAmount(parseFloat(event.target.value)) }
-                                }
+                                  field.onChange(
+                                    parseFloat(event.target.value)
+                                  );
+                                  setFromAmount(parseFloat(event.target.value));
+                                }}
                               />
-                              <Tabs
-                                defaultValue="avail"
-                                className=" flex flex-row items-center justify-center"
-                              >
-                                <TabsList className={`!bg-[#33384B] !border-0`}>
-                                  <TabsTrigger
-                                    value="eth"
-                                    onClick={() => {
-                                      setFromChain(Chain.ETH);
-                                      setToChain(Chain.AVAIL);
-                                    }}
-                                  >
-                                    <Image
-                                      src="/images/eth.png"
-                                      alt="eth"
-                                      width={20}
-                                      height={20}
-                                    ></Image>
-                                  </TabsTrigger>
-                                  <TabsTrigger
-                                    value="avail"
-                                    onClick={() => {
-                                      setFromChain(Chain.AVAIL);
-                                      setToChain(Chain.ETH);
-                                    }}
-                                  >
-                                    <Image
-                                      src="/images/logo.png"
-                                      alt="eth"
-                                      width={20}
-                                      height={20}
-                                    ></Image>
-                                  </TabsTrigger>
-                                </TabsList>
-                              </Tabs>
                             </div>
 
                             <div className="flex flex-row items-center justify-between">
@@ -439,13 +415,14 @@ export default function BridgeSection() {
                     </>
                   )}
                 />
-                <div>
+                <div className="relative flex items-center justify-center">
+                  <div className="absolute border-b border-white border-opacity-30 w-[95%] mx-auto hover:border-opacity-60"></div>
                   <HiOutlineSwitchVertical
                     onClick={() => {
                       setFromChain(toChain);
                       setToChain(fromChain);
                     }}
-                    className="h-6 w-6 mx-auto cursor-pointer "
+                    className="h-12 w-12 bg-[#3A3E4A] transform transition-transform duration-1000 hover:p-2.5 p-3 rounded-full mx-auto cursor-pointer relative z-10"
                   />
                 </div>
                 {/* TO FIELD*/}
@@ -472,46 +449,63 @@ export default function BridgeSection() {
                           {fromChain === Chain.ETH ? <Avail /> : <Eth />}
                         </FormLabel>
                         <FormControl>
-                          <Input
-                            disabled={true}
-                            min={0}
-                            placeholder={
-                              fromChain === Chain.ETH
-                                ? selected?.address
-                                : account?.address
-                            }
-                            {...field}
-                            onChange={(event) => {
-                              field.onChange(+event.target.value)
-                              setToAddress(event.target.value)}
-                            }
-                          />
+                          <>
+                            <div className="!mt-3 card_background pl-2 !rounded-xl !space-y-2 p-2 flex flex-col items-start justify-start">
+                              <p className="text-white font-ppmori text-sm text-opacity-60">
+                                To Address
+                              </p>
+                              <div className="w-full flex flex-row items-center justify-between">
+                                <input
+                                  className="!bg-inherit placeholder:text-white text-white text-opacity-90 placeholder:text-opacity-90 placeholder:text-2xl text-2xl "
+                                  style={{
+                                    border: "none",
+                                    background: "none",
+                                    padding: 0,
+                                    margin: 0,
+                                    outline: "none",
+                                  }}
+                                  disabled={true}
+                                  min={0}
+                                  placeholder={
+                                    fromChain === Chain.ETH
+                                      ? selected?.address
+                                      : account?.address
+                                  }
+                                  {...field}
+                                  onChange={(event) => {
+                                    field.onChange(+event.target.value);
+                                    setToAddress(event.target.value);
+                                  }}
+                                />
+                                {/* <div
+                                  className="rounded-xl max-h-fit aspect-square  text-lg font-ppmori  justify-center cursor-pointer border border-white border-opacity-30"
+                                  onClick={async () => {
+                                    const address =
+                                      await navigator.clipboard.readText();
+                                    form.setValue("toAddress", address);
+                                  }}
+                                >
+                                  +
+                                </div> */}
+                              </div>
+                            </div>
+                          </>
                         </FormControl>
                         <div className="flex flex-row items-center justify-between">
                           <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70"></div>
-                          <div className="flex flex-row items-center justify-center ">
-                            <div
-                              onClick={async () => {
-                                const address =
-                                  await navigator.clipboard.readText();
-                                form.setValue("toAddress", address);
-                              }}
-                              className="font-thicccboisemibold text-[#3FB5F8] text-sm"
-                            >
-                              + Paste Address
-                            </div>
-                          </div>
+                         
                         </div>
                         <FormMessage />
                       </FormItem>
                     </>
                   )}
                 />
+                <br/>
                 <LoadingButton
                   variant={"primary"}
                   loading={transactionInProgress}
                   type="submit"
-                  className="!rounded-xl w-full !text-md !py-7 font-ppmoribsemibold"
+                  className="!rounded-xl w-full !text-[15px] !py-8  font-ppmori"
                   disabled={isDisabled}
                 >
                   {buttonStatus}

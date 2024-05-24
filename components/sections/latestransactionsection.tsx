@@ -31,11 +31,6 @@ import { Transaction } from "@/types/transaction";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination"
 
 
@@ -299,14 +294,14 @@ export default function LatestTransactions(props: { pending: boolean }) {
                         <span className="relative flex h-2 w-2">
                           <span
                             className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
-                              txn.status === "INITIALIZED"
+                              txn.status === "SUBMITTED"
                                 ? "bg-yellow-600"
                                 : "bg-green-600"
                             } opacity-75`}
                           ></span>
                           <span
                             className={`relative inline-flex rounded-full h-2 w-2  ${
-                              txn.status === "INITIALIZED"
+                              txn.status === "SUBMITTED"
                                 ? "bg-yellow-600"
                                 : "bg-green-600"
                             }`}

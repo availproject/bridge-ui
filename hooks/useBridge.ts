@@ -185,7 +185,7 @@ export default function useBridge() {
       sourceTransactionHash: burnTxHash,
       destinationTransactionHash: destinationAddress,
       amount: atomicAmount,
-      status: TransactionStatus.INITIALIZED,
+      status: TransactionStatus.SUBMITTED,
       messageId: 0,
       dataType: "ERC20",
       depositorAddress: activeUserAddress,
@@ -246,7 +246,7 @@ export default function useBridge() {
 
     if (send.blockhash !== undefined) {
       const tempLocalTransaction: Transaction = {
-        status: TransactionStatus.INITIALIZED,
+        status: TransactionStatus.SUBMITTED,
         destinationChain: Chain.ETH,
         messageId: 0,
         sourceChain: Chain.AVAIL,

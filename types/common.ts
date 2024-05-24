@@ -9,7 +9,7 @@ export enum TransactionFlow {
 }
 
 export enum TransactionStatus {
-  INITIALIZED = "INITIALIZED",
+  SUBMITTED = "SUBMITTED",
   BRIDGED = "BRIDGED",
   READY_TO_CLAIM = "READY_TO_CLAIM",
   CLAIMED = "CLAIMED",

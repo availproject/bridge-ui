@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/utils/tailwind"
 
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-full border border-gray-200 px-3 ml-2 py-[5.5px] text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-gray-950 focus:ring-offset-2 dark:border-gray-800 dark:focus:ring-gray-300 space-x-2",
+  "inline-flex items-center justify-center rounded-xl border border-gray-200 px-3 ml-2 py-[5.5px] text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-gray-950 focus:ring-offset-2 dark:border-gray-800 dark:focus:ring-gray-300 space-x-2",
   { 
     variants: {
       variant: {

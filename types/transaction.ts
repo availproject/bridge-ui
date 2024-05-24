@@ -1,7 +1,6 @@
 import { Chain, TransactionStatus } from "./common";
 
 export enum TRANSACTION_TYPES {
-  // Bridging transactions
   BRIDGE_ETH_TO_AVAIL = "BRIDGE_ETH_TO_AVAIL",
   BRIDGE_AVAIL_TO_ETH = "BRIDGE_AVAIL_TO_ETH",
 }

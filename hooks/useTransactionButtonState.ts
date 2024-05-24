@@ -13,7 +13,7 @@ export default function useTransactionButtonState(
   const account = useAccount();
 
   const {selected} = useAvailAccount();
-  const {fromChain, fromAmount, toAddress} = useCommonStore();
+  const {fromChain, toChain, fromAmount, toAddress} = useCommonStore();
 
   const isWalletConnected = useMemo(() => {
     if(fromChain === Chain.ETH) {
@@ -72,8 +72,8 @@ export default function useTransactionButtonState(
     if (hasInsufficientBalance) {
       return "Insufficient Balance";
     }
-    return "Initiate Transaction";
-  }, [transactionInProgress, isInvalidAmount, hasInsufficientBalance, isWalletConnected]);
+    return `Initiate bridge from ${fromChain.toLocaleLowerCase()} to ${toChain.toLocaleLowerCase()}`;
+  }, [isWalletConnected, transactionInProgress, isInvalidAmount, hasInsufficientBalance, fromChain, toChain]);
 
   const isDisabled = useMemo(() => {
     return transactionInProgress || isInvalidAmount || hasInsufficientBalance || !isWalletConnected;
