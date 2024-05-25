@@ -7,7 +7,7 @@ export default function NavBar() {
       <div className=" space-x-4 w-screen flex flex-row items-center justify-center">
         <img
           alt="Avail logo"
-          className="h-8"
+          className="h-10 mt-2"
           height="40"
           src="/images/nav.svg"
         /> 

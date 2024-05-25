@@ -16,6 +16,8 @@ interface CommonStore {
     setApi: (api: ApiPromise) => void
     pendingTransactionsNumber: number
     setPendingTransactionsNumber: (pendingTransactions: number) => void
+    readyToClaimTransactionsNumber: number
+    setReadyToClaimTransactionsNumber: (readyToClaimTransactions: number) => void
     fromAmount: number
     setFromAmount: (fromAmount: number) => void
     toAddress: string | undefined
@@ -35,6 +37,8 @@ export const useCommonStore = create<CommonStore>((set) => ({
     setApi: (api) => set({ api }),
     pendingTransactionsNumber: 0,
     setPendingTransactionsNumber: (pendingTransactionsNumber) => set({ pendingTransactionsNumber }),
+    readyToClaimTransactionsNumber: 0,
+    setReadyToClaimTransactionsNumber: (readyToClaimTransactionsNumber) => set({ readyToClaimTransactionsNumber }),
     fromAmount: 0,
     setFromAmount: (fromAmount) => set({ fromAmount }),
     toAddress: undefined,

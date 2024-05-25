@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { z } from "zod";
+import { set, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { FaHistory } from "react-icons/fa";
@@ -26,6 +26,7 @@ import {
   _getBalance,
   showFailedMessage,
   showSuccessMessage,
+  validAddress,
 } from "@/utils/common";
 import { useAccount } from "wagmi";
 import { useAvailAccount } from "@/stores/availWalletHook";
@@ -43,6 +44,19 @@ import useTransactions from "@/hooks/useTransactions";
 import { parseAmount } from "@/utils/parseAmount";
 import { LoadingButton } from "../ui/loadingbutton";
 import useTransactionButtonState from "@/hooks/useTransactionButtonState";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
+import { Checkbox } from "../ui/checkbox";
+import { RxCrossCircled } from "react-icons/rx";
 
 const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -54,6 +68,7 @@ const formSchema = z.object({
   ),
   toAddress: z.string(),
 });
+type CheckedState = boolean | "indeterminate";
 
 export default function BridgeSection() {
   const account = useAccount();
@@ -67,9 +82,11 @@ export default function BridgeSection() {
   } = useCommonStore();
   const { selected } = useAvailAccount();
   const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
-  const { pendingTransactionsNumber, setPendingTransactionsNumber } =
+  const { pendingTransactionsNumber, setPendingTransactionsNumber, readyToClaimTransactionsNumber, setReadyToClaimTransactionsNumber } =
     useCommonStore();
   const { pendingTransactions } = useTransactions();
+  const [isChecked, setIsChecked] = useState<CheckedState>(false);
+  const [open, setOpen] = useState(false);
   const [ethBalance, setEthBalance] = useState<string | undefined | null>(null);
   const [availBalance, setAvailBalance] = useState<string | undefined | null>(
     null
@@ -91,12 +108,16 @@ export default function BridgeSection() {
     transactionInProgress
   );
 
-  /////  USE EFFECT HOOKS
 
   useEffect(() => {
     setPendingTransactionsNumber(
       pendingTransactions.filter(
         (transaction) => transaction.status !== TransactionStatus.CLAIMED
+      ).length
+    );
+    setReadyToClaimTransactionsNumber(
+      pendingTransactions.filter(
+        (transaction) => transaction.status === TransactionStatus.READY_TO_CLAIM
       ).length
     );
   }, [pendingTransactions]);
@@ -126,8 +147,6 @@ export default function BridgeSection() {
         `height:${document.getElementById("bridge")?.clientHeight}px`
       );
   }, []);
-
-  ///// FUNCTIONS
 
   const resetState = async () => {
     // form.reset();
@@ -249,6 +268,30 @@ export default function BridgeSection() {
     );
   }
 
+  async function PasteAddressAction() {
+  
+      const address =
+      await navigator.clipboard.readText();
+      const a = await validAddress(address, toChain);
+      a && (form.setValue("toAddress", address), setOpen(false));
+      !a && toast({
+        title: (
+          <div className="flex flex-row items-center justify-center !space-x-3 ">
+            <RxCrossCircled className="mr-2 h-10 w-10" color="FF0000" />
+            <div className="flex flex-col space-y-2">
+              <p className="mr-2 font-thicccboisemibold">
+               Invalid Address
+              </p>
+              <p className="!text-xs !text-white !text-opacity-40 font-thicccboisemibold">
+               Please Check the Address you have copied
+              </p>
+            </div>
+          </div>
+        ),
+      });
+     
+    }
+
   return (
     <div className="text-white w-full m-4">
       <Tabs
@@ -312,8 +355,8 @@ export default function BridgeSection() {
 
                 <p className="!text-left">
                   {" "}
-                  {pendingTransactionsNumber} Pending |{" "}
-                  {pendingTransactionsNumber} Ready to Claim
+                  {pendingTransactionsNumber} Pending | {" "}
+                  {readyToClaimTransactionsNumber} Ready to Claim
                 </p>
               </>
             ) : (
@@ -359,29 +402,51 @@ export default function BridgeSection() {
                         </FormLabel>
                         <FormControl>
                           <>
-                            <div  className="!mt-3 card_background pl-2 !rounded-xl !space-y-2 p-2 flex flex-col items-start justify-start">
-                              <p className="text-white font-ppmori text-sm text-opacity-60">
-                                You send
-                              </p>
-                              <input
-                                className="!bg-inherit placeholder:text-white text-white placeholder:text-2xl text-2xl p-2 !h-8"
-                                style={{
-                                  border: "none",
-                                  background: "none",
-                                  padding: 0,
-                                  margin: 0,
-                                  outline: "none",
-                                }}
-                                type="number"
-                                placeholder="0.0"
-                                {...field}
-                                onChange={(event) => {
-                                  field.onChange(
-                                    parseFloat(event.target.value)
-                                  );
-                                  setFromAmount(parseFloat(event.target.value));
-                                }}
-                              />
+                            <div className="!mt-3 card_background pl-2 !rounded-xl !space-y-2 p-2 flex flex-row items-center justify-between">
+                              <div className="!space-y-2 p-1 flex flex-col items-start justify-start">
+                                <p className="text-white font-ppmori text-sm text-opacity-60">
+                                  You send
+                                </p>
+                                <input
+                                  className="!bg-inherit placeholder:text-white text-white placeholder:text-2xl text-2xl p-2 !h-8"
+                                  style={{
+                                    border: "none",
+                                    background: "none",
+                                    padding: 0,
+                                    margin: 0,
+                                    outline: "none",
+                                  }}
+                                  type="number"
+                                  placeholder="0.0"
+                                  {...field}
+                                  onChange={(event) => {
+                                    field.onChange(
+                                      parseFloat(event.target.value)
+                                    );
+                                    setFromAmount(
+                                      parseFloat(event.target.value)
+                                    );
+                                  }}
+                                />
+                              </div>
+
+                              <div className="rounded-xl bg-[#464A5B] flex flex-row  transform transition-transform duration-200 hover:scale-105 items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer">
+                                <div
+                                  className={
+                                    "flex flex-row items-center justify-center space-x-2  font-ppmori"
+                                  }
+                                >
+                                  <img
+                                    src={`/images/${fromChain}small.png`}
+                                    alt="logo"
+                                  ></img>
+                                  <p className="!text-lg !text-left">
+                                    {fromChain === Chain.ETH
+                                      ? "ETH"
+                                      : fromChain.toLocaleUpperCase()}
+                                  </p>
+                                </div>
+                              </div>
                             </div>
 
                             <div className="flex flex-row items-center justify-between">
@@ -392,14 +457,16 @@ export default function BridgeSection() {
                                     const value =
                                       fromChain === Chain.ETH
                                         ? ethBalance
-                                        : availBalance &&
-                                          parseAmount(availBalance, 18);
-                                    //TODO: we need to cut a percentage for gas here, need to ask @vthunder
-                                    value &&
-                                      form.setValue(
-                                        "fromAmount",
-                                        value as unknown as number
-                                      );
+                                          ? parseFloat(ethBalance) * 0.98
+                                          : 0
+                                        : availBalance
+                                        ? parseFloat(
+                                            parseAmount(availBalance, 18)
+                                          ) * 0.98
+                                        : 0;
+
+                                    value && form.setValue("fromAmount", value);
+                                    setFromAmount(value);
                                   }}
                                   className="font-thicccboisemibold text-[#3FB5F8] text-sm cursor-pointer"
                                 >
@@ -450,11 +517,12 @@ export default function BridgeSection() {
                         </FormLabel>
                         <FormControl>
                           <>
-                            <div className="!mt-3 card_background pl-2 !rounded-xl !space-y-2 p-2 flex flex-col items-start justify-start">
-                              <p className="text-white font-ppmori text-sm text-opacity-60">
-                                To Address
-                              </p>
-                              <div className="w-full flex flex-row items-center justify-between">
+                            <div className="!mt-3 card_background pl-2 !rounded-xl !space-y-2 p-2 flex flex-row items-center justify-between">
+                              <div className="!space-y-2 p-1 flex flex-col items-start justify-start">
+                                <p className="text-white font-ppmori text-sm text-opacity-60">
+                                  To Address
+                                </p>
+
                                 <input
                                   className="!bg-inherit placeholder:text-white text-white text-opacity-90 placeholder:text-opacity-90 placeholder:text-2xl text-2xl "
                                   style={{
@@ -467,9 +535,10 @@ export default function BridgeSection() {
                                   disabled={true}
                                   min={0}
                                   placeholder={
+
                                     fromChain === Chain.ETH
-                                      ? selected?.address
-                                      : account?.address
+                                      ? selected?.address && selected?.address.slice(0, 10) + "..."
+                                      : account.address && account?.address.slice(0, 10) + "..."
                                   }
                                   {...field}
                                   onChange={(event) => {
@@ -477,30 +546,79 @@ export default function BridgeSection() {
                                     setToAddress(event.target.value);
                                   }}
                                 />
-                                {/* <div
-                                  className="rounded-xl max-h-fit aspect-square  text-lg font-ppmori  justify-center cursor-pointer border border-white border-opacity-30"
-                                  onClick={async () => {
-                                    const address =
-                                      await navigator.clipboard.readText();
-                                    form.setValue("toAddress", address);
-                                  }}
-                                >
-                                  +
-                                </div> */}
                               </div>
+                              <AlertDialog open={open}>
+                                <AlertDialogTrigger
+                                  onClick={() => {
+                                    setOpen(!open);
+                                  }}
+                                  className="rounded-xl bg-[#464A5B] flex flex-row  transform transition-transform duration-200 hover:scale-105 items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer"
+                                >
+                                  <span>+</span>
+                                  <span className="text-sm text-white text-opacity-70">
+                                    Add Address
+                                  </span>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent className="bg-[#252831] border-2 border-[#3a3b3cb1] !rounded-[1rem]">
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle className="text-white font-ppmoribsemibold !text-lg">
+                                      Transfer to different Address
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription className="text-[#B6B7BB] font-thicccboisemibold text-md">
+                                      <div className=" border-white border-t border-opacity-25 w-full !h-1 mb-4"></div>
+                                      <div className="flex flex-row items-bottom pt-2"></div>
+                                      <div className="items-start flex  space-x-2 px-2 pb-4">
+                                        <Checkbox
+                                          id="terms1"
+                                          checked={isChecked}
+                                          onCheckedChange={setIsChecked}
+                                          className="text-white border-white border-opacity-70 border rounded-md mt-1"
+                                        ></Checkbox>
+                                        <div className="grid gap-1.5 leading-none">
+                                          <label
+                                            htmlFor="terms1"
+                                            className="text-sm font-light leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white text-opacity-60"
+                                          >
+                                            Please double-check if the address
+                                            is correct. Any tokens sent to an
+                                            incorrect address will be
+                                            unrecoverable.
+                                          </label>
+                                        </div>
+                                      </div>
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel onClick={()=>{
+                                      setOpen(false)
+                                    }} className="!bg-inherit !border-0 text-red-600 hover:text-red-800 ">
+                                      Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      disabled={!isChecked}
+                                      className="rounded-xl bg-[#464A5B] flex flex-row  items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer"
+                                      onClick={PasteAddressAction}
+                                    >
+                                      <span>+</span>
+                                      <span className="text-sm text-white text-opacity-70">
+                                        Copy Address from Clipboard
+                                      </span>
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </div>
                           </>
                         </FormControl>
                         <div className="flex flex-row items-center justify-between">
                           <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70"></div>
-                         
                         </div>
                         <FormMessage />
                       </FormItem>
                     </>
                   )}
                 />
-                <br/>
+                <br />
                 <LoadingButton
                   variant={"primary"}
                   loading={transactionInProgress}

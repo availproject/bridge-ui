@@ -4,7 +4,6 @@ import { badgeVariants } from "@/components/ui/badge";
 import { ArrowUpRight } from "lucide-react";
 import { BiSupport } from "react-icons/bi";
 import dynamic from "next/dynamic";
-// import BridgeSection from "@/components/sections/bridgesection";
 const
 BridgeSection = dynamic(() =>
 import("@/components/sections/bridgesection"), {

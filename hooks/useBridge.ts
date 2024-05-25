@@ -60,7 +60,7 @@ export default function useBridge() {
       const avlHead = await fetchAvlHead();
       setEthHead(ethHead.data);
       setAvlHead(avlHead.data);
-    }, 5000);
+    }, 50000);
   }, []);
 
   const getAvailBalanceOnEth = useCallback(async () => {
