@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
+  Clock,
   ExternalLink,
   MoveRight,
 } from "lucide-react";
@@ -187,7 +188,7 @@ export default function TransactionSection() {
             key={index}
             variant="primary"
             loading={inProcess[index]}
-            className="!px-4 !py-0"
+            className="!px-4 !py-0 rounded-xl"
             onClick={() =>
               onSubmit(
                 txn.sourceChain,
@@ -209,7 +210,7 @@ export default function TransactionSection() {
               )
             }
           >
-            {txn.status === "READY_TO_CLAIM" ? "Claim" : txn.status}
+            {txn.status === "READY_TO_CLAIM" ? "Claim Ready" : txn.status}
           </LoadingButton>
         </>
       );
@@ -222,7 +223,7 @@ export default function TransactionSection() {
     }) {
       return (
         <div className="flex">
-          <TableBody className="min-w-[100%]" >
+          <TableBody className="min-w-[99%] mx-auto space-y-2.5" >
             {pendingTransactions
               ?.sort((a, b) => {
                 return (
@@ -231,32 +232,33 @@ export default function TransactionSection() {
                 );
               })
               .map((txn, index) => (
-                <TableRow className="flex flex-row justify-between w-[100%] " key={index}>
-                  <TableCell className="font-medium flex flex-row space-x-2">
-                    <span className="flex flex-col">
-                      <span className="text-white text-opacity-60 flex flex-col items-center justify-center">
+                <TableRow className="flex flex-row justify-between w-[100%] bg-[#363b4f] rounded-xl " key={index}>
+                  <TableCell className="font-medium flex flex-row space-x-4 rounded-xl">
+                    <span className="flex flex-col items-center justify-center  ">
+                      <span className="text-white text-opacity-60 flex flex-col items-center justify-center ml-2">
                         <p className="text-white text-md">
                           {parseDateTimeToDay(txn.sourceTransactionTimestamp)}
                         </p>
-                        <p>
+                        <p className=" text-xs">
                           {parseDateTimeToMonthShort(
                             txn.sourceTransactionTimestamp,
                           )}
                         </p>
                       </span>
                     </span>
-                    <span className="flex flex-col space-y-1 ">
+                    <span className="flex flex-col-reverse items-start justify-center">
                       <span className="flex flex-row w-full">
                         <ChainLabel chain={txn.sourceChain} />
-                        <p className="px-1">
+                        <p className="px-4">
                           <MoveRight />
                         </p>{" "}
                         <ChainLabel chain={txn.destinationChain} />
                       </span>
   
                       <span className="flex flex-row space-x-2">
-                        <p className="text-white text-opacity-60 text-xs ml-2">
-                          {
+                       
+                        <p className="text-white  text-lg font-thicccboisemibold">
+                          Sent {
                             //@ts-ignore look at this once @ankitboghra
                             parseAvailAmount(txn.amount)
                           }{" "}
@@ -270,7 +272,7 @@ export default function TransactionSection() {
                               : `https://avail-turing.subscan.io/extrinsic/${txn.sourceTransactionBlockNumber}-${txn.sourceTransactionIndex}`
                           }
                         >
-                          <ExternalLink className="w-3 h-3" />
+                          <ArrowUpRight className="w-4 h-4" />
                         </a>
                       </span>
                     </span>
@@ -278,13 +280,15 @@ export default function TransactionSection() {
                     <br />
                   </TableCell>
                   <TableCell className="text-right items-end">
+                    <div className="flex flex-col space-y-2 justify-between">
+                      <span>
                     {txn.status === "READY_TO_CLAIM" ? (
                       <>
                         <SubmitClaim txn={txn} index={index} />
                       </>
                     ) : (
                       <>
-                        <Badge className="flex-row items-center justify-center space-x-2">
+                        <Badge className="flex-row items-center justify-center space-x-2 bg-[#24262f]">
                           <p>{txn.status}</p>
                           <span className="relative flex h-2 w-2">
                             <span
@@ -305,6 +309,10 @@ export default function TransactionSection() {
                         </Badge>
                       </>
                     )}
+                    </span>
+                    <p className="text-xs flex flex-row items-end justify-end text-right text-white text-opacity-70 space-x-1"><span>~1 hour</span> <Clock className="w-4 h-4"/></p>
+                    </div>
+                  
                   </TableCell>
                 </TableRow>
               ))}
@@ -325,7 +333,7 @@ export default function TransactionSection() {
             {completedTransactions?.map((txn, index) => (
               <TableRow key={index}>
                 <TableCell className="font-medium w-full flex flex-row space-x-2">
-                  <span className="flex flex-col">
+                  <span className="flex flex-col items-center justify-center">
                     <span className="text-white text-opacity-60 flex flex-col items-center justify-center">
                       <p className="text-white text-md">
                         {parseDateTimeToDay(txn.sourceTransactionTimestamp)}
@@ -336,11 +344,6 @@ export default function TransactionSection() {
                         )}
                       </p>
                     </span>
-                    {/* <p className="text-white text-opacity-60">{` ${new Date(
-                          txn.sourceTransactionTimestamp
-                        ).getHours()}${new Date(
-                          txn.sourceTransactionTimestamp
-                        ).getMinutes()}`}</p> */}
                   </span>
                   <span className="flex flex-col space-y-1 ">
                     <span className="flex flex-row w-full">
@@ -401,8 +404,8 @@ export default function TransactionSection() {
     }
   
     return(
-        <Tabs defaultValue="pending" className="relative flex flex-col  mx-auto mt-2 w-[100%] h-[100%] ">
-        <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-4 ">
+        <Tabs defaultValue="pending" className="relative flex flex-col  mx-auto mt-2 w-[95%] h-[100%] ">
+        <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2 ">
           <TabsTrigger value="pending" className="">
             Pending
           </TabsTrigger>
@@ -436,8 +439,8 @@ export default function TransactionSection() {
           </div>
          
         </TabsContent>
-    <div className="absolute bottom-5 right-3 flex flex-row space-x-2 items-center justify-center">
-        <p className="font-thicccboisemibold text-sm text-white mr-4">View More</p>
+    <div className="absolute bottom-3 right-3 flex flex-row space-x-2 items-center justify-center">
+        <p className="font-thicccboisemibold text-sm text-white mr-4">View More </p>
                   <button
                     disabled={currentPage === 0}
                     onClick={() => setCurrentPage((prev) => prev - 1)}
