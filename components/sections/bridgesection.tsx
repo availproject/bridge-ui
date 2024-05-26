@@ -53,6 +53,7 @@ import {
 import { Checkbox } from "../ui/checkbox";
 import { RxCrossCircled } from "react-icons/rx";
 import TransactionSection from "./transactionsection";
+import { FaCheckCircle } from "react-icons/fa";
 
 const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -113,7 +114,7 @@ export default function BridgeSection() {
     );
     setReadyToClaimTransactionsNumber(
       pendingTransactions.filter(
-        (transaction) => transaction.status === TransactionStatus.READY_TO_CLAIM
+        (transaction) => transaction.status == TransactionStatus.READY_TO_CLAIM
       ).length
     );
   }, [pendingTransactions]);
@@ -145,7 +146,7 @@ export default function BridgeSection() {
   }, []);
 
   const resetState = async () => {
-    // form.reset();
+    form.reset();
     if (account.address) {
       const result = await _getBalance(Chain.ETH, undefined, account.address);
       setEthBalance(result);
@@ -269,7 +270,22 @@ export default function BridgeSection() {
       const address =
       await navigator.clipboard.readText();
       const a = await validAddress(address, toChain);
-      a && (form.setValue("toAddress", address), setOpen(false));
+      a && (form.setValue("toAddress", address), setOpen(false), toast({
+        title: (
+          <div className="flex flex-row items-center justify-center !space-x-3 ">
+            <FaCheckCircle className="mr-4 h-10 w-10" color="0BDA51" />
+            <div className="flex flex-col space-y-2">
+              <p className="mr-2 font-thicccboisemibold">
+                Address Added Successfully
+              </p>
+              <p className="!text-xs !text-white !text-opacity-40 font-thicccboisemibold">
+             The Address has been added successfully and would be used for future txns.
+              </p>
+            </div>
+          </div>
+        ),
+      }));
+
       !a && toast({
         title: (
           <div className="flex flex-row items-center justify-center !space-x-3 ">
@@ -327,7 +343,7 @@ export default function BridgeSection() {
                           {" "}
                           {pendingTransactionsNumber} Pending{" "}
                           <span className="mx-2">|</span>{" "}
-                          {pendingTransactionsNumber} Ready to Claim
+                          {readyToClaimTransactionsNumber} Claim Ready
                         </p>
                       </>
                     ) : (
@@ -531,10 +547,9 @@ export default function BridgeSection() {
                                   disabled={true}
                                   min={0}
                                   placeholder={
-
                                     fromChain === Chain.ETH
-                                      ? selected?.address && selected?.address.slice(0, 10) + "..."
-                                      : account.address && account?.address.slice(0, 10) + "..."
+                                      ? (selected?.address ? selected.address.slice(0, 10) + "..." : "0x")
+                                      : (account?.address ? account.address.slice(0, 10) + "..." : "0x")
                                   }
                                   {...field}
                                   onChange={(event) => {
@@ -631,7 +646,7 @@ export default function BridgeSection() {
         <TabsContent
           id="transactions"
           value="transactions"
-          className="text-white  overflow-scroll"
+          className="text-white overflow-scroll"
         >
          <TransactionSection/>
         </TabsContent>
