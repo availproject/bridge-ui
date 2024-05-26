@@ -11,7 +11,7 @@ import { Footer } from "@/components/ui/Footer/Footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Avail Bridge",
+  title: "Avail | Bridge",
   description: "",
 };
 

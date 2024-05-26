@@ -5,9 +5,7 @@
 import { set, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { FaHistory } from "react-icons/fa";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
-import Image from "next/image";
 import {
   Form,
   FormControl,
@@ -17,11 +15,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { RiLoopLeftFill } from "react-icons/ri";
-import { Input } from "@/components/ui/input";
 import { useEffect, useMemo, useState } from "react";
 import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
-import { Button } from "../ui/button";
 import {
   _getBalance,
   showFailedMessage,
@@ -32,7 +28,6 @@ import { useAccount } from "wagmi";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import LatestTransactions from "./latestransactionsection";
 import { Chain, TransactionStatus } from "@/types/common";
 import useBridge from "@/hooks/useBridge";
 import { toast } from "@/components/ui/use-toast";
@@ -57,6 +52,7 @@ import {
 } from "../ui/alert-dialog";
 import { Checkbox } from "../ui/checkbox";
 import { RxCrossCircled } from "react-icons/rx";
+import TransactionSection from "./transactionsection";
 
 const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -635,32 +631,9 @@ export default function BridgeSection() {
         <TabsContent
           id="transactions"
           value="transactions"
-          className="text-white flex-1  overflow-scroll"
+          className="text-white  overflow-scroll"
         >
-          <Tabs defaultValue="pending" className="w-[95%] mx-auto mt-2 ">
-            <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-4">
-              <TabsTrigger value="pending" className="">
-                Pending
-              </TabsTrigger>
-              <TabsTrigger
-                value="history"
-                className="flex flex-row items-center justify-center space-x-1"
-              >
-                <p>History</p>
-                <FaHistory />
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="pending">
-              <div className="overflow-y-scroll">
-                <LatestTransactions pending={true} />
-              </div>
-            </TabsContent>
-            <TabsContent value="history">
-              <div className="overflow-y-scroll">
-                <LatestTransactions pending={false} />
-              </div>
-            </TabsContent>
-          </Tabs>
+         <TransactionSection/>
         </TabsContent>
       </Tabs>
     </div>
