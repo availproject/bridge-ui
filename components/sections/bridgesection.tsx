@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { set, z } from "zod";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { RiLoopLeftFill } from "react-icons/ri";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
 import {
@@ -54,6 +54,8 @@ import { Checkbox } from "../ui/checkbox";
 import { RxCrossCircled } from "react-icons/rx";
 import TransactionSection from "./transactionsection";
 import { FaCheckCircle } from "react-icons/fa";
+import { pollWithDelay } from "@/utils/poller";
+import { appConfig } from "@/config/default";
 
 const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -81,6 +83,7 @@ export default function BridgeSection() {
   const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
   const { pendingTransactionsNumber, setPendingTransactionsNumber, readyToClaimTransactionsNumber, setReadyToClaimTransactionsNumber } =
     useCommonStore();
+  const { fetchTransactions } = useTransactions();
   const { pendingTransactions } = useTransactions();
   const [isChecked, setIsChecked] = useState<CheckedState>(false);
   const [open, setOpen] = useState(false);
@@ -105,6 +108,24 @@ export default function BridgeSection() {
     transactionInProgress
   );
 
+  const appInit = async () => {
+    if (!selected && !account.address) return;
+    pollWithDelay(
+      fetchTransactions,
+      [
+        {
+          availAddress: selected?.address,
+          ethAddress: account.address,
+        },
+      ],
+      appConfig.bridgeIndexerPollingInterval,
+      () => true
+    );
+  };
+  useEffect(() => {
+    appInit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected]);
 
   useEffect(() => {
     setPendingTransactionsNumber(

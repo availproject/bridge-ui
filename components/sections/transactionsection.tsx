@@ -2,9 +2,9 @@
 
 "use client";
 
-import { FaHistory, FaQuestionCircle } from "react-icons/fa";
+import { FaHistory } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Table, TableBody, TableCell, TableRow } from "../ui/table";
+import { TableBody, TableCell, TableRow } from "../ui/table";
 import { Badge } from "../ui/badge";
 import { Chain, TransactionStatus } from "@/types/common";
 import useTransactions from "@/hooks/useTransactions";
@@ -27,8 +27,6 @@ import { useEffect, useState } from "react";
 import { showFailedMessage, showSuccessMessage } from "@/utils/common";
 import { LoadingButton } from "../ui/loadingbutton";
 import { useAvailAccount } from "@/stores/availWalletHook";
-import { pollWithDelay } from "@/utils/poller";
-import { appConfig } from "@/config/default";
 import { Transaction } from "@/types/transaction";
 import { CiCircleQuestion } from "react-icons/ci";
 
@@ -42,8 +40,6 @@ export default function TransactionSection() {
     setPaginatedCompletedTransactionArray,
   ] = useState<Transaction[][]>([]);
   const [currentPage, setCurrentPage] = useState<number>(0);
-  const { selected } = useAvailAccount();
-  const { fetchTransactions } = useTransactions();
   const { initClaimAvailToEth, initClaimEthtoAvail } = useClaim();
   const [complete, setComplete] = useState<boolean[]>(
     Array(pendingTransactions.length).fill(false)
@@ -52,27 +48,18 @@ export default function TransactionSection() {
     Array(pendingTransactions.length).fill(false)
   );
 
-  const appInit = async () => {
-    if (!selected) return;
-    pollWithDelay(
-      fetchTransactions,
-      [
-        {
-          userAddress: selected.address,
-        },
-      ],
-      appConfig.bridgeIndexerPollingInterval,
-      () => true
-    );
-  };
-
-
   useEffect(() => {
     if (pendingTransactions && pendingTransactions.length > 0) {
       const chunkSize = 4;
       const chunks = [];
+      const sortedTxns = pendingTransactions.sort((a, b) => {
+        return (
+          new Date(b.sourceTransactionTimestamp).getTime() -
+          new Date(a.sourceTransactionTimestamp).getTime()
+        );
+      });
       for (let i = 0; i < pendingTransactions.length; i += chunkSize) {
-        chunks.push(pendingTransactions.slice(i, i + chunkSize));
+        chunks.push(sortedTxns.slice(i, i + chunkSize));
       }
       setPaginatedTransactionArray(chunks);
     }
@@ -81,18 +68,19 @@ export default function TransactionSection() {
   useEffect(() => {
     if (completedTransactions && completedTransactions.length > 0) {
       const chunkSize = 4;
+      const sortedTxns = completedTransactions.sort((a, b) => {
+        return (
+          new Date(b.sourceTransactionTimestamp).getTime() -
+          new Date(a.sourceTransactionTimestamp).getTime()
+        );
+      });
       const chunks = [];
       for (let i = 0; i < completedTransactions.length; i += chunkSize) {
-        chunks.push(completedTransactions.slice(i, i + chunkSize));
+        chunks.push(sortedTxns.slice(i, i + chunkSize));
       }
       setPaginatedCompletedTransactionArray(chunks);
     }
   }, [completedTransactions]);
-
-  useEffect(() => {
-    appInit();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
 
   useEffect(() => {
     setInProcess(Array(pendingTransactions.length).fill(false));
@@ -237,7 +225,7 @@ export default function TransactionSection() {
     }
 };
 
-  function PendingTransactions({
+ function PendingTransactions({
     pendingTransactions,
   }: {
     pendingTransactions: Transaction[];
@@ -245,14 +233,7 @@ export default function TransactionSection() {
     return (
       <div className="flex">
         <TableBody className="min-w-[99%] mx-auto space-y-2.5">
-          {pendingTransactions && pendingTransactions
-            .sort((a, b) => {
-              return (
-                new Date(b.sourceTransactionTimestamp).getTime() -
-                new Date(a.sourceTransactionTimestamp).getTime()
-              );
-            })
-            .map((txn, index) => (
+          {pendingTransactions && pendingTransactions.map((txn, index) => (
               <TableRow
                 className="flex flex-row justify-between w-[100%] bg-[#363b4f] rounded-xl "
                 key={index}
@@ -353,12 +334,6 @@ export default function TransactionSection() {
       <div className="flex">
       <TableBody className="min-w-[99%] mx-auto space-y-2.5">
         {completedTransactions && completedTransactions
-          .sort((a, b) => {
-            return (
-              new Date(b.sourceTransactionTimestamp).getTime() -
-              new Date(a.sourceTransactionTimestamp).getTime()
-            );
-          })
           .map((txn, index) => (
             <TableRow
               className="flex flex-row justify-between w-[100%] bg-[#363b4f] rounded-xl "

@@ -5,6 +5,7 @@ import { Chain, TransactionStatus } from "@/types/common";
 import { Transaction } from "@/types/transaction";
 import { useEffect, useMemo } from "react";
 import { useAvailAccount } from "@/stores/availWalletHook";
+import { useAccount } from "wagmi";
 
 /**
  * @description All the functionalities related to substrate wallet such as connecting, switching network, etc
@@ -18,9 +19,10 @@ export default function useTransactions() {
   } = useTransactionsStore();
 
   const { selected } = useAvailAccount()
+  const { address } = useAccount()
 
   useEffect(() => {
-    if (!selected?.address) {
+    if (!selected?.address && !address) {
       return
     }
 
@@ -34,19 +36,19 @@ export default function useTransactions() {
 
   // Fetch transactions from indexer
   const fetchTransactions = async ({
-    userAddress,
+    availAddress,
+    ethAddress,
     sourceChain,
     destinationChain,
   }: {
-    userAddress: string;
-    sourceChain: string;
-    destinationChain: string;
+    availAddress?: string;
+    ethAddress?: string;
+    sourceChain?: Chain;
+    destinationChain?: Chain;
   }) => {
     // Fetch all transactions
     const indexedTransactions = await getTransactionsFromIndexer(
-      userAddress,
-      sourceChain,
-      destinationChain,
+     { availAddress: availAddress, ethAddress: ethAddress, sourceChain: sourceChain, destinationChain: destinationChain}
     );
     setIndexedTransactions(indexedTransactions);
   };

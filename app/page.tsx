@@ -1,8 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
 // import BridgeSection from "@/components/sections/bridgesection";
-import { badgeVariants } from "@/components/ui/badge";
-import { ArrowUpRight } from "lucide-react";
-import { BiSupport } from "react-icons/bi";
 import dynamic from "next/dynamic";
 const
 BridgeSection = dynamic(() =>
@@ -43,15 +40,7 @@ export default function Home() {
               Privacy Policy
                </p>
              </div>
-              <div className="flex flex-row justify-center items-center space-x-2 ">
-               
-
-               <p className="text-center  font-ppmoribsemibold   ">
-                 {" "}
-               Contact Support
-               </p>
-               <ArrowUpRight className="h-4 w-4 text-white"/>
-             </div>
+             
         </div>
       </div>
     </main>
