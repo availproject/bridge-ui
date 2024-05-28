@@ -5,8 +5,24 @@ import { Badge, badgeVariants } from "../ui/badge";
 import { IoMdClose } from "react-icons/io";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "../ui/button";
+import useTransactions from "@/hooks/useTransactions";
+import { useAvailAccount } from "@/stores/availWalletHook";
+import { useEffect } from "react";
+import { useAccount } from "wagmi";
 
 export default function Eth() {
+  const { selected } = useAvailAccount();
+  const { address } = useAccount();
+  const { fetchTransactions } = useTransactions();
+
+  useEffect(()=> {
+    fetchTransactions({
+      availAddress: selected?.address,
+      ethAddress: address,
+    })
+
+  },[address])
+
   return (
     <>
       <div className="">
@@ -27,6 +43,7 @@ export default function Eth() {
               chain &&
               (!authenticationStatus ||
                 authenticationStatus === "authenticated");
+              
             return (
               <div
                 {...(!ready && {
@@ -42,7 +59,9 @@ export default function Eth() {
                   if (!connected) {
                     return (
                       <Button
-                        onClick={openConnectModal}
+                        onClick={async()=>{
+                        openConnectModal()
+                        }}
                         className=""
                         variant={"primary"}
                         size={"sm"}

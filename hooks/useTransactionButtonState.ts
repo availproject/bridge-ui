@@ -79,5 +79,9 @@ export default function useTransactionButtonState(
     return transactionInProgress || isInvalidAmount || hasInsufficientBalance || !isWalletConnected;
   }, [transactionInProgress, isInvalidAmount, hasInsufficientBalance, isWalletConnected]);
 
-  return { buttonStatus, isDisabled };
+  const availAmountToDollars = useMemo(() => {
+    return fromAmount ? fromAmount*.5 : 0;
+  },[fromAmount]);
+
+  return { buttonStatus, isDisabled, availAmountToDollars };
 }

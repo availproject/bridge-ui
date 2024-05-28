@@ -19,9 +19,14 @@ import { badgeVariants } from "../ui/badge";
 import { useCookies } from "react-cookie";
 import { ArrowDownCircle, ArrowLeft, InfoIcon } from "lucide-react";
 import { useAvailAccount } from "@/stores/availWalletHook";
+import useTransactions from "@/hooks/useTransactions";
+import { useAccount } from "wagmi";
+
 
 export default function Avail() {
   const [open, setOpen] = useState(false);
+  const {fetchTransactions} = useTransactions();
+  const {address} = useAccount();
   const [cookie, setCookie, removeCookie] = useCookies([
     "substrateAddress",
     "substrateWallet",
@@ -100,7 +105,6 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
             onClick={() => {
               removeCookie("substrateAddress");
               removeCookie("substrateWallet");
-              localStorage.removeItem("localTransactions")
               setSelected(null);
             }}
           >
@@ -156,6 +160,11 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
                       path: "/",
                       sameSite: true,
                     });
+                    fetchTransactions({
+                      availAddress: selected?.address,
+                      ethAddress: address
+                      
+                    })
                     setOpen(false);
                   }}
                   className="flex flex-row items-center justify-between bg-[#3a3b3cb1] rounded-xl !h-20  p-4 "
