@@ -23,7 +23,7 @@ import {
   fetchLatestBlockhash,
 } from "@/services/api";
 import { sendMessage } from "@/services/vectorpallet";
-import { _getBalance } from "@/utils/common";
+import { _getBalance, showSuccessMessage } from "@/utils/common";
 import { Logger } from "@/utils/logger";
 import { ONE_POWER_EIGHTEEN } from "@/constants/bigNumber";
 
@@ -134,7 +134,7 @@ export default function useBridge() {
 
       return txHash;
     },
-    [],
+    []
   );
 
   /**
@@ -156,16 +156,18 @@ export default function useBridge() {
 
     if ((await activeNetworkId()) !== networks.ethereum.id) {
       throw new Error(
-        `Invalid network, please switch to ${networks.ethereum.name} network(id: ${networks.ethereum.id})`,
+        `Invalid network, please switch to ${networks.ethereum.name} network(id: ${networks.ethereum.id})`
       );
     }
 
     // check approval
     const currentAllowance = await getCurrentAllowanceOnEth();
     if (new BigNumber(atomicAmount).gt(currentAllowance)) {
-      // approve
       await approveOnEth(atomicAmount);
-      // todo: can show approval success message
+      showSuccessMessage({
+        title: "Approval Executed",
+        desc: "Your approval transaction has been successfully executed",
+      });
     }
 
     const availBalance = await getAvailBalanceOnEth();
@@ -199,11 +201,6 @@ export default function useBridge() {
     Logger.debug(`Burn transaction hash: ${burnTxHash}`);
 
     return burnTxHash;
-
-    // todo:
-    // initiate bridging
-    // create contract instance for appConfig.contracts.ethereum.bridge
-    // call contract method
   };
 
   const initAvailToEthBridging = async ({
@@ -224,7 +221,9 @@ export default function useBridge() {
 
     if (
       availBalance &&
-      new BigNumber(atomicAmount).gt(new BigNumber(availBalance).times(ONE_POWER_EIGHTEEN))
+      new BigNumber(atomicAmount).gt(
+        new BigNumber(availBalance).times(ONE_POWER_EIGHTEEN)
+      )
     ) {
       throw new Error("insufficient balance");
     }
@@ -241,7 +240,7 @@ export default function useBridge() {
         to: `${destinationAddress.padEnd(66, "0")}`,
         domain: 2,
       },
-      selected!,
+      selected!
     );
     if (send.blockhash !== undefined) {
       const tempLocalTransaction: Transaction = {

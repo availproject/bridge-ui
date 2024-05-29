@@ -3,7 +3,6 @@ export enum ROUTES {
     DEVELOPERS = 'https://www.availproject.org/developer',
     ABOUTUS = 'https://www.availproject.org/aboutus',
     ECOSYSTEM = 'https://www.availproject.org/ecosystem',
-    // SOLUTIONS = '/solutions',
     DISCORD = 'https://discord.gg/y6fHnxZQX8',
     GITHUB = 'https://github.com/availproject',
     TWITTER = 'https://twitter.com/AvailProject',

@@ -11,6 +11,13 @@ import { getWalletBySource, WalletAccount } from "@talismn/connect-wallets";
 import { SignerOptions } from "@polkadot/api/types";
 import { executeParams, sendMessageParams } from "@/types/transaction";
 
+
+/**
+ * @description Get injected metadata for extrinsic call
+ * 
+ * @param api 
+ * @returns injected metadata
+ */
 const getInjectorMetadata = (api: ApiPromise) => {
   return {
     chain: api.runtimeChain.toString(),
@@ -26,6 +33,13 @@ const getInjectorMetadata = (api: ApiPromise) => {
   };
 };
 
+/**
+ * @brief Send message to initiate a AVAIL-> ETH transaction
+ * 
+ * @param props 
+ * @param account 
+ * @returns  { status: string, message: string, blockhash?: string }
+ */
 export async function sendMessage(
   props: sendMessageParams,
   account: WalletAccount
@@ -35,10 +49,9 @@ export async function sendMessage(
   blockhash?: string;
 }> {
   const injector = await getWalletBySource(account.source);
-  console.log("injector", injector);
-
   const api = await initialize(substrateConfig.endpoint);
   const metadata = getInjectorMetadata(api);
+
   //@ts-ignore
   await injector?.metadata?.provide(metadata);
 
@@ -50,8 +63,9 @@ export async function sendMessage(
         { signer: injector?.signer, app_id: 0 } as Partial<SignerOptions>,
         ({ status, events }) => {
           if (status.isInBlock) {
+            console.log()
             console.log(
-              `Transaction included at blockHash ${status.asInBlock}`
+              `Transaction included at blockHash ${status.asInBlock} `
             );
 
             events.forEach(({ event }) => {
@@ -110,6 +124,15 @@ export async function sendMessage(
   };
 }
 
+
+/**
+ * 
+ * @brief Execute transaction to finalize a  ETH -> AVAIL transaction
+ * 
+ * @param props 
+ * @param account 
+ * @returns  { status: string, message: string, blockhash?: string }
+ */
 export async function executeTransaction(
   props: executeParams,
   account: WalletAccount
@@ -119,10 +142,9 @@ export async function executeTransaction(
   blockhash?: string;
 }> {
   const injector = await getWalletBySource(account.source);
-  console.log("injector", injector);
-
   const api = await initialize(substrateConfig.endpoint);
   const metadata = getInjectorMetadata(api);
+  
   //@ts-ignore
   await injector?.metadata?.provide(metadata);
 

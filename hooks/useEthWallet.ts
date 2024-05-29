@@ -9,14 +9,6 @@ export default function useEthWallet() {
     const { switchChainAsync } = useSwitchChain();
     const { chainId, address, isConnected } = useAccount();
 
-
-    const isWalletConnected = useMemo(
-        async () => {
-            // Check if wallet is connected logic
-        },
-        [],
-    );
-
     const switchNetwork =
         async (chainId: number) => {
             await switchChainAsync({ chainId: chainId })
@@ -32,6 +24,7 @@ export default function useEthWallet() {
             
             return address
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [chainId],
     );
 
@@ -39,13 +32,6 @@ export default function useEthWallet() {
         async () => {
             return chainId
         }
-
-    const provider = useMemo(
-        () => {
-            // Get ethereum provider logic
-        },
-        [],
-    );
 
     const ethersProvider = useMemo(
         (): ethers.providers.JsonRpcProvider => {
@@ -55,9 +41,7 @@ export default function useEthWallet() {
     );
 
     return {
-        isWalletConnected,
         activeUserAddress,
-        provider,
         ethersProvider,
         activeNetworkId,
         switchNetwork

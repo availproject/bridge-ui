@@ -1,13 +1,12 @@
 import { initialize, isValidAddress } from "avail-js-sdk";
 import { substrateConfig, ethConfig } from "@/config/walletConfig";
-import { getBalance, readContract } from "@wagmi/core";
+import { readContract } from "@wagmi/core";
 import { Chain } from "@/types/common";
 import { appConfig } from "@/config/default";
 import ethereumAvailTokenAbi from "@/constants/abis/ethereumAvailToken.json";
-import BigNumber from "bignumber.js";
 import { toast } from "@/components/ui/use-toast";
 import { FaCheckCircle } from "react-icons/fa";
-import { ArrowUpRight, ExternalLink } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { isAddress } from "viem";
 import { RxCrossCircled } from "react-icons/rx";
 const networks = appConfig.networks;
@@ -45,6 +44,13 @@ export async function _getBalance(
   }
 }
 
+
+/**
+ * @description check if the address is valid
+ * @param address 
+ * @param chain 
+ * @returns boolean
+ */
 export async function validAddress(address: string, chain: Chain) {
   if (chain === Chain.AVAIL) {
     if (isValidAddress(address)) {
@@ -62,12 +68,19 @@ export async function validAddress(address: string, chain: Chain) {
   return false;
 }
 
+/**
+ * @description success toast message
+ */
 export const showSuccessMessage = ({
   blockhash,
   chain,
+  title,
+  desc,
 }: {
-  blockhash: `${string}`;
-  chain: Chain;
+  blockhash?: `${string}`;
+  chain?: Chain;
+  title?: string;
+  desc?: string;
 }) => {
   toast({
     title: (
@@ -75,11 +88,11 @@ export const showSuccessMessage = ({
         <FaCheckCircle className="mr-4 h-10 w-10" color="0BDA51" />
         <div className="flex flex-col space-y-2">
           <p className="mr-2 font-thicccboisemibold">
-            Transaction Initiated Successfully
+            {title ? title : "Transaction Initiated Successfully"}
           </p>
           <p className="!text-xs !text-white !text-opacity-40 font-thicccboisemibold">
-            Your Transaction of was Initiated Successfully.{" "}
-            <a
+            {desc ? desc : "Your Transaction of was Initiated Successfully."}
+            {blockhash && <a
               target="_blank"
               className="flex flex-row underline"
               href={
@@ -90,7 +103,7 @@ export const showSuccessMessage = ({
             >
               <p>View on Explorer. </p>
               <ArrowUpRight className="h-3 w-6" />
-            </a>
+            </a>}
           </p>
         </div>
       </div>
@@ -98,6 +111,9 @@ export const showSuccessMessage = ({
   });
 };
 
+/**
+ * @description failed toast message
+ */
 export const showFailedMessage = ({title, description} : {title: string, description?: string}) => {
   toast({
     title: (

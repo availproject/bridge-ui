@@ -264,6 +264,7 @@ export default function TransactionSection() {
                         href={
                           txn.sourceChain === Chain.ETH
                             ? `https://sepolia.etherscan.io/tx/${txn.sourceTransactionHash}`
+                            //TODO: need to fix this, the local txn dosen't have all these, check indexer to see how they are fetching.
                             : `https://avail-turing.subscan.io/extrinsic/${txn.sourceTransactionBlockNumber}-${txn.sourceTransactionIndex}`
                         }
                       >

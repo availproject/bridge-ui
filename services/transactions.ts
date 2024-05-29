@@ -9,7 +9,6 @@ const indexerInstance = axios.create({
     withCredentials: false
 });
 
-// todo: will need pagination in near future
 type TransactionQueryParams = {
     availAddress?: string;
     ethAddress?: string;
@@ -21,11 +20,18 @@ function validateParams({ availAddress, ethAddress }: TransactionQueryParams) {
     if (!availAddress && !ethAddress) {
         console.log("Either availAddress or ethAddress must be provided.")
         return [];
-       
      
     }
 }
 
+/** 
+ * @description Fetches transactions from the indexer
+ *      
+ * @param userAddress
+ * @param sourceChain
+ * @param destinationChain
+ * @returns  List of transactions
+*/
 async function fetchTransactions(userAddress: string, sourceChain?: string, destinationChain?: string): Promise<Transaction[]> {
     try {
         const response = await indexerInstance.get(`/transactions`, {
@@ -44,6 +50,13 @@ async function fetchTransactions(userAddress: string, sourceChain?: string, dest
     }
 }
 
+
+/**
+ * @description Fetches transactions and adds to store, based on wallet logged in
+ * 
+ * @param {TransactionQueryParams} 
+ * @returns Transaction[]
+ */
 export const getTransactionsFromIndexer = async (
     { availAddress, ethAddress, sourceChain, destinationChain }: TransactionQueryParams
 ): Promise<Transaction[]> => {
