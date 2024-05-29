@@ -6,6 +6,7 @@ import { Transaction } from "@/types/transaction";
 import { useEffect, useMemo } from "react";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useAccount } from "wagmi";
+import { Console } from "console";
 
 /**
  * @description All the functionalities related to substrate wallet such as connecting, switching network, etc
@@ -126,19 +127,24 @@ export default function useTransactions() {
   }, [allTransactions]);
 
   const completedTransactions: Transaction[] = useMemo(() => {
-    return allTransactions.filter((txn) => txn.status === "CLAIMED");
+    return allTransactions.filter((txn ) => txn.status === "CLAIMED");
   }, [allTransactions]);
 
   const addToLocalTransaction = (transaction: Transaction) => {
-    addLocalTransaction(transaction); // store
-
-    localStorage.setItem(
-      `localTransactions:${selected?.address}`,
-      JSON.stringify([
-        ...localTransactions,
-        transaction,
-      ]),
+    const localTransactionsKey = `localTransactions:${selected?.address}`;
+    const existingTransactions = JSON.parse(localStorage.getItem(localTransactionsKey) || '[]');
+    console.log(existingTransactions,"Existing",transaction, "Transaction")
+  console.log("adding", transaction)
+    const transactionExists = existingTransactions.some(
+      (t: Transaction) => t.sourceTransactionHash === transaction.sourceTransactionHash
     );
+    console.log("exists", transactionExists)
+    if (!transactionExists) {
+      const updatedTransactions = [...existingTransactions, transaction];
+      console.log("setting, no dupli found", transaction)
+      localStorage.setItem(localTransactionsKey, JSON.stringify(updatedTransactions));
+    }
+    addLocalTransaction(transaction);
   };
 
   const deleteLocalTransaction = (transaction: Transaction) => {

@@ -98,7 +98,7 @@ export const showSuccessMessage = ({
   });
 };
 
-export const showFailedMessage = () => {
+export const showFailedMessage = ({title, description} : {title: string, description?: string}) => {
   toast({
     title: (
       <div className="flex flex-row items-center justify-center !space-x-3 ">
@@ -108,7 +108,7 @@ export const showFailedMessage = () => {
             Transaction Failed
           </p>
           <p className="!text-xs !text-white !text-opacity-40 font-thicccboisemibold">
-            Your Transaction has failed due to some error. Please try again later.
+           {title ? title :  "Your Transaction has failed due to some error. Please try again later."} 
           </p>
         </div>
       </div>

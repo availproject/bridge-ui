@@ -243,7 +243,6 @@ export default function useBridge() {
       },
       selected!,
     );
-
     if (send.blockhash !== undefined) {
       const tempLocalTransaction: Transaction = {
         status: TransactionStatus.INITIATED,
@@ -256,7 +255,7 @@ export default function useBridge() {
         receiverAddress: "",
         sourceBlockHash: send.blockhash,
         sourceTransactionBlockNumber: 5811152,
-        sourceTransactionHash: "0xabc",
+        sourceTransactionHash: send.blockhash,
         sourceTransactionIndex: 66,
         sourceTransactionTimestamp: new Date().toISOString(),
       };

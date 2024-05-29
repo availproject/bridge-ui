@@ -9,6 +9,9 @@ export function parseError(error: unknown): string {
     if (!errorMessageString) {
         return genericErrorMessage;
     }
+    if(errorMessageString.match(/Cancelled/i)){
+        return "You have rejected the transaction on your connected wallet.";
+    }
 
     if (errorMessageString.match(/exceeds balance/i)) {
         return "Transfer amount is more than amount available in your wallet.";

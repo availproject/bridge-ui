@@ -196,7 +196,6 @@ export default function BridgeSection() {
           destinationAddress: destinationAddress,
         });
 
-        // show success message
         showSuccessMessage({
           blockhash: a,
           chain: Chain.ETH,
@@ -217,26 +216,20 @@ export default function BridgeSection() {
           destinationAddress: destinationAddress,
         });
 
-        if (init.blockhash === undefined) {
-          showFailedMessage();
-          setTransactionInProgress(false);
-        } else {
+        if (init.blockhash !== undefined) {
           showSuccessMessage({
             blockhash: init.blockhash,
             chain: Chain.AVAIL,
           });
-          setTransactionInProgress(false);
         }
-
+        setTransactionInProgress(false);
         resetState();
+        
       }
     } catch (error) {
       console.error(error);
-
       setTransactionInProgress(false);
-      toast({
-        title: parseError(error),
-      });
+      showFailedMessage({title : parseError(error)});
     }
   }
 

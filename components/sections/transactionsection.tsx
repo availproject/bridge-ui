@@ -29,6 +29,7 @@ import { LoadingButton } from "../ui/loadingbutton";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { Transaction } from "@/types/transaction";
 import { CiCircleQuestion } from "react-icons/ci";
+import { parseError } from "@/utils/parseError";
 
 export default function TransactionSection() {
   const { pendingTransactions, completedTransactions } = useTransactions();
@@ -123,7 +124,6 @@ export default function TransactionSection() {
           sourceTransactionTimestamp: sourceTransactionTimestamp,
           atomicAmount: atomicAmount,
         });
-
         if (successBlockhash) {
           showSuccessMessage({
             blockhash: successBlockhash,
@@ -132,11 +132,8 @@ export default function TransactionSection() {
           setComplete((prevState) =>
             prevState.map((state, idx) => (idx === index ? true : state))
           );
-          console.log("Claimed AVAIL");
-          console.log(complete, "complete index", index);
-        } else {
-          showFailedMessage();
         }
+
       } else if (chainFrom === Chain.ETH && blockhash && executeParams) {
         console.log("Initiate Vector.Execute");
         const successBlockhash = await initClaimEthtoAvail({
@@ -156,20 +153,13 @@ export default function TransactionSection() {
           );
           console.log("Claimed AVAIL on AVAIL");
           console.log(complete, "complete index", index);
-        } else {
-          showFailedMessage();
         }
-
-        setComplete((prevState) =>
-          prevState.map((state, idx) => (idx === index ? true : state))
-        );
-        console.log("Claimed AVAIL on ETH");
       } else {
-        showFailedMessage();
+        showFailedMessage({title: "Invalid Transaction"});
       }
     } catch (e) {
       console.error(e);
-      showFailedMessage();
+      showFailedMessage({title: parseError(e)});
     } finally {
       setInProcess((prevState) =>
         prevState.map((state, idx) => (idx === index ? false : state))
