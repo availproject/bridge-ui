@@ -553,7 +553,12 @@ export default function TransactionSection() {
       </TabsContent>
       <div className="absolute bottom-3 right-3 flex flex-row space-x-2 items-center justify-center">
         <p className="font-thicccboisemibold text-sm text-white mr-2">
-          <CiCircleQuestion className="w-6 h-6" />
+        
+          <HoverCard>
+  <HoverCardTrigger className="cursor-pointer">  <CiCircleQuestion className="w-6 h-6" /></HoverCardTrigger>
+  <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
+    Transactions take about 1 hour to bridge, thank you for your patience.  </HoverCardContent>
+</HoverCard>
         </p>
         <button
           disabled={currentPage === 0}
