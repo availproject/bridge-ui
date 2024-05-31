@@ -15,10 +15,13 @@ import { decodeAddress } from "@polkadot/util-crypto";
 import { u8aToHex } from "@polkadot/util";
 import { Chain, TransactionStatus } from "@/types/common";
 import useTransactions from "./useTransactions";
+import { useAccount } from "wagmi";
+import { parseError } from "@/utils/parseError";
 
 export default function useClaim() {
   const { ethHead, latestBlockhash } = useLatestBlockInfo();
   const { selected } = useAvailAccount();
+  const { address } = useAccount();
   const { addToLocalTransaction } = useTransactions();
 
   async function receiveAvail(merkleProof: merkleProof) {
@@ -85,6 +88,8 @@ export default function useClaim() {
     atomicAmount: string;
   }) => {
     try {
+
+      if (!address) throw new Error("Connect a Eth account");
       const a: merkleProof = await getMerkleProof(
         blockhash,
         sourceTransactionIndex,
@@ -116,8 +121,8 @@ export default function useClaim() {
       }
       console.log("added txn to local storage");
       return receive;
-    } catch (e) {
-      throw new Error("Error while claiming AVAIL");
+    } catch (e : any) {
+      throw new Error(e.message as string);
     }
   };
 
@@ -165,7 +170,7 @@ export default function useClaim() {
           from: `${executeParams.from.padEnd(66, "0")}`,
           to: u8aToHex(decodeAddress(executeParams.to)),
 
-          //@rac-sri we need to change this in the indexer
+          //TODO: check if this is correct, should'nt be the way it is right now.
           originDomain: executeParams.destinationDomain,
           destinationDomain: executeParams.originDomain,
           id: executeParams.messageid,

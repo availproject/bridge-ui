@@ -5,12 +5,18 @@ export function parseError(error: unknown): string {
     console.error(error)
     const errorMessageString: string = error instanceof Error ? error.message :
         typeof error === 'string' ? error : "";
-
     if (!errorMessageString) {
         return genericErrorMessage;
     }
     if(errorMessageString.match(/Cancelled/i)){
         return "You have rejected the transaction on your connected wallet.";
+    }
+
+    if (errorMessageString.match(/Connect a Eth account/i)) {
+        return "Connect an Ethereum account to proceed.";
+    }
+    if (errorMessageString.match(/Connect a Avail account/i)) {
+        return "Connect an Avail account to proceed.";
     }
 
     if (errorMessageString.match(/exceeds balance/i)) {
