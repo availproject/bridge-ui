@@ -41,6 +41,7 @@ export default function TransactionSection() {
   const [paginatedTransactionArray, setPaginatedTransactionArray] = useState<
     Transaction[][]
   >([]);
+  const [pendingTab, setPendingTab] = useState<boolean>(true);
   const [
     paginatedCompletedTransactionArray,
     setPaginatedCompletedTransactionArray,
@@ -277,6 +278,15 @@ export default function TransactionSection() {
     );
   }
 
+  const showPagination = () => {
+    if(paginatedCompletedTransactionArray.length > 4 && !pendingTab) {
+      return true
+    }
+    if(paginatedTransactionArray.length > 4 && pendingTab) {
+      return true
+    }
+    return false
+  }
   function PendingTransactions({
     pendingTransactions,
   }: {
@@ -525,7 +535,7 @@ export default function TransactionSection() {
     <div className=" relative flex flex-col mx-auto w-[95%] h-[100%] ">
       <Tabs defaultValue="pending" className="flex flex-col h-full">
         <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2  ">
-          <TabsTrigger value="pending" className="">
+          <TabsTrigger value="pending" className="" onClick={()=> {setPendingTab(true)}}>
             Pending
           </TabsTrigger>
           <TabsTrigger
@@ -561,7 +571,8 @@ export default function TransactionSection() {
           </div>
         </TabsContent>
       </Tabs>
-      <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
+      {/* Pagination */}
+      {showPagination() ? <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
         <p className="font-thicccboisemibold text-sm text-white mr-2">
           <HoverCard>
             <HoverCardTrigger className="cursor-pointer">
@@ -595,7 +606,8 @@ export default function TransactionSection() {
         >
           <ArrowRight />
         </button>
-      </div>
+      </div> :<></>
+      }
     </div>
   );
 }
