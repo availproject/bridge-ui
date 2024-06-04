@@ -16,7 +16,6 @@ import { u8aToHex } from "@polkadot/util";
 import { Chain, TransactionStatus } from "@/types/common";
 import useTransactions from "./useTransactions";
 import { useAccount } from "wagmi";
-import { parseError } from "@/utils/parseError";
 
 export default function useClaim() {
   const { ethHead, latestBlockhash } = useLatestBlockInfo();
@@ -146,6 +145,7 @@ export default function useClaim() {
       destinationDomain: number;
     };
   }) => {
+    try {
     if (!selected) throw new Error("Connect a Avail account");
     const proofs = await getAccountStorageProofs(
       latestBlockhash.blockHash,
@@ -198,7 +198,11 @@ export default function useClaim() {
       sourceTransactionTimestamp: sourceTransactionTimestamp,
     });
     return execute;
+  } catch (e : any) {
+    throw new Error(e as string);
   };
+}  
 
-  return { initClaimAvailToEth, initClaimEthtoAvail };
+return { initClaimAvailToEth, initClaimEthtoAvail };
+
 }

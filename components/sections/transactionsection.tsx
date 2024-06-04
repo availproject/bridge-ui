@@ -266,9 +266,9 @@ export default function TransactionSection() {
     pendingTransactions: Transaction[];
   }) {
     return (
-      <div className="flex">
-        <TableBody className="min-w-[99%] mx-auto space-y-2.5">
-          {pendingTransactions &&
+      <div className="flex h-[100%] overflow-scroll">
+        <TableBody className="overflow-scroll min-w-[99%] mx-auto space-y-2.5">
+          {pendingTransactions && 
             pendingTransactions.map((txn, index) => (
               <TableRow
                 className="flex flex-row justify-between w-[100%] bg-[#363b4f] rounded-xl "
@@ -493,8 +493,7 @@ export default function TransactionSection() {
 
   function NoTransactions() {
     return (
-      <>
-        <div className="flex pt-[30%] md:pt-[25%] lg:pt-[20%] xl:pt-[15%] flex-col items-center justify-center space-y-4">
+        <div className="flex flex-col items-center justify-center space-y-4 !h-[100%]">
           <img
             src="/images/notransactions.svg"
             alt="no transactions"
@@ -505,15 +504,14 @@ export default function TransactionSection() {
             <br /> with the connected accounts
           </h2>
         </div>
-      </>
     );
   }
 
   return (
-    <div className="relative flex flex-col mx-auto w-[95%] h-full ">
+    <div className=" relative flex flex-col mx-auto w-[95%] h-full ">
     <Tabs
       defaultValue="pending"
-      className=" flex flex-col"
+      className="flex flex-col h-full"
     >
       <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2  ">
         <TabsTrigger value="pending" className="">
@@ -527,19 +525,20 @@ export default function TransactionSection() {
           <FaHistory />
         </TabsTrigger>
       </TabsList>
-      <TabsContent value="pending">
-        <div className="overflow-y-scroll max-h-[90%] min-w-[100%]">
+      <TabsContent value="pending" className="h-full">
+        <div className="overflow-y-scroll h-full">
           {pendingTransactions.length > 0 ? (
             <PendingTransactions
               pendingTransactions={paginatedTransactionArray[currentPage]}
             />
           ) : (
+
             <NoTransactions />
           )}
         </div>
       </TabsContent>
-      <TabsContent value="history">
-        <div className="overflow-y-scroll max-h-[90%] min-w-[100%]">
+      <TabsContent value="history" className="h-full">
+        <div className="overflow-y-scroll h-full  min-w-[100%]">
           {completedTransactions.length > 0 ? (
             <CompletedTransactions
               completedTransactions={
@@ -551,7 +550,9 @@ export default function TransactionSection() {
           )}
         </div>
       </TabsContent>
-      <div className="absolute bottom-3 right-3 flex flex-row space-x-2 items-center justify-center">
+
+    </Tabs>
+    <div className="absolute w-[102%] pt-4 mx-auto bottom-1 -right-2 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
         <p className="font-thicccboisemibold text-sm text-white mr-2">
         
           <HoverCard>
@@ -583,7 +584,6 @@ export default function TransactionSection() {
           <ArrowRight />
         </button>
       </div>
-    </Tabs>
     </div>
   );
 }
