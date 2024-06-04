@@ -398,7 +398,7 @@ export default function BridgeSection() {
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4 w-full"
+                className="md:space-y-4 w-full"
               >
                 {/* FROM FIELD*/}
                 <FormField
@@ -662,7 +662,7 @@ export default function BridgeSection() {
         <TabsContent
           id="transactions"
           value="transactions"
-          className="text-white overflow-scroll"
+          className="text-white h-full"
         >
          <TransactionSection/>
         </TabsContent>

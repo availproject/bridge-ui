@@ -32,7 +32,6 @@ import useClaim from "@/hooks/useClaim";
 import { useEffect, useState } from "react";
 import { showFailedMessage, showSuccessMessage } from "@/utils/common";
 import { LoadingButton } from "../ui/loadingbutton";
-import { useAvailAccount } from "@/stores/availWalletHook";
 import { Transaction } from "@/types/transaction";
 import { CiCircleQuestion } from "react-icons/ci";
 import { parseError } from "@/utils/parseError";
@@ -93,7 +92,6 @@ export default function TransactionSection() {
     setInProcess(Array(pendingTransactions.length).fill(false));
     setComplete(Array(pendingTransactions.length).fill(false));
   }, [pendingTransactions]);
-
 
   const onSubmit = async (
     chainFrom: Chain,
@@ -180,7 +178,7 @@ export default function TransactionSection() {
           key={index}
           variant="primary"
           loading={inProcess[index]}
-          className="!px-4 !py-0 rounded-xl"
+          className="!px-4 !py-0 rounded-xl whitespace-nowrap"
           onClick={() =>
             onSubmit(
               txn.sourceChain,
@@ -221,6 +219,25 @@ export default function TransactionSection() {
     }
   };
 
+  function ParsedDate({
+    sourceTransactionTimestamp,
+  }: {
+    sourceTransactionTimestamp: string;
+  }) {
+    return (
+      <span className="flex md:flex-col flex-row items-center justify-center mr-4  ">
+        <span className="text-white text-opacity-60 flex md:flex-col flex-row space-x-1 items-center justify-center ml-2">
+          <p className="text-white">
+            {parseDateTimeToDay(sourceTransactionTimestamp)}
+          </p>
+          <p className=" text-xs">
+            {parseDateTimeToMonthShort(sourceTransactionTimestamp)}
+          </p>
+        </span>
+      </span>
+    );
+  }
+
   function TxnAddresses({
     depositor,
     receiver,
@@ -235,20 +252,20 @@ export default function TransactionSection() {
           <HoverCardContent className="bg-[#141414]">
             <p className="text-white text-opacity-80 !font-thicccboisemibold flex flex-row">
               <span>Depositor Address</span>{" "}
-              <img src="/images/Wallet.png" className="pl-1 !w-5 h-4"></img>
+              <img src="/images/Wallet.png" className="pl-1 !w-5 h-4" alt="wallet"></img>
             </p>
             <p className="text-white text-opacity-70 overflow-scroll">
               {depositor}
             </p>
           </HoverCardContent>
-        </HoverCard>{" "}
+        </HoverCard>
         <ArrowUpRight className="w-4 h-4 mr-2" />
         <HoverCard>
           <HoverCardTrigger className="">Reciever </HoverCardTrigger>
           <HoverCardContent>
             <p className="text-white text-opacity-80 !font-thicccboisemibold flex flex-row ">
               <span>Reciever Address</span>{" "}
-              <img src="/images/Wallet.png" className="pl-1 !w-5 h-4"></img>
+              <img src="/images/Wallet.png" className="pl-1 !w-5 h-4" alt="wallet"></img>
             </p>
             <p className="text-white text-opacity-70 overflow-scroll">
               {receiver}
@@ -266,27 +283,21 @@ export default function TransactionSection() {
     pendingTransactions: Transaction[];
   }) {
     return (
-      <div className="flex h-[85%] overflow-scroll">
-        <TableBody className="overflow-scroll min-w-[99%] mx-auto space-y-2.5">
-          {pendingTransactions && 
+      <div className="flex h-[85%] overflow-y-scroll">
+        <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
+          {pendingTransactions &&
             pendingTransactions.map((txn, index) => (
               <TableRow
-                className="flex flex-row justify-between w-[100%] bg-[#363b4f] rounded-xl "
+                className="flex overflow-x-scroll flex-row justify-between w-[100%] bg-[#363b4f] rounded-xl "
                 key={index}
               >
-                <TableCell className="font-medium flex flex-row space-x-4 rounded-xl">
-                  <span className="flex flex-col items-center justify-center  ">
-                    <span className="text-white text-opacity-60 flex flex-col items-center justify-center ml-2">
-                      <p className="text-white text-md">
-                        {parseDateTimeToDay(txn.sourceTransactionTimestamp)}
-                      </p>
-                      <p className=" text-xs">
-                        {parseDateTimeToMonthShort(
-                          txn.sourceTransactionTimestamp
-                        )}
-                      </p>
-                    </span>
-                  </span>
+                <TableCell className="font-medium flex flex-row rounded-xl">
+                  <div className="hidden md:flex">
+                  <ParsedDate
+                    sourceTransactionTimestamp={txn.sourceTransactionTimestamp}
+                  />
+                  </div>
+                 
                   <span className="flex flex-col-reverse items-start justify-center">
                     <TxnAddresses
                       depositor={txn.depositorAddress}
@@ -294,14 +305,18 @@ export default function TransactionSection() {
                     />
                     <span className="flex flex-row w-full">
                       <ChainLabel chain={txn.sourceChain} />
-                      <p className="px-4">
+                      <p className="md:px-4 px-2">
                         <MoveRight />
                       </p>{" "}
                       <ChainLabel chain={txn.destinationChain} />
+                      <div className="md:hidden flex">
+                      <ParsedDate
+                    sourceTransactionTimestamp={txn.sourceTransactionTimestamp}
+                  />
+                  </div>
                     </span>
-
                     <span className="flex flex-row space-x-2">
-                      <p className="text-white  text-lg font-thicccboisemibold">
+                      <p className="text-white !text-md lg:text-lg font-thicccboisemibold">
                         Sent{" "}
                         {
                           //@ts-ignore look at this once @ankitboghra
@@ -335,9 +350,9 @@ export default function TransactionSection() {
                       ) : (
                         <>
                           <Badge className="flex-row items-center justify-center space-x-2 bg-[#24262f]">
-                            <p>
+                            <p className="font-thicccboisemibold whitespace-nowrap">
                               {txn.status === "BRIDGED"
-                                ? "In Progress"
+                                ? `In Progress`
                                 : txn.status.charAt(0) +
                                   txn.status.toLocaleLowerCase().slice(1)}
                             </p>
@@ -388,42 +403,40 @@ export default function TransactionSection() {
     completedTransactions: Transaction[];
   }) {
     return (
-      <div className="flex">
-        <TableBody className="min-w-[99%] mx-auto space-y-2.5">
+      <div className="flex h-[85%] overflow-y-scroll">
+        <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
           {completedTransactions &&
             completedTransactions.map((txn, index) => (
               <TableRow
-                className="flex flex-row justify-between w-[100%] bg-[#363b4f] rounded-xl "
+                className="flex overflow-x-scroll flex-row justify-between w-[100%] bg-[#363b4f] rounded-xl "
                 key={index}
               >
-                <TableCell className="font-medium flex flex-row space-x-4 rounded-xl">
-                  <span className="flex flex-col items-center justify-center  ">
-                    <span className="text-white text-opacity-60 flex flex-col items-center justify-center ml-2">
-                      <p className="text-white text-md">
-                        {parseDateTimeToDay(txn.sourceTransactionTimestamp)}
-                      </p>
-                      <p className=" text-xs">
-                        {parseDateTimeToMonthShort(
-                          txn.sourceTransactionTimestamp
-                        )}
-                      </p>
-                    </span>
-                  </span>
+               <TableCell className="font-medium flex flex-row rounded-xl">
+                  <div className="hidden md:flex">
+                  <ParsedDate
+                    sourceTransactionTimestamp={txn.sourceTransactionTimestamp}
+                  />
+                  </div>
+                 
                   <span className="flex flex-col-reverse items-start justify-center">
-                  <TxnAddresses
+                    <TxnAddresses
                       depositor={txn.depositorAddress}
                       receiver={txn.receiverAddress}
                     />
                     <span className="flex flex-row w-full">
                       <ChainLabel chain={txn.sourceChain} />
-                      <p className="px-4">
+                      <p className="md:px-4 px-2">
                         <MoveRight />
                       </p>{" "}
                       <ChainLabel chain={txn.destinationChain} />
+                      <div className="md:hidden flex">
+                      <ParsedDate
+                    sourceTransactionTimestamp={txn.sourceTransactionTimestamp}
+                  />
+                  </div>
                     </span>
-
                     <span className="flex flex-row space-x-2">
-                      <p className="text-white  text-lg font-thicccboisemibold">
+                      <p className="text-white !text-md lg:text-lg font-thicccboisemibold">
                         Sent{" "}
                         {
                           //@ts-ignore look at this once @ankitboghra
@@ -436,7 +449,8 @@ export default function TransactionSection() {
                         href={
                           txn.sourceChain === Chain.ETH
                             ? `https://sepolia.etherscan.io/tx/${txn.sourceTransactionHash}`
-                            : `https://avail-turing.subscan.io/extrinsic/${txn.sourceTransactionBlockNumber}-${txn.sourceTransactionIndex}`
+                            : //TODO: need to fix this, the local txn dosen't have all these, check indexer to see how they are fetching.
+                              `https://avail-turing.subscan.io/extrinsic/${txn.sourceTransactionBlockNumber}-${txn.sourceTransactionIndex}`
                         }
                       >
                         <ArrowUpRight className="w-4 h-4" />
@@ -493,73 +507,71 @@ export default function TransactionSection() {
 
   function NoTransactions() {
     return (
-        <div className="flex flex-col items-center justify-center space-y-4 !h-[100%]">
-          <img
-            src="/images/notransactions.svg"
-            alt="no transactions"
-            className="text-opacity-80"
-          ></img>
-          <h2 className="font-ppmoribsemibold text-center w-[70%] md:text-lg mx-auto text-white text-opacity-90">
-            You don&apos;t have any transactions
-            <br /> with the connected accounts
-          </h2>
-        </div>
+      <div className="flex flex-col items-center justify-center space-y-4 !h-[100%]">
+        <img
+          src="/images/notransactions.svg"
+          alt="no transactions"
+          className="text-opacity-80"
+        ></img>
+        <h2 className="font-ppmoribsemibold text-center w-[70%] md:text-lg mx-auto text-white text-opacity-90">
+          You don&apos;t have any transactions
+          <br /> with the connected accounts
+        </h2>
+      </div>
     );
   }
 
   return (
-    <div className=" relative flex flex-col mx-auto w-[95%] h-full ">
-    <Tabs
-      defaultValue="pending"
-      className="flex flex-col h-full"
-    >
-      <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2  ">
-        <TabsTrigger value="pending" className="">
-          Pending
-        </TabsTrigger>
-        <TabsTrigger
-          value="history"
-          className="flex flex-row items-center justify-center space-x-1"
-        >
-          <p>History</p>
-          <FaHistory />
-        </TabsTrigger>
-      </TabsList>
-      <TabsContent value="pending" className="h-full">
-        <div className=" h-full">
-          {pendingTransactions.length > 0 ? (
-            <PendingTransactions
-              pendingTransactions={paginatedTransactionArray[currentPage]}
-            />
-          ) : (
-
-            <NoTransactions />
-          )}
-        </div>
-      </TabsContent>
-      <TabsContent value="history" className="h-full">
-        <div className=" h-full ">
-          {completedTransactions.length > 0 ? (
-            <CompletedTransactions
-              completedTransactions={
-                paginatedCompletedTransactionArray[currentPage]
-              }
-            />
-          ) : (
-            <NoTransactions />
-          )}
-        </div>
-      </TabsContent>
-
-    </Tabs>
-    <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
+    <div className=" relative flex flex-col mx-auto w-[95%] h-[100%] ">
+      <Tabs defaultValue="pending" className="flex flex-col h-full">
+        <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2  ">
+          <TabsTrigger value="pending" className="">
+            Pending
+          </TabsTrigger>
+          <TabsTrigger
+            value="history"
+            className="flex flex-row items-center justify-center space-x-1"
+          >
+            <p>History</p>
+            <FaHistory />
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="pending" className="h-full">
+          <div className=" h-full">
+            {pendingTransactions.length > 0 ? (
+              <PendingTransactions
+                pendingTransactions={paginatedTransactionArray[currentPage]}
+              />
+            ) : (
+              <NoTransactions />
+            )}
+          </div>
+        </TabsContent>
+        <TabsContent value="history" className="h-full">
+          <div className=" h-full ">
+            {completedTransactions.length > 0 ? (
+              <CompletedTransactions
+                completedTransactions={
+                  paginatedCompletedTransactionArray[currentPage]
+                }
+              />
+            ) : (
+              <NoTransactions />
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
+      <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
         <p className="font-thicccboisemibold text-sm text-white mr-2">
-        
           <HoverCard>
-  <HoverCardTrigger className="cursor-pointer">  <CiCircleQuestion className="w-6 h-6" /></HoverCardTrigger>
-  <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
-    Transactions take about 1 hour to bridge, thank you for your patience.  </HoverCardContent>
-</HoverCard>
+            <HoverCardTrigger className="cursor-pointer">
+              <CiCircleQuestion className="w-6 h-6" />
+            </HoverCardTrigger>
+            <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
+              Transactions take about 1 hour to bridge, thank you for your
+              patience.
+            </HoverCardContent>
+          </HoverCard>
         </p>
         <button
           disabled={currentPage === 0}
