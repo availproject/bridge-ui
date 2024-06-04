@@ -433,7 +433,7 @@ export default function BridgeSection() {
                                   You send
                                 </p>
                                 <input
-                                  className="!bg-inherit placeholder:text-white text-white placeholder:text-2xl text-2xl p-2 !h-8"
+                                  className="!bg-inherit  max-md:w-24 placeholder:text-white text-white placeholder:text-2xl text-2xl p-2 !h-8"
                                   style={{
                                     border: "none",
                                     background: "none",
@@ -552,7 +552,7 @@ export default function BridgeSection() {
                                 </p>
 
                                 <input
-                                  className="!bg-inherit placeholder:text-white text-white text-opacity-90 placeholder:text-opacity-90 placeholder:text-2xl text-2xl "
+                                  className="!bg-inherit max-md:w-24 placeholder:text-white text-white text-opacity-90 placeholder:text-opacity-90 placeholder:text-2xl text-2xl "
                                   style={{
                                     border: "none",
                                     background: "none",

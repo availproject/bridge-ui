@@ -266,7 +266,7 @@ export default function TransactionSection() {
     pendingTransactions: Transaction[];
   }) {
     return (
-      <div className="flex h-[100%] overflow-scroll">
+      <div className="flex h-[85%] overflow-scroll">
         <TableBody className="overflow-scroll min-w-[99%] mx-auto space-y-2.5">
           {pendingTransactions && 
             pendingTransactions.map((txn, index) => (
@@ -526,7 +526,7 @@ export default function TransactionSection() {
         </TabsTrigger>
       </TabsList>
       <TabsContent value="pending" className="h-full">
-        <div className="overflow-y-scroll h-full">
+        <div className=" h-full">
           {pendingTransactions.length > 0 ? (
             <PendingTransactions
               pendingTransactions={paginatedTransactionArray[currentPage]}
@@ -538,7 +538,7 @@ export default function TransactionSection() {
         </div>
       </TabsContent>
       <TabsContent value="history" className="h-full">
-        <div className="overflow-y-scroll h-full  min-w-[100%]">
+        <div className=" h-full ">
           {completedTransactions.length > 0 ? (
             <CompletedTransactions
               completedTransactions={
@@ -552,7 +552,7 @@ export default function TransactionSection() {
       </TabsContent>
 
     </Tabs>
-    <div className="absolute w-[102%] pt-4 mx-auto bottom-1 -right-2 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
+    <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
         <p className="font-thicccboisemibold text-sm text-white mr-2">
         
           <HoverCard>
