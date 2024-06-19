@@ -22,7 +22,7 @@ export default function Home() {
           className="-z-50 object-cover select-none absolute top-0 left-0 h-full  w-full"
           alt=""
         />
-        <div className="absolute bottom-4 left-8 flex flex-row space-x-4 text-opacity-80 text-white">
+        {/* <div className="absolute bottom-4 left-8 flex flex-row space-x-4 text-opacity-80 text-white">
           <div className="flex flex-row justify-center items-center space-x-2 ">
             <p className="text-center font-ppmoribsemibold"> Docs</p>
           </div>
@@ -32,7 +32,7 @@ export default function Home() {
               Privacy Policy
             </p>
           </div>
-        </div>
+        </div> */}
       </div>
     </main>
   );

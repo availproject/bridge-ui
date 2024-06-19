@@ -127,7 +127,7 @@ export async function sendMessage(
 
 /**
  * 
- * @brief Execute transaction to finalize a  ETH -> AVAIL transaction
+ * @brief Execute transaction to finalize/claim a  ETH -> AVAIL transaction
  * 
  * @param props 
  * @param account 
