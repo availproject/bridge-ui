@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
@@ -82,7 +83,7 @@ export default function Eth() {
                   return (
                     <>
                       <div className={badgeVariants({ variant: "avail" })}>
-                      <img src="/images/Wallet.png" className="pr-1"></img>
+                      <img src="/images/Wallet.png" className="pr-1" alt="a"></img>
                         {account?.address?.slice(0, 6) +
                           "..." +
                           account?.address?.slice(-4)}

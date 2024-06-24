@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client"
 
 /* eslint-disable react/jsx-key */
@@ -98,7 +99,7 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
             navigator.clipboard.writeText(selected.address);
           }}
         >
-          <img src="/images/Wallet.png" className="pr-1"></img>
+          <img src="/images/Wallet.png" className="pr-1" alt="a"></img>
           {selected.address.slice(0, 6) + "..." + selected.address?.slice(-4)}
           <button
             className="ml-2"

@@ -49,10 +49,10 @@ export default function TransactionSection() {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const { initClaimAvailToEth, initClaimEthtoAvail } = useClaim();
   const [complete, setComplete] = useState<boolean[]>(
-    Array(pendingTransactions.length).fill(false)
+    Array(pendingTransactions.length).fill(false),
   );
   const [inProcess, setInProcess] = useState<boolean[]>(
-    Array(pendingTransactions.length).fill(false)
+    Array(pendingTransactions.length).fill(false),
   );
 
   useEffect(() => {
@@ -109,10 +109,10 @@ export default function TransactionSection() {
       to: `${string}`;
       originDomain: number;
       destinationDomain: number;
-    }
+    },
   ) => {
     setInProcess((prevState) =>
-      prevState.map((state, idx) => (idx === index ? true : state))
+      prevState.map((state, idx) => (idx === index ? true : state)),
     );
 
     try {
@@ -136,7 +136,7 @@ export default function TransactionSection() {
             chain: Chain.ETH,
           });
           setComplete((prevState) =>
-            prevState.map((state, idx) => (idx === index ? true : state))
+            prevState.map((state, idx) => (idx === index ? true : state)),
           );
         }
       } else if (chainFrom === Chain.ETH && blockhash && executeParams) {
@@ -154,7 +154,7 @@ export default function TransactionSection() {
             chain: Chain.AVAIL,
           });
           setComplete((prevState) =>
-            prevState.map((state, idx) => (idx === index ? true : state))
+            prevState.map((state, idx) => (idx === index ? true : state)),
           );
           console.log("Claimed AVAIL on AVAIL");
           console.log(complete, "complete index", index);
@@ -167,7 +167,7 @@ export default function TransactionSection() {
       showFailedMessage({ title: parseError(e) });
     } finally {
       setInProcess((prevState) =>
-        prevState.map((state, idx) => (idx === index ? false : state))
+        prevState.map((state, idx) => (idx === index ? false : state)),
       );
     }
   };
@@ -197,7 +197,7 @@ export default function TransactionSection() {
                 to: txn.receiverAddress,
                 originDomain: 1,
                 destinationDomain: 2,
-              }
+              },
             )
           }
         >
@@ -249,11 +249,15 @@ export default function TransactionSection() {
     return (
       <span className="cursor-pointer flex mt-2 text-white text-opacity-70 flex-row w-full text-sm underline">
         <HoverCard>
-          <HoverCardTrigger>Depositor</HoverCardTrigger>
+          <HoverCardTrigger>Initator</HoverCardTrigger>
           <HoverCardContent className="bg-[#141414]">
             <p className="text-white text-opacity-80 !font-thicccboisemibold flex flex-row">
               <span>Depositor Address</span>{" "}
-              <img src="/images/Wallet.png" className="pl-1 !w-5 h-4" alt="wallet"></img>
+              <img
+                src="/images/Wallet.png"
+                className="pl-1 !w-5 h-4"
+                alt="wallet"
+              ></img>
             </p>
             <p className="text-white text-opacity-70 overflow-scroll">
               {depositor}
@@ -266,7 +270,11 @@ export default function TransactionSection() {
           <HoverCardContent>
             <p className="text-white text-opacity-80 !font-thicccboisemibold flex flex-row ">
               <span>Reciever Address</span>{" "}
-              <img src="/images/Wallet.png" className="pl-1 !w-5 h-4" alt="wallet"></img>
+              <img
+                src="/images/Wallet.png"
+                className="pl-1 !w-5 h-4"
+                alt="wallet"
+              ></img>
             </p>
             <p className="text-white text-opacity-70 overflow-scroll">
               {receiver}
@@ -279,14 +287,14 @@ export default function TransactionSection() {
   }
 
   const showPagination = () => {
-    if(paginatedCompletedTransactionArray.length > 4 && !pendingTab) {
-      return true
+    if (paginatedCompletedTransactionArray.length > 4 && !pendingTab) {
+      return true;
     }
-    if(paginatedTransactionArray.length > 4 && pendingTab) {
-      return true
+    if (paginatedTransactionArray.length > 4 && pendingTab) {
+      return true;
     }
-    return false
-  }
+    return false;
+  };
   function PendingTransactions({
     pendingTransactions,
   }: {
@@ -303,11 +311,13 @@ export default function TransactionSection() {
               >
                 <TableCell className="font-medium flex flex-row rounded-xl">
                   <div className="hidden md:flex">
-                  <ParsedDate
-                    sourceTransactionTimestamp={txn.sourceTransactionTimestamp}
-                  />
+                    <ParsedDate
+                      sourceTransactionTimestamp={
+                        txn.sourceTransactionTimestamp
+                      }
+                    />
                   </div>
-                 
+
                   <span className="flex flex-col-reverse items-start justify-center">
                     <TxnAddresses
                       depositor={txn.depositorAddress}
@@ -320,14 +330,16 @@ export default function TransactionSection() {
                       </p>{" "}
                       <ChainLabel chain={txn.destinationChain} />
                       <div className="md:hidden flex">
-                      <ParsedDate
-                    sourceTransactionTimestamp={txn.sourceTransactionTimestamp}
-                  />
-                  </div>
+                        <ParsedDate
+                          sourceTransactionTimestamp={
+                            txn.sourceTransactionTimestamp
+                          }
+                        />
+                      </div>
                     </span>
                     <span className="flex flex-row space-x-2">
                       <p className="text-white !text-md lg:text-lg font-thicccboisemibold">
-                        Sent{" "}
+
                         {
                           //@ts-ignore look at this once @ankitboghra
                           parseAvailAmount(txn.amount)
@@ -421,13 +433,15 @@ export default function TransactionSection() {
                 className="flex overflow-x-scroll flex-row justify-between w-[100%] bg-[#363b4f] rounded-xl "
                 key={index}
               >
-               <TableCell className="font-medium flex flex-row rounded-xl">
+                <TableCell className="font-medium flex flex-row rounded-xl">
                   <div className="hidden md:flex">
-                  <ParsedDate
-                    sourceTransactionTimestamp={txn.sourceTransactionTimestamp}
-                  />
+                    <ParsedDate
+                      sourceTransactionTimestamp={
+                        txn.sourceTransactionTimestamp
+                      }
+                    />
                   </div>
-                 
+
                   <span className="flex flex-col-reverse items-start justify-center">
                     <TxnAddresses
                       depositor={txn.depositorAddress}
@@ -440,14 +454,16 @@ export default function TransactionSection() {
                       </p>{" "}
                       <ChainLabel chain={txn.destinationChain} />
                       <div className="md:hidden flex">
-                      <ParsedDate
-                    sourceTransactionTimestamp={txn.sourceTransactionTimestamp}
-                  />
-                  </div>
+                        <ParsedDate
+                          sourceTransactionTimestamp={
+                            txn.sourceTransactionTimestamp
+                          }
+                        />
+                      </div>
                     </span>
                     <span className="flex flex-row space-x-2">
                       <p className="text-white !text-md lg:text-lg font-thicccboisemibold">
-                        Sent{" "}
+         
                         {
                           //@ts-ignore look at this once @ankitboghra
                           parseAvailAmount(txn.amount)
@@ -502,7 +518,7 @@ export default function TransactionSection() {
                         }
                         className="flex flex-row !text-xs justify-end text-white text-opacity-75 underline"
                       >
-                        Destination Transaction{" "}
+                        Claim Transaction{" "}
                         <ArrowUpRight className="w-4 h-4" />
                       </a>
                     </p>
@@ -535,7 +551,13 @@ export default function TransactionSection() {
     <div className=" relative flex flex-col mx-auto w-[95%] h-[100%] ">
       <Tabs defaultValue="pending" className="flex flex-col h-full">
         <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2  ">
-          <TabsTrigger value="pending" className="" onClick={()=> {setPendingTab(true)}}>
+          <TabsTrigger
+            value="pending"
+            className=""
+            onClick={() => {
+              setPendingTab(true);
+            }}
+          >
             Pending
           </TabsTrigger>
           <TabsTrigger
@@ -572,42 +594,45 @@ export default function TransactionSection() {
         </TabsContent>
       </Tabs>
       {/* Pagination */}
-      {showPagination() ? <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
-        <p className="font-thicccboisemibold text-sm text-white mr-2">
-          <HoverCard>
-            <HoverCardTrigger className="cursor-pointer">
-              <CiCircleQuestion className="w-6 h-6" />
-            </HoverCardTrigger>
-            <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
-              Transactions take about 1 hour to bridge, thank you for your
-              patience.
-            </HoverCardContent>
-          </HoverCard>
-        </p>
-        <button
-          disabled={currentPage === 0}
-          onClick={() => setCurrentPage((prev) => prev - 1)}
-          className={`rounded-lg bg-[#484C5D] ${
-            currentPage === 0
-              ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
-              : " text-white"
-          } p-2`}
-        >
-          <ArrowLeft />
-        </button>
-        <button
-          disabled={currentPage === paginatedTransactionArray.length - 1}
-          onClick={() => setCurrentPage((prev) => prev + 1)}
-          className={`rounded-lg bg-[#484C5D] ${
-            currentPage === paginatedTransactionArray.length - 1
-              ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
-              : " text-white"
-          } p-2`}
-        >
-          <ArrowRight />
-        </button>
-      </div> :<></>
-      }
+      {showPagination() ? (
+        <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
+          <p className="font-thicccboisemibold text-sm text-white mr-2">
+            <HoverCard>
+              <HoverCardTrigger className="cursor-pointer">
+                <CiCircleQuestion className="w-6 h-6" />
+              </HoverCardTrigger>
+              <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
+                Transactions take about 1 hour to bridge, thank you for your
+                patience.
+              </HoverCardContent>
+            </HoverCard>
+          </p>
+          <button
+            disabled={currentPage === 0}
+            onClick={() => setCurrentPage((prev) => prev - 1)}
+            className={`rounded-lg bg-[#484C5D] ${
+              currentPage === 0
+                ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
+                : " text-white"
+            } p-2`}
+          >
+            <ArrowLeft />
+          </button>
+          <button
+            disabled={currentPage === paginatedTransactionArray.length - 1}
+            onClick={() => setCurrentPage((prev) => prev + 1)}
+            className={`rounded-lg bg-[#484C5D] ${
+              currentPage === paginatedTransactionArray.length - 1
+                ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
+                : " text-white"
+            } p-2`}
+          >
+            <ArrowRight />
+          </button>
+        </div>
+      ) : (
+        <></>
+      )}
     </div>
   );
 }

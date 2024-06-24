@@ -23,6 +23,11 @@ export default function useClaim() {
   const { address } = useAccount();
   const { addToLocalTransaction } = useTransactions();
 
+  /**
+   * @description Receive/Claim after the merkleProof is fetched from the api AVAIL on ETH
+   * @param merkleProof 
+   * @returns 
+   */
   async function receiveAvail(merkleProof: merkleProof) {
     try {
       //@ts-ignore TODO: to be fixed later

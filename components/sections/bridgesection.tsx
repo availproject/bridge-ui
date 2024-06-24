@@ -63,7 +63,7 @@ const formSchema = z.object({
     (a) => parseFloat(z.number().parse(a)),
     z.number({
       invalid_type_error: "Amount should be a number",
-    })
+    }),
   ),
   toAddress: z.string(),
 });
@@ -81,15 +81,19 @@ export default function BridgeSection() {
   } = useCommonStore();
   const { selected } = useAvailAccount();
   const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
-  const { pendingTransactionsNumber, setPendingTransactionsNumber, readyToClaimTransactionsNumber, setReadyToClaimTransactionsNumber } =
-    useCommonStore();
+  const {
+    pendingTransactionsNumber,
+    setPendingTransactionsNumber,
+    readyToClaimTransactionsNumber,
+    setReadyToClaimTransactionsNumber,
+  } = useCommonStore();
   const { fetchTransactions } = useTransactions();
   const { pendingTransactions } = useTransactions();
   const [isChecked, setIsChecked] = useState<CheckedState>(false);
   const [open, setOpen] = useState(false);
   const [ethBalance, setEthBalance] = useState<string | undefined | null>(null);
   const [availBalance, setAvailBalance] = useState<string | undefined | null>(
-    null
+    null,
   );
 
   const [transactionInProgress, setTransactionInProgress] =
@@ -102,11 +106,8 @@ export default function BridgeSection() {
     },
   });
 
-  const { buttonStatus, isDisabled, availAmountToDollars } = useTransactionButtonState(
-    ethBalance,
-    availBalance,
-    transactionInProgress
-  );
+  const { buttonStatus, isDisabled, availAmountToDollars } =
+    useTransactionButtonState(ethBalance, availBalance, transactionInProgress);
 
   const appInit = async () => {
     if (!selected && !account.address) return;
@@ -119,7 +120,7 @@ export default function BridgeSection() {
         },
       ],
       appConfig.bridgeIndexerPollingInterval,
-      () => true
+      () => true,
     );
   };
   useEffect(() => {
@@ -130,13 +131,13 @@ export default function BridgeSection() {
   useEffect(() => {
     setPendingTransactionsNumber(
       pendingTransactions.filter(
-        (transaction) => transaction.status !== TransactionStatus.CLAIMED
-      ).length
+        (transaction) => transaction.status !== TransactionStatus.CLAIMED,
+      ).length,
     );
     setReadyToClaimTransactionsNumber(
       pendingTransactions.filter(
-        (transaction) => transaction.status == TransactionStatus.READY_TO_CLAIM
-      ).length
+        (transaction) => transaction.status == TransactionStatus.READY_TO_CLAIM,
+      ).length,
     );
   }, [pendingTransactions]);
 
@@ -162,7 +163,7 @@ export default function BridgeSection() {
       .getElementById("transactions")
       ?.setAttribute(
         "style",
-        `height:${document.getElementById("bridge")?.clientHeight}px`
+        `height:${document.getElementById("bridge")?.clientHeight}px`,
       );
   }, []);
 
@@ -224,12 +225,11 @@ export default function BridgeSection() {
         }
         setTransactionInProgress(false);
         resetState();
-        
       }
     } catch (error) {
       console.error(error);
       setTransactionInProgress(false);
-      showFailedMessage({title : parseError(error)});
+      showFailedMessage({ title: parseError(error) });
     }
   }
 
@@ -280,10 +280,12 @@ export default function BridgeSection() {
   }
 
   async function PasteAddressAction() {
-      const address =
-      await navigator.clipboard.readText();
-      const a = await validAddress(address, toChain);
-      a && (form.setValue("toAddress", address), setOpen(false), toast({
+    const address = await navigator.clipboard.readText();
+    const a = await validAddress(address, toChain);
+    a &&
+      (form.setValue("toAddress", address),
+      setOpen(false),
+      toast({
         title: (
           <div className="flex flex-row items-center justify-center !space-x-3 ">
             <FaCheckCircle className="mr-4 h-10 w-10" color="0BDA51" />
@@ -292,30 +294,29 @@ export default function BridgeSection() {
                 Address Added Successfully
               </p>
               <p className="!text-xs !text-white !text-opacity-40 font-thicccboisemibold">
-             The Address has been added successfully and would be used for future txns.
+                The Address has been added successfully and would be used for
+                future txns.
               </p>
             </div>
           </div>
         ),
       }));
 
-      !a && toast({
+    !a &&
+      toast({
         title: (
           <div className="flex flex-row items-center justify-center !space-x-3 ">
             <RxCrossCircled className="mr-2 h-10 w-10" color="FF0000" />
             <div className="flex flex-col space-y-2">
-              <p className="mr-2 font-thicccboisemibold">
-               Invalid Address
-              </p>
+              <p className="mr-2 font-thicccboisemibold">Invalid Address</p>
               <p className="!text-xs !text-white !text-opacity-40 font-thicccboisemibold">
-               Please Check the Address you have copied
+                Please Check the Address you have copied
               </p>
             </div>
           </div>
         ),
       });
-     
-    }
+  }
 
   return (
     <div className="text-white w-full m-4">
@@ -380,7 +381,7 @@ export default function BridgeSection() {
 
                 <p className="!text-left">
                   {" "}
-                  {pendingTransactionsNumber} Pending | {" "}
+                  {pendingTransactionsNumber} Pending |{" "}
                   {readyToClaimTransactionsNumber} Ready to Claim
                 </p>
               </>
@@ -446,14 +447,14 @@ export default function BridgeSection() {
                                   {...field}
                                   onChange={(event) => {
                                     field.onChange(
-                                      parseFloat(event.target.value)
+                                      parseFloat(event.target.value),
                                     );
                                     setFromAmount(
-                                      parseFloat(event.target.value)
+                                      parseFloat(event.target.value),
                                     );
                                   }}
                                 />
-                                  <p className="text-white font-ppmori text-sm text-opacity-60">
+                                <p className="text-white font-ppmori text-sm text-opacity-60">
                                   ~ {availAmountToDollars}$
                                 </p>
                               </div>
@@ -488,10 +489,10 @@ export default function BridgeSection() {
                                           ? parseFloat(ethBalance) * 0.98
                                           : 0
                                         : availBalance
-                                        ? parseFloat(
-                                            parseAmount(availBalance, 18)
-                                          ) * 0.98
-                                        : 0;
+                                          ? parseFloat(
+                                              parseAmount(availBalance, 18),
+                                            ) * 0.98
+                                          : 0;
 
                                     value && form.setValue("fromAmount", value);
                                     setFromAmount(value);
@@ -564,8 +565,12 @@ export default function BridgeSection() {
                                   min={0}
                                   placeholder={
                                     fromChain === Chain.ETH
-                                      ? (selected?.address ? selected.address.slice(0, 10) + "..." : "0x")
-                                      : (account?.address ? account.address.slice(0, 10) + "..." : "0x")
+                                      ? selected?.address
+                                        ? selected.address.slice(0, 10) + "..."
+                                        : "0x"
+                                      : account?.address
+                                        ? account.address.slice(0, 10) + "..."
+                                        : "0x"
                                   }
                                   {...field}
                                   onChange={(event) => {
@@ -616,9 +621,12 @@ export default function BridgeSection() {
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
-                                    <AlertDialogCancel onClick={()=>{
-                                      setOpen(false)
-                                    }} className="!bg-inherit !border-0 text-red-600 hover:text-red-800 ">
+                                    <AlertDialogCancel
+                                      onClick={() => {
+                                        setOpen(false);
+                                      }}
+                                      className="!bg-inherit !border-0 text-red-600 hover:text-red-800 "
+                                    >
                                       Cancel
                                     </AlertDialogCancel>
                                     <AlertDialogAction
@@ -664,7 +672,7 @@ export default function BridgeSection() {
           value="transactions"
           className="text-white h-full"
         >
-         <TransactionSection/>
+          <TransactionSection />
         </TabsContent>
       </Tabs>
     </div>
