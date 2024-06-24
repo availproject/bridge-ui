@@ -1,12 +1,29 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { badgeVariants } from "../ui/badge";
+import { Badge, badgeVariants } from "../ui/badge";
 import { IoMdClose } from "react-icons/io";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "../ui/button";
+import useTransactions from "@/hooks/useTransactions";
+import { useAvailAccount } from "@/stores/availWalletHook";
+import { useEffect } from "react";
+import { useAccount } from "wagmi";
 
 export default function Eth() {
+  const { selected } = useAvailAccount();
+  const { address } = useAccount();
+  const { fetchTransactions } = useTransactions();
+
+  useEffect(()=> {
+    fetchTransactions({
+      availAddress: selected?.address,
+      ethAddress: address,
+    })
+
+  },[address])
+
   return (
     <>
       <div className="">
@@ -27,6 +44,7 @@ export default function Eth() {
               chain &&
               (!authenticationStatus ||
                 authenticationStatus === "authenticated");
+              
             return (
               <div
                 {...(!ready && {
@@ -42,7 +60,9 @@ export default function Eth() {
                   if (!connected) {
                     return (
                       <Button
-                        onClick={openConnectModal}
+                        onClick={async()=>{
+                          openConnectModal()
+                        }}
                         className=""
                         variant={"primary"}
                         size={"sm"}
@@ -55,14 +75,14 @@ export default function Eth() {
                   if (chain.unsupported) {
                     return (
                       <button onClick={openChainModal} type="button">
-                        Wrong network
+                        <Badge>Wrong network</Badge>
                       </button>
                     );
                   }
 
                   return (
-                    <>
                       <div className={badgeVariants({ variant: "avail" })}>
+                      <img src="/images/Wallet.png" className="pr-1" alt="a"></img>
                         {account?.address?.slice(0, 6) +
                           "..." +
                           account?.address?.slice(-4)}
@@ -76,7 +96,6 @@ export default function Eth() {
                           <IoMdClose />
                         </button>
                       </div>
-                    </>
                   );
                 })()}
               </div>

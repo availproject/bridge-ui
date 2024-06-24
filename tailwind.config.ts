@@ -33,6 +33,7 @@ const config = {
         thicccboibold:["Thicccboi-bold","sans-serif"],
         thicccboiregular:["Thicccboi-regular","sans-serif"],
         ppmori:["PP Mori","sans-serif"],
+        ppmoribsemibold:["ppmori-semibold","sans-serif"],
         
       },
       animation: {

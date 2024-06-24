@@ -1,3 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
+"use client"
+
 /* eslint-disable react/jsx-key */
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
@@ -17,10 +20,14 @@ import { badgeVariants } from "../ui/badge";
 import { useCookies } from "react-cookie";
 import { ArrowDownCircle, ArrowLeft, InfoIcon } from "lucide-react";
 import { useAvailAccount } from "@/stores/availWalletHook";
-import { web3Enable } from "@polkadot/extension-dapp";
+import useTransactions from "@/hooks/useTransactions";
+import { useAccount } from "wagmi";
+
 
 export default function Avail() {
   const [open, setOpen] = useState(false);
+  const {fetchTransactions} = useTransactions();
+  const {address} = useAccount();
   const [cookie, setCookie, removeCookie] = useCookies([
     "substrateAddress",
     "substrateWallet",
@@ -30,7 +37,6 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
   const [enabledAccounts, setEnabledAccounts] = useState<WalletAccount[]>([]);
 
   useEffect(() => {(async()=>{
-    await web3Enable("bridge-ui")
     setSupportedWallets(getWallets());
     if (cookie.substrateAddress && cookie.substrateWallet) {
       const selectedWallet = getWallets().find((wallet) => {
@@ -40,12 +46,14 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
       if (!selectedWallet) {
         return;
       }
-      //TODO: fix this ts error later
-      //@ts-ignore
+       //@ts-ignore TODO: fix this ts error later
       selectedWallet.enable("bridge-ui").then(() => {
         selectedWallet.getAccounts().then((accounts) => {
-          // Now you can work with the enabledAccounts
-          const enabledAccounts = accounts;
+          const enabledAccounts = accounts.filter(account =>{
+            //@ts-ignore WalletAccount object dosen't have the types right
+            return account.type! !== "ethereum"
+          });
+          console.log(enabledAccounts, "enabled accounts")
           const selected = enabledAccounts.find(
             (account) => account.address == cookie.substrateAddress
           );
@@ -64,12 +72,15 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
     }
   })();
     
-  }, []);
+  }, [cookie.substrateAddress, cookie.substrateWallet, setSelected, setSelectedWallet]);
 
   async function updateEnabledAccounts(wallet: Wallet): Promise<undefined> {
     const accounts = await wallet.getAccounts();
-    setEnabledAccounts(accounts);
-
+    const substrateAccounts = accounts.filter(account =>{
+      //@ts-ignore WalletAccount object dosen't have the types right
+      return account.type! !== "ethereum"
+    });
+    setEnabledAccounts(substrateAccounts);
     return;
   }
 
@@ -80,11 +91,12 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
     return (
       <>
         <div
-          className={badgeVariants({ variant: "default" })}
+          className={badgeVariants({ variant: "avail" })}
           onClick={() => {
             navigator.clipboard.writeText(selected.address);
           }}
         >
+          <img src="/images/Wallet.png" className="pr-1" alt="a"></img>
           {selected.address.slice(0, 6) + "..." + selected.address?.slice(-4)}
           <button
             className="ml-2"
@@ -143,6 +155,10 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
                       path: "/",
                       sameSite: true,
                     });
+                    fetchTransactions({
+                      availAddress: selected?.address,
+                      ethAddress: address    
+                    })
                     setOpen(false);
                   }}
                   className="flex flex-row items-center justify-between bg-[#3a3b3cb1] rounded-xl !h-20  p-4 "
@@ -228,6 +244,7 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
   }
 
   return (
+    window === undefined ? <></> :
     <>
       {selected ? (
         <DisconnectWallet />
