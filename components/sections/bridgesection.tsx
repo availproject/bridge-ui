@@ -192,13 +192,13 @@ export default function BridgeSection() {
         const destinationAddress = selected?.address || values.toAddress;
 
         setTransactionInProgress(true);
-        const a = await initEthToAvailBridging({
+        const blockhash = await initEthToAvailBridging({
           atomicAmount: fromAmountAtomic,
           destinationAddress: destinationAddress,
         });
 
         showSuccessMessage({
-          blockhash: a,
+          blockhash: blockhash,
           chain: Chain.ETH,
         });
         setTransactionInProgress(false);

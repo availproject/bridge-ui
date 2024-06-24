@@ -46,12 +46,9 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
       if (!selectedWallet) {
         return;
       }
-      //TODO: fix this ts error later
-      //@ts-ignore
+       //@ts-ignore TODO: fix this ts error later
       selectedWallet.enable("bridge-ui").then(() => {
         selectedWallet.getAccounts().then((accounts) => {
-          // Now you can work with the enabledAccounts
-          console.log(accounts, "accounts")
           const enabledAccounts = accounts.filter(account =>{
             //@ts-ignore WalletAccount object dosen't have the types right
             return account.type! !== "ethereum"
@@ -114,8 +111,6 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
         </div>
       </>
     );
-
-
   }
 
   function SelectAccount() {
@@ -152,7 +147,6 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
                 <Button
                   onClick={() => {
                     setSelected(account);
-                    //do it here once
                     setCookie("substrateAddress", account?.address, {
                       path: "/",
                       sameSite: true,
@@ -163,8 +157,7 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
                     });
                     fetchTransactions({
                       availAddress: selected?.address,
-                      ethAddress: address
-                      
+                      ethAddress: address    
                     })
                     setOpen(false);
                   }}

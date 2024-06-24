@@ -35,9 +35,11 @@ import { LoadingButton } from "../ui/loadingbutton";
 import { Transaction } from "@/types/transaction";
 import { CiCircleQuestion } from "react-icons/ci";
 import { parseError } from "@/utils/parseError";
+import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
 
 export default function TransactionSection() {
   const { pendingTransactions, completedTransactions } = useTransactions();
+  const {avlHead, ethHead} = useLatestBlockInfo();
   const [paginatedTransactionArray, setPaginatedTransactionArray] = useState<
     Transaction[][]
   >([]);
@@ -49,10 +51,10 @@ export default function TransactionSection() {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const { initClaimAvailToEth, initClaimEthtoAvail } = useClaim();
   const [complete, setComplete] = useState<boolean[]>(
-    Array(pendingTransactions.length).fill(false),
+    Array(pendingTransactions.length).fill(false)
   );
   const [inProcess, setInProcess] = useState<boolean[]>(
-    Array(pendingTransactions.length).fill(false),
+    Array(pendingTransactions.length).fill(false)
   );
 
   useEffect(() => {
@@ -109,10 +111,10 @@ export default function TransactionSection() {
       to: `${string}`;
       originDomain: number;
       destinationDomain: number;
-    },
+    }
   ) => {
     setInProcess((prevState) =>
-      prevState.map((state, idx) => (idx === index ? true : state)),
+      prevState.map((state, idx) => (idx === index ? true : state))
     );
 
     try {
@@ -136,7 +138,7 @@ export default function TransactionSection() {
             chain: Chain.ETH,
           });
           setComplete((prevState) =>
-            prevState.map((state, idx) => (idx === index ? true : state)),
+            prevState.map((state, idx) => (idx === index ? true : state))
           );
         }
       } else if (chainFrom === Chain.ETH && blockhash && executeParams) {
@@ -154,7 +156,7 @@ export default function TransactionSection() {
             chain: Chain.AVAIL,
           });
           setComplete((prevState) =>
-            prevState.map((state, idx) => (idx === index ? true : state)),
+            prevState.map((state, idx) => (idx === index ? true : state))
           );
           console.log("Claimed AVAIL on AVAIL");
           console.log(complete, "complete index", index);
@@ -167,7 +169,7 @@ export default function TransactionSection() {
       showFailedMessage({ title: parseError(e) });
     } finally {
       setInProcess((prevState) =>
-        prevState.map((state, idx) => (idx === index ? false : state)),
+        prevState.map((state, idx) => (idx === index ? false : state))
       );
     }
   };
@@ -197,7 +199,7 @@ export default function TransactionSection() {
                 to: txn.receiverAddress,
                 originDomain: 1,
                 destinationDomain: 2,
-              },
+              }
             )
           }
         >
@@ -207,16 +209,32 @@ export default function TransactionSection() {
     );
   }
 
-  const getStatusTime = (status: TransactionStatus) => {
-    switch (status) {
-      case "PENDING":
-        return "~10 minutes approx";
-      case "INITIATED":
-        return "~1 hour approx";
-      case "BRIDGED":
-        return "~45 minutes approx";
-      default:
-        return "--";
+  const getStatusTime = ({
+    from,
+    sourceTimestamp,
+    sourceTransactionBlockNumber,
+    status,
+  }: {
+    from: Chain;
+    sourceTimestamp: Transaction["sourceTransactionTimestamp"];
+    sourceTransactionBlockNumber: Transaction["sourceTransactionBlockNumber"];
+    status: TransactionStatus;
+  }) => {
+
+    if (status === "READY_TO_CLAIM") {
+      return "~";
+    }
+    if (status === "INITIATED") {
+      return "Waiting for finalisation";
+    }
+    if (from === Chain.ETH) {
+      /** here we get a timestamp of  last update, considering the freq is 5 minutes, i add that time to the lastupdated time, and then substract from the current timestamp to get diff */
+      //another way, just use diff, subtract from 10minutes and you'll get next proof incoming when.
+      return `~ ${((ethHead.timestamp +  - new Date(sourceTimestamp).getTime()) / 1000 / 60).toFixed(2)} minutes`;
+    }
+    if (from === Chain.AVAIL) {
+      /** we have the blocknumber of txn, we check the latest proof's blocknumber, the max time from that should be 360 block's time + 1hr for proof, just check form the sourceblocknumber how far along are we   */
+      return `~ ${(((avlHead.data.end + 360) - sourceTransactionBlockNumber) * 12 )/ 60 + 60} minutes`;
     }
   };
 
@@ -295,6 +313,7 @@ export default function TransactionSection() {
     }
     return false;
   };
+
   function PendingTransactions({
     pendingTransactions,
   }: {
@@ -339,7 +358,6 @@ export default function TransactionSection() {
                     </span>
                     <span className="flex flex-row space-x-2">
                       <p className="text-white !text-md lg:text-lg font-thicccboisemibold">
-
                         {
                           //@ts-ignore look at this once @ankitboghra
                           parseAvailAmount(txn.amount)
@@ -407,7 +425,7 @@ export default function TransactionSection() {
                       )}
                     </span>
                     <p className="text-xs flex flex-row items-end justify-end text-right text-white text-opacity-70 space-x-1">
-                      <span>{getStatusTime(txn.status)}</span>{" "}
+                      <span>{getStatusTime({from: txn.sourceChain, sourceTimestamp: txn.sourceTransactionTimestamp, sourceTransactionBlockNumber: txn.sourceTransactionBlockNumber, status: txn.status} )}</span>{" "}
                       <Clock className="w-4 h-4" />
                     </p>
                   </div>
@@ -463,7 +481,6 @@ export default function TransactionSection() {
                     </span>
                     <span className="flex flex-row space-x-2">
                       <p className="text-white !text-md lg:text-lg font-thicccboisemibold">
-         
                         {
                           //@ts-ignore look at this once @ankitboghra
                           parseAvailAmount(txn.amount)
@@ -518,8 +535,7 @@ export default function TransactionSection() {
                         }
                         className="flex flex-row !text-xs justify-end text-white text-opacity-75 underline"
                       >
-                        Claim Transaction{" "}
-                        <ArrowUpRight className="w-4 h-4" />
+                        Claim Transaction <ArrowUpRight className="w-4 h-4" />
                       </a>
                     </p>
                   </div>

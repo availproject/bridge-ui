@@ -30,7 +30,7 @@ export default function useClaim() {
    */
   async function receiveAvail(merkleProof: merkleProof) {
     try {
-      //@ts-ignore TODO: to be fixed later
+      //@ts-ignore config gives a wagmi dep type error
       const result = await writeContract(config, {
         address: "0x967F7DdC4ec508462231849AE81eeaa68Ad01389",
         abi: bridgeContractAbi,
@@ -185,7 +185,6 @@ export default function useClaim() {
       },
       selected!,
     );
-    console.log(execute);
     addToLocalTransaction({
       sourceChain: Chain.ETH,
       destinationChain: Chain.AVAIL,

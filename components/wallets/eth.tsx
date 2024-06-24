@@ -61,7 +61,7 @@ export default function Eth() {
                     return (
                       <Button
                         onClick={async()=>{
-                        openConnectModal()
+                          openConnectModal()
                         }}
                         className=""
                         variant={"primary"}
@@ -74,14 +74,13 @@ export default function Eth() {
                   }
                   if (chain.unsupported) {
                     return (
-                      <button onClick={openChainModal}  type="button">
-                       <Badge>Wrong network</Badge>
+                      <button onClick={openChainModal} type="button">
+                        <Badge>Wrong network</Badge>
                       </button>
                     );
                   }
 
                   return (
-                    <>
                       <div className={badgeVariants({ variant: "avail" })}>
                       <img src="/images/Wallet.png" className="pr-1" alt="a"></img>
                         {account?.address?.slice(0, 6) +
@@ -97,7 +96,6 @@ export default function Eth() {
                           <IoMdClose />
                         </button>
                       </div>
-                    </>
                   );
                 })()}
               </div>
