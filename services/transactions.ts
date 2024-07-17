@@ -42,9 +42,10 @@ async function fetchTransactions(userAddress: string, sourceChain?: string, dest
                 page: 0,
             },
         });
-        return response.data.result;
+        return response.data.data.result;
     } catch (e) {
         console.error(e);
+        console.log("Error fetching transactions from indexer")
         return [];
     }
 }
