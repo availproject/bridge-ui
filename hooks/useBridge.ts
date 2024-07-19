@@ -195,7 +195,7 @@ export default function useBridge() {
       sourceBlockHash: "0x",
       sourceTransactionBlockNumber: 0,
       sourceTransactionIndex: 0,
-      sourceTransactionTimestamp: new Date().toISOString(),
+      sourceTimestamp: new Date().toISOString(),
     });
 
     Logger.debug(`Burn transaction hash: ${burnTxHash}`);
@@ -256,7 +256,7 @@ export default function useBridge() {
         sourceTransactionBlockNumber: 5811152,
         sourceTransactionHash: send.blockhash,
         sourceTransactionIndex: 66,
-        sourceTransactionTimestamp: new Date().toISOString(),
+        sourceTimestamp: new Date().toISOString(),
       };
 
       await addToLocalTransaction(tempLocalTransaction);

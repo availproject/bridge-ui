@@ -63,8 +63,8 @@ export default function TransactionSection() {
       const chunks = [];
       const sortedTxns = pendingTransactions.sort((a, b) => {
         return (
-          new Date(b.sourceTransactionTimestamp).getTime() -
-          new Date(a.sourceTransactionTimestamp).getTime()
+          new Date(b.sourceTimestamp).getTime() -
+          new Date(a.sourceTimestamp).getTime()
         );
       });
       for (let i = 0; i < pendingTransactions.length; i += chunkSize) {
@@ -79,8 +79,8 @@ export default function TransactionSection() {
       const chunkSize = 4;
       const sortedTxns = completedTransactions.sort((a, b) => {
         return (
-          new Date(b.sourceTransactionTimestamp).getTime() -
-          new Date(a.sourceTransactionTimestamp).getTime()
+          new Date(b.sourceTimestamp).getTime() -
+          new Date(a.sourceTimestamp).getTime()
         );
       });
       const chunks = [];
@@ -101,7 +101,7 @@ export default function TransactionSection() {
     blockhash: `0x${string}`,
     index: number,
     sourceTransactionHash: `0x${string}`,
-    sourceTransactionTimestamp: string,
+    sourceTimestamp: string,
     atomicAmount: string,
     sourceTransactionIndex?: number,
     executeParams?: {
@@ -129,7 +129,7 @@ export default function TransactionSection() {
           blockhash: blockhash,
           sourceTransactionIndex: sourceTransactionIndex,
           sourceTransactionHash: sourceTransactionHash,
-          sourceTransactionTimestamp: sourceTransactionTimestamp,
+          sourceTimestamp: sourceTimestamp,
           atomicAmount: atomicAmount,
         });
         if (successBlockhash) {
@@ -146,7 +146,7 @@ export default function TransactionSection() {
         const successBlockhash = await initClaimEthtoAvail({
           blockhash: blockhash,
           sourceTransactionHash: sourceTransactionHash,
-          sourceTransactionTimestamp: sourceTransactionTimestamp,
+          sourceTimestamp: sourceTimestamp,
           atomicAmount: atomicAmount,
           executeParams: executeParams,
         });
@@ -182,14 +182,15 @@ export default function TransactionSection() {
           variant="primary"
           loading={inProcess[index]}
           className="!px-4 !py-0 rounded-xl whitespace-nowrap"
-          onClick={() =>
-            onSubmit(
+          onClick={async () => {
+            console.log("adf", txn.sourceTimestamp)
+            await onSubmit(
               txn.sourceChain,
               //@ts-ignore to be fixed later
               txn.sourceBlockHash,
               index,
               txn.sourceTransactionHash,
-              txn.sourceTransactionTimestamp,
+              txn.sourceTimestamp,
               txn.amount,
               txn.sourceTransactionIndex,
               {
@@ -201,7 +202,7 @@ export default function TransactionSection() {
                 destinationDomain: 2,
               }
             )
-          }
+          }}
         >
           {txn.status === "READY_TO_CLAIM" ? "Claim Ready" : txn.status}
         </LoadingButton>
@@ -216,7 +217,7 @@ export default function TransactionSection() {
     status,
   }: {
     from: Chain;
-    sourceTimestamp: Transaction["sourceTransactionTimestamp"];
+    sourceTimestamp: Transaction["sourceTimestamp"];
     sourceTransactionBlockNumber: Transaction["sourceTransactionBlockNumber"];
     status: TransactionStatus;
   }) => {
@@ -239,18 +240,18 @@ export default function TransactionSection() {
   };
 
   function ParsedDate({
-    sourceTransactionTimestamp,
+    sourceTimestamp,
   }: {
-    sourceTransactionTimestamp: string;
+    sourceTimestamp: string;
   }) {
     return (
       <span className="flex md:flex-col flex-row items-center justify-center mr-4  ">
         <span className="text-white text-opacity-60 flex md:flex-col flex-row space-x-1 items-center justify-center ml-2">
           <p className="text-white">
-            {parseDateTimeToDay(sourceTransactionTimestamp)}
+            {parseDateTimeToDay(sourceTimestamp)}
           </p>
           <p className=" text-xs">
-            {parseDateTimeToMonthShort(sourceTransactionTimestamp)}
+            {parseDateTimeToMonthShort(sourceTimestamp)}
           </p>
         </span>
       </span>
@@ -331,8 +332,8 @@ export default function TransactionSection() {
                 <TableCell className="font-medium flex flex-row rounded-xl">
                   <div className="hidden md:flex">
                     <ParsedDate
-                      sourceTransactionTimestamp={
-                        txn.sourceTransactionTimestamp
+                      sourceTimestamp={
+                        txn.sourceTimestamp
                       }
                     />
                   </div>
@@ -350,8 +351,8 @@ export default function TransactionSection() {
                       <ChainLabel chain={txn.destinationChain} />
                       <div className="md:hidden flex">
                         <ParsedDate
-                          sourceTransactionTimestamp={
-                            txn.sourceTransactionTimestamp
+                          sourceTimestamp={
+                            txn.sourceTimestamp
                           }
                         />
                       </div>
@@ -370,7 +371,7 @@ export default function TransactionSection() {
                           txn.sourceChain === Chain.ETH
                             ? `https://sepolia.etherscan.io/tx/${txn.sourceTransactionHash}`
                             : //TODO: need to fix this, the local txn dosen't have all these, check indexer to see how they are fetching.
-                              `https://avail-turing.subscan.io/extrinsic/${txn.sourceTransactionBlockNumber}-${txn.sourceTransactionIndex}`
+                              `https://avail-turing.subscan.io/extrinsic/${txn.sourceTransactionHash}`
                         }
                       >
                         <ArrowUpRight className="w-4 h-4" />
@@ -425,7 +426,7 @@ export default function TransactionSection() {
                       )}
                     </span>
                     <p className="text-xs flex flex-row items-end justify-end text-right text-white text-opacity-70 space-x-1">
-                      <span>{getStatusTime({from: txn.sourceChain, sourceTimestamp: txn.sourceTransactionTimestamp, sourceTransactionBlockNumber: txn.sourceTransactionBlockNumber, status: txn.status} )}</span>{" "}
+                      <span>{getStatusTime({from: txn.sourceChain, sourceTimestamp: txn.sourceTimestamp, sourceTransactionBlockNumber: txn.sourceTransactionBlockNumber, status: txn.status} )}</span>{" "}
                       <Clock className="w-4 h-4" />
                     </p>
                   </div>
@@ -454,8 +455,8 @@ export default function TransactionSection() {
                 <TableCell className="font-medium flex flex-row rounded-xl">
                   <div className="hidden md:flex">
                     <ParsedDate
-                      sourceTransactionTimestamp={
-                        txn.sourceTransactionTimestamp
+                      sourceTimestamp={
+                        txn.sourceTimestamp
                       }
                     />
                   </div>
@@ -473,8 +474,8 @@ export default function TransactionSection() {
                       <ChainLabel chain={txn.destinationChain} />
                       <div className="md:hidden flex">
                         <ParsedDate
-                          sourceTransactionTimestamp={
-                            txn.sourceTransactionTimestamp
+                          sourceTimestamp={
+                            txn.sourceTimestamp
                           }
                         />
                       </div>

@@ -117,6 +117,7 @@ export default function BridgeSection() {
         {
           availAddress: selected?.address,
           ethAddress: account.address,
+          
         },
       ],
       appConfig.bridgeIndexerPollingInterval,

@@ -82,13 +82,13 @@ export default function useClaim() {
     blockhash,
     sourceTransactionHash,
     sourceTransactionIndex,
-    sourceTransactionTimestamp,
+    sourceTimestamp,
     atomicAmount,
   }: {
     blockhash: `0x${string}`;
     sourceTransactionHash: `0x${string}`;
     sourceTransactionIndex: number;
-    sourceTransactionTimestamp: string;
+    sourceTimestamp: string;
     atomicAmount: string;
   }) => {
     try {
@@ -120,7 +120,7 @@ export default function useClaim() {
           sourceBlockHash: "0x",
           sourceTransactionBlockNumber: 0,
           sourceTransactionIndex: 0,
-          sourceTransactionTimestamp: sourceTransactionTimestamp,
+          sourceTimestamp: sourceTimestamp,
         });
       }
       console.log("added txn to local storage");
@@ -134,12 +134,12 @@ export default function useClaim() {
     blockhash,
     executeParams,
     sourceTransactionHash,
-    sourceTransactionTimestamp,
+    sourceTimestamp,
     atomicAmount,
   }: {
     blockhash: `0x${string}`;
     sourceTransactionHash: `0x${string}`;
-    sourceTransactionTimestamp: string;
+    sourceTimestamp: string;
     atomicAmount: string;
     executeParams: {
       messageid: number;
@@ -199,7 +199,7 @@ export default function useClaim() {
       sourceBlockHash: "0x",
       sourceTransactionBlockNumber: 0,
       sourceTransactionIndex: 0,
-      sourceTransactionTimestamp: sourceTransactionTimestamp,
+      sourceTimestamp: sourceTimestamp,
     });
     return execute;
   } catch (e : any) {
