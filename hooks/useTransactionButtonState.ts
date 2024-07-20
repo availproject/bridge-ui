@@ -36,7 +36,6 @@ async function getTokenPrice({ coin, fiat, id }: { coin: string, fiat: string, i
       `${process.env.NEXT_PUBLIC_COINGECKO_API_URL}?ids=${coin}&vs_currencies=${fiat}`
     );
     const data = await response.json();
-    console.log(data, "sdgf");
     setDollarAmount(data[coin][fiat]);
   } catch (error) {
     console.error('Error fetching token price:', error);

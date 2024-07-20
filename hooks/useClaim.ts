@@ -118,7 +118,7 @@ export default function useClaim() {
           depositorAddress: "",
           receiverAddress: "",
           sourceBlockHash: "0x",
-          sourceTransactionBlockNumber: 0,
+          sourceBlockNumber: 0,
           sourceTransactionIndex: 0,
           sourceTimestamp: sourceTimestamp,
         });
@@ -197,7 +197,7 @@ export default function useClaim() {
       depositorAddress: "",
       receiverAddress: "",
       sourceBlockHash: "0x",
-      sourceTransactionBlockNumber: 0,
+      sourceBlockNumber: 0,
       sourceTransactionIndex: 0,
       sourceTimestamp: sourceTimestamp,
     });

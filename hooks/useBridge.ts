@@ -193,7 +193,7 @@ export default function useBridge() {
       depositorAddress: activeUserAddress,
       receiverAddress: destinationAddress,
       sourceBlockHash: "0x",
-      sourceTransactionBlockNumber: 0,
+      sourceBlockNumber: 0,
       sourceTransactionIndex: 0,
       sourceTimestamp: new Date().toISOString(),
     });
@@ -253,7 +253,7 @@ export default function useBridge() {
         depositorAddress: selected?.address,
         receiverAddress: "",
         sourceBlockHash: send.blockhash,
-        sourceTransactionBlockNumber: 0,
+        sourceBlockNumber: 0,
         sourceTransactionHash: send.txHash,
         sourceTransactionIndex: 0,
         sourceTimestamp: new Date().toISOString(),

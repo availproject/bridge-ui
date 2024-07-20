@@ -127,7 +127,7 @@ export default function BridgeSection() {
       getTokenPrice,
       [
         {
-          coin: "celestia", fiat: "usd"
+          coin: "ethereum", fiat: "usd"
         },
       ],
       appConfig.bridgeIndexerPollingInterval,

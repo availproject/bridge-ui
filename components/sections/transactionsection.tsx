@@ -183,7 +183,6 @@ export default function TransactionSection() {
           loading={inProcess[index]}
           className="!px-4 !py-0 rounded-xl whitespace-nowrap"
           onClick={async () => {
-            console.log("adf", txn.sourceTimestamp)
             await onSubmit(
               txn.sourceChain,
               //@ts-ignore to be fixed later
@@ -213,15 +212,14 @@ export default function TransactionSection() {
   const getStatusTime = ({
     from,
     sourceTimestamp,
-    sourceTransactionBlockNumber,
+    sourceBlockNumber,
     status,
   }: {
     from: Chain;
     sourceTimestamp: Transaction["sourceTimestamp"];
-    sourceTransactionBlockNumber: Transaction["sourceTransactionBlockNumber"];
+    sourceBlockNumber: Transaction["sourceBlockNumber"];
     status: TransactionStatus;
   }) => {
-
     if (status === "READY_TO_CLAIM") {
       return "~";
     }
@@ -235,7 +233,7 @@ export default function TransactionSection() {
     }
     if (from === Chain.AVAIL) {
       /** we have the blocknumber of txn, we check the latest proof's blocknumber, the max time from that should be 360 block's time + 1hr for proof, just check form the sourceblocknumber how far along are we   */
-      return `~ ${(((avlHead.data.end + 360) - sourceTransactionBlockNumber) * 12 )/ 60 + 60} minutes`;
+      return `~ ${(((avlHead.data.end + 360) - sourceBlockNumber) * 12 )/ 60 + 60} minutes`;
     }
   };
 
@@ -426,7 +424,7 @@ export default function TransactionSection() {
                       )}
                     </span>
                     <p className="text-xs flex flex-row items-end justify-end text-right text-white text-opacity-70 space-x-1">
-                      <span>{getStatusTime({from: txn.sourceChain, sourceTimestamp: txn.sourceTimestamp, sourceTransactionBlockNumber: txn.sourceTransactionBlockNumber, status: txn.status} )}</span>{" "}
+                      <span>{getStatusTime({from: txn.sourceChain, sourceTimestamp: txn.sourceTimestamp, sourceBlockNumber: txn.sourceBlockNumber, status: txn.status} )}</span>{" "}
                       <Clock className="w-4 h-4" />
                     </p>
                   </div>
@@ -494,7 +492,7 @@ export default function TransactionSection() {
                           txn.sourceChain === Chain.ETH
                             ? `https://sepolia.etherscan.io/tx/${txn.sourceTransactionHash}`
                             : //TODO: need to fix this, the local txn dosen't have all these, check indexer to see how they are fetching.
-                              `https://avail-turing.subscan.io/extrinsic/${txn.sourceTransactionBlockNumber}-${txn.sourceTransactionIndex}`
+                              `https://avail-turing.subscan.io/extrinsic/${txn.sourceBlockNumber}-${txn.sourceTransactionIndex}`
                         }
                       >
                         <ArrowUpRight className="w-4 h-4" />
