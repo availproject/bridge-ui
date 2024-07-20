@@ -13,7 +13,7 @@ export default function useTransactionButtonState(
   const account = useAccount();
 
   const {selected} = useAvailAccount();
-  const {fromChain, toChain, fromAmount, toAddress} = useCommonStore();
+  const {fromChain, dollarAmount, setDollarAmount, toChain, fromAmount, toAddress} = useCommonStore();
 
   const isWalletConnected = useMemo(() => {
     if(fromChain === Chain.ETH) {
@@ -23,6 +23,28 @@ export default function useTransactionButtonState(
       return selected?.address && true
     }
   }, [account.address, selected?.address, fromChain]);
+
+/**
+ * @description get the price of the token
+ * 
+ * @param {coin, fiat, id}
+ * @sets price of the token in dollars
+ */
+async function getTokenPrice({ coin, fiat, id }: { coin: string, fiat: string, id: number }) {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_COINGECKO_API_URL}?ids=${coin}&vs_currencies=${fiat}`
+    );
+    const data = await response.json();
+    console.log(data, "sdgf");
+    setDollarAmount(data[coin][fiat]);
+  } catch (error) {
+    console.error('Error fetching token price:', error);
+    throw error;
+  }
+  
+}
+
 
   const isInvalidAmount = useMemo(() => {
     const amount = parseFloat(fromAmount?.toString());
@@ -79,9 +101,9 @@ export default function useTransactionButtonState(
     return transactionInProgress || isInvalidAmount || hasInsufficientBalance || !isWalletConnected;
   }, [transactionInProgress, isInvalidAmount, hasInsufficientBalance, isWalletConnected]);
 
-  const availAmountToDollars = useMemo(() => {
-    return fromAmount ? fromAmount*.5 : 0;
-  },[fromAmount]);
+  const availAmountToDollars: number = useMemo(() => {
+    return fromAmount ? fromAmount * dollarAmount : 0;
+  },[fromAmount, dollarAmount]);
 
-  return { buttonStatus, isDisabled, availAmountToDollars };
+  return { buttonStatus, isDisabled, availAmountToDollars, getTokenPrice };
 }

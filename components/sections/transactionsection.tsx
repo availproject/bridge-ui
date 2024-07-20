@@ -348,7 +348,7 @@ export default function TransactionSection() {
                       <p className="md:px-4 px-2">
                         <MoveRight />
                       </p>{" "}
-                      <ChainLabel chain={txn.destinationChain} />
+                      <ChainLabel chain={txn.sourceChain === Chain.AVAIL ? Chain.ETH : Chain.AVAIL} />
                       <div className="md:hidden flex">
                         <ParsedDate
                           sourceTimestamp={
@@ -471,7 +471,7 @@ export default function TransactionSection() {
                       <p className="md:px-4 px-2">
                         <MoveRight />
                       </p>{" "}
-                      <ChainLabel chain={txn.destinationChain} />
+                      <ChainLabel chain={txn.sourceChain === Chain.AVAIL ? Chain.ETH : Chain.AVAIL} />
                       <div className="md:hidden flex">
                         <ParsedDate
                           sourceTimestamp={

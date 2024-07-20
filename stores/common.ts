@@ -6,6 +6,8 @@ import { create } from "zustand";
 interface CommonStore {
     fromChain: Chain
     setFromChain: (fromChain: Chain) => void
+    dollarAmount: number
+    setDollarAmount: (dollarAmount: number) => void
     toChain: Chain
     setToChain: (toChain: Chain) => void
     fromChainBalance: number | undefined
@@ -27,6 +29,8 @@ interface CommonStore {
 export const useCommonStore = create<CommonStore>((set) => ({
     fromChain: Chain.AVAIL,
     setFromChain: (fromChain) => set({ fromChain }),
+    dollarAmount: 0,
+    setDollarAmount: (dollarAmount) => set({ dollarAmount }),
     toChain: Chain.ETH,
     setToChain: (toChain) => set({ toChain }),
     fromChainBalance: undefined,

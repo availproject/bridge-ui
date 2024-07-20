@@ -53,7 +53,6 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
             //@ts-ignore WalletAccount object dosen't have the types right
             return account.type! !== "ethereum"
           });
-          console.log(enabledAccounts, "enabled accounts")
           const selected = enabledAccounts.find(
             (account) => account.address == cookie.substrateAddress
           );

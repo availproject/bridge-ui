@@ -106,12 +106,12 @@ export default function BridgeSection() {
     },
   });
 
-  const { buttonStatus, isDisabled, availAmountToDollars } =
+  const { buttonStatus, isDisabled, availAmountToDollars, getTokenPrice } =
     useTransactionButtonState(ethBalance, availBalance, transactionInProgress);
 
   const appInit = async () => {
     if (!selected && !account.address) return;
-    pollWithDelay(
+     pollWithDelay(
       fetchTransactions,
       [
         {
@@ -123,6 +123,17 @@ export default function BridgeSection() {
       appConfig.bridgeIndexerPollingInterval,
       () => true,
     );
+   pollWithDelay(
+      getTokenPrice,
+      [
+        {
+          coin: "celestia", fiat: "usd"
+        },
+      ],
+      appConfig.bridgeIndexerPollingInterval,
+      () => true,
+    );
+    
   };
   useEffect(() => {
     appInit();
@@ -183,7 +194,6 @@ export default function BridgeSection() {
       setAvailBalance(undefined);
     }
   };
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       if (fromChain === Chain.ETH) {
@@ -233,6 +243,7 @@ export default function BridgeSection() {
       showFailedMessage({ title: parseError(error) });
     }
   }
+
 
   function Balance() {
     return (
@@ -320,7 +331,7 @@ export default function BridgeSection() {
   }
 
   return (
-    <div className="text-white w-full m-4">
+    <div className="text-white w-full m-4">   
       <Tabs
         defaultValue="bridge"
         id="container"
@@ -456,7 +467,7 @@ export default function BridgeSection() {
                                   }}
                                 />
                                 <p className="text-white font-ppmori text-sm text-opacity-60">
-                                  ~ {availAmountToDollars}$
+                                  ~{availAmountToDollars} $
                                 </p>
                               </div>
 

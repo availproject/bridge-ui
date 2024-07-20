@@ -1,6 +1,7 @@
 import axios from "axios";
 import { appConfig } from "@/config/default";
 import { Transaction } from "@/types/transaction";
+import { Chain } from "@/types/common";
 
 const indexerInstance = axios.create({
     baseURL: appConfig.bridgeIndexerBaseUrl,
@@ -75,14 +76,12 @@ export const getTransactionsFromIndexer = async (
     };
     console.log("Fetching transactions from indexer");
     if (ethAddress) {
-        const ethTransactions = await fetchTransactions(ethAddress, sourceChain, destinationChain);
-        console.log("Fetched eth transactions", ethTransactions);
+        const ethTransactions = await fetchTransactions(ethAddress, Chain.ETH, destinationChain);
         addUniqueTransactions(ethTransactions);
     }
 
     if (availAddress) {
-        const availTransactions = await fetchTransactions(availAddress, sourceChain, destinationChain);
-        console.log("Fetched avail transactions", availTransactions);
+        const availTransactions = await fetchTransactions(availAddress, Chain.AVAIL, destinationChain);
         addUniqueTransactions(availTransactions);
     }
 
