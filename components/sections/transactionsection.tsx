@@ -153,6 +153,7 @@ export default function TransactionSection() {
         if (successBlockhash.blockhash) {
           showSuccessMessage({
             blockhash: successBlockhash.blockhash,
+            txHash: successBlockhash.txHash,
             chain: Chain.AVAIL,
           });
           setComplete((prevState) =>
@@ -266,7 +267,7 @@ export default function TransactionSection() {
     return (
       <span className="cursor-pointer flex mt-2 text-white text-opacity-70 flex-row w-full text-sm underline">
         <HoverCard>
-          <HoverCardTrigger>Initator</HoverCardTrigger>
+          <HoverCardTrigger>From</HoverCardTrigger>
           <HoverCardContent className="bg-[#141414]">
             <p className="text-white text-opacity-80 !font-thicccboisemibold flex flex-row">
               <span>Depositor Address</span>{" "}
@@ -283,7 +284,7 @@ export default function TransactionSection() {
         </HoverCard>
         <ArrowUpRight className="w-4 h-4 mr-2" />
         <HoverCard>
-          <HoverCardTrigger className="">Reciever </HoverCardTrigger>
+          <HoverCardTrigger className="">To </HoverCardTrigger>
           <HoverCardContent>
             <p className="text-white text-opacity-80 !font-thicccboisemibold flex flex-row ">
               <span>Reciever Address</span>{" "}

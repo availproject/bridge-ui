@@ -20,10 +20,9 @@ export async function _getBalance(
     const api = await initialize(substrateConfig.endpoint);
     const oldBalance: any = await api.query.system.account(availAddress);
 
-    const intValue = oldBalance["data"]["free"].toHuman().replace(/,/g, "");
-    const atomicBalance = intValue.toString();
-
-    return atomicBalance;
+   const atomicBalance =  oldBalance.data.free.toHuman().replace(/,/g, "") - oldBalance.data.frozen.toHuman().replace(/,/g, "")
+  
+    return atomicBalance.toString();
   }
 
   if (chain === Chain.ETH && ethAddress) {

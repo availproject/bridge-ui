@@ -189,7 +189,7 @@ export default function useClaim() {
       sourceChain: Chain.ETH,
       destinationChain: Chain.AVAIL,
       sourceTransactionHash: sourceTransactionHash,
-      destinationTransactionHash: execute.blockhash,
+      destinationTransactionHash: execute.txHash,
       amount: atomicAmount,
       status: TransactionStatus.CLAIM_PENDING,
       messageId: 0,
