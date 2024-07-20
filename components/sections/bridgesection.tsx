@@ -230,6 +230,7 @@ export default function BridgeSection() {
 
         if (init.blockhash !== undefined) {
           showSuccessMessage({
+            txHash: init.txHash,
             blockhash: init.blockhash,
             chain: Chain.AVAIL,
           });
@@ -467,7 +468,7 @@ export default function BridgeSection() {
                                   }}
                                 />
                                 <p className="text-white font-ppmori text-sm text-opacity-60">
-                                  ~{availAmountToDollars} $
+                                  ~ {availAmountToDollars} $
                                 </p>
                               </div>
 
@@ -478,13 +479,15 @@ export default function BridgeSection() {
                                   }
                                 >
                                   <img
-                                    src={`/images/${fromChain}small.png`}
+                                    src={`/images/availsmall.png`}
                                     alt="logo"
                                   ></img>
                                   <p className="!text-lg !text-left">
-                                    {fromChain === Chain.ETH
+                                    {/* since we're doing just avail tokens for now, we'll just show avail here */}
+                                    {/* {fromChain === Chain.ETH
                                       ? "ETH"
-                                      : fromChain.toLocaleUpperCase()}
+                                      : fromChain.toLocaleUpperCase()} */}
+                                      {Chain.AVAIL}
                                   </p>
                                 </div>
                               </div>

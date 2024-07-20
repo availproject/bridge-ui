@@ -73,11 +73,13 @@ export async function validAddress(address: string, chain: Chain) {
  */
 export const showSuccessMessage = ({
   blockhash,
+  txHash,
   chain,
   title,
   desc,
 }: {
   blockhash?: `${string}`;
+  txHash?: string;
   chain?: Chain;
   title?: string;
   desc?: string;
@@ -98,7 +100,7 @@ export const showSuccessMessage = ({
               href={
                 chain === Chain.ETH
                   ? `https://sepolia.etherscan.io/tx/${blockhash}`
-                  : `https://explorer.avail.so/#/explorer/query/${blockhash}`
+                  : `https://avail-turing.subscan.io/extrinsic/${txHash}`
               }
             >
               <p>View on Explorer. </p>
