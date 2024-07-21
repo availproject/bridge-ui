@@ -479,7 +479,7 @@ export default function BridgeSection() {
                                   }
                                 >
                                   <img
-                                    src={`/images/availsmall.png`}
+                                    src={`/images/AVAILsmall.png`}
                                     alt="logo"
                                   ></img>
                                   <p className="!text-lg !text-left">
