@@ -93,7 +93,7 @@ async function getTokenPrice({ coin, fiat, id }: { coin: string, fiat: string, i
     if (hasInsufficientBalance) {
       return "Insufficient Balance";
     }
-    return `Initiate bridge from ${fromChain.toLocaleLowerCase()} to ${toChain.toLocaleLowerCase()}`;
+    return `Initiate bridge from ${fromChain.charAt(0).toUpperCase() + fromChain.slice(1).toLowerCase()} to ${toChain.charAt(0).toUpperCase() + toChain.slice(1).toLowerCase()}`;
   }, [isWalletConnected, transactionInProgress, isInvalidAmount, hasInsufficientBalance, fromChain, toChain]);
 
   const isDisabled = useMemo(() => {
