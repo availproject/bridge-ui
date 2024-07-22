@@ -36,10 +36,11 @@ import { Transaction } from "@/types/transaction";
 import { CiCircleQuestion } from "react-icons/ci";
 import { parseError } from "@/utils/parseError";
 import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
+import { parseMinutes } from "@/utils/parseMinutes";
 
 export default function TransactionSection() {
   const { pendingTransactions, completedTransactions } = useTransactions();
-  const {avlHead, ethHead} = useLatestBlockInfo();
+  const { avlHead, ethHead } = useLatestBlockInfo();
   const [paginatedTransactionArray, setPaginatedTransactionArray] = useState<
     Transaction[][]
   >([]);
@@ -228,13 +229,15 @@ export default function TransactionSection() {
       return "Waiting for finalisation";
     }
     if (from === Chain.ETH) {
-      /** here we get a timestamp of  last update, considering the freq is 5 minutes, i add that time to the lastupdated time, and then substract from the current timestamp to get diff */
-      //another way, just use diff, subtract from 10minutes and you'll get next proof incoming when.
-      return `~ ${((ethHead.timestamp +  - new Date(sourceTimestamp).getTime()) / 1000 / 60).toFixed(2)} minutes`;
+      const totalMinutes = (ethHead.timestamp - new Date(sourceTimestamp).getTime()) / 1000 / 60;
+
+      return `Est time remaining: ~${parseMinutes(totalMinutes)}`;
     }
+
     if (from === Chain.AVAIL) {
-      /** we have the blocknumber of txn, we check the latest proof's blocknumber, the max time from that should be 360 block's time + 1hr for proof, just check form the sourceblocknumber how far along are we   */
-      return `~ ${(((avlHead.data.end + 360) - sourceBlockNumber) * 12 )/ 60 + 60} minutes`;
+      const estimatedTimeMinutes = (((avlHead.data.end + 360) - sourceBlockNumber) * 12) / 60 + 60;
+
+      return `Est time remaining: ~${parseMinutes(estimatedTimeMinutes)}`;
     }
   };
 
@@ -370,7 +373,7 @@ export default function TransactionSection() {
                           txn.sourceChain === Chain.ETH
                             ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txn.sourceTransactionHash}`
                             : //TODO: need to fix this, the local txn dosen't have all these, check indexer to see how they are fetching.
-                              `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.sourceTransactionHash}`
+                            `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.sourceTransactionHash}`
                         }
                       >
                         <ArrowUpRight className="w-4 h-4" />
@@ -394,30 +397,26 @@ export default function TransactionSection() {
                               {txn.status === "BRIDGED"
                                 ? `In Progress`
                                 : txn.status.charAt(0) +
-                                  txn.status.toLocaleLowerCase().slice(1)}
+                                txn.status.toLocaleLowerCase().slice(1)}
                             </p>
                             <span className="relative flex h-2 w-2">
                               <span
-                                className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
-                                  txn.status === "INITIATED"
-                                    ? "bg-yellow-600"
-                                    : `${
-                                        txn.status === "PENDING"
-                                          ? "bg-blue-600"
-                                          : "bg-orange-500"
-                                      }`
-                                } opacity-75`}
+                                className={`animate-ping absolute inline-flex h-full w-full rounded-full ${txn.status === "INITIATED"
+                                  ? "bg-yellow-600"
+                                  : `${txn.status === "PENDING"
+                                    ? "bg-blue-600"
+                                    : "bg-orange-500"
+                                  }`
+                                  } opacity-75`}
                               ></span>
                               <span
-                                className={`relative inline-flex rounded-full h-2 w-2  ${
-                                  txn.status === "INITIATED"
-                                    ? "bg-yellow-600"
-                                    : `${
-                                        txn.status === "PENDING"
-                                          ? "bg-blue-600"
-                                          : "bg-orange-500"
-                                      }`
-                                }`}
+                                className={`relative inline-flex rounded-full h-2 w-2  ${txn.status === "INITIATED"
+                                  ? "bg-yellow-600"
+                                  : `${txn.status === "PENDING"
+                                    ? "bg-blue-600"
+                                    : "bg-orange-500"
+                                  }`
+                                  }`}
                               ></span>
                             </span>
                           </Badge>
@@ -425,7 +424,7 @@ export default function TransactionSection() {
                       )}
                     </span>
                     <p className="text-xs flex flex-row items-end justify-end text-right text-white text-opacity-70 space-x-1">
-                      <span>{getStatusTime({from: txn.sourceChain, sourceTimestamp: txn.sourceTimestamp, sourceBlockNumber: txn.sourceBlockNumber, status: txn.status} )}</span>{" "}
+                      <span>{getStatusTime({ from: txn.sourceChain, sourceTimestamp: txn.sourceTimestamp, sourceBlockNumber: txn.sourceBlockNumber, status: txn.status })}</span>{" "}
                       <Clock className="w-4 h-4" />
                     </p>
                   </div>
@@ -493,7 +492,7 @@ export default function TransactionSection() {
                           txn.sourceChain === Chain.ETH
                             ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txn.sourceTransactionHash}`
                             : //TODO: need to fix this, the local txn dosen't have all these, check indexer to see how they are fetching.
-                              `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.sourceBlockNumber}-${txn.sourceTransactionIndex}`
+                            `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.sourceBlockNumber}-${txn.sourceTransactionIndex}`
                         }
                       >
                         <ArrowUpRight className="w-4 h-4" />
@@ -512,7 +511,7 @@ export default function TransactionSection() {
                             {txn.status === "CLAIMED"
                               ? "Bridged"
                               : txn.status.charAt(0) +
-                                txn.status.toLocaleLowerCase().slice(1)}
+                              txn.status.toLocaleLowerCase().slice(1)}
                           </p>
                           <span className="relative flex h-2 w-2">
                             <span
@@ -626,22 +625,20 @@ export default function TransactionSection() {
           <button
             disabled={currentPage === 0}
             onClick={() => setCurrentPage((prev) => prev - 1)}
-            className={`rounded-lg bg-[#484C5D] ${
-              currentPage === 0
-                ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
-                : " text-white"
-            } p-2`}
+            className={`rounded-lg bg-[#484C5D] ${currentPage === 0
+              ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
+              : " text-white"
+              } p-2`}
           >
             <ArrowLeft />
           </button>
           <button
             disabled={currentPage === paginatedTransactionArray.length - 1}
             onClick={() => setCurrentPage((prev) => prev + 1)}
-            className={`rounded-lg bg-[#484C5D] ${
-              currentPage === paginatedTransactionArray.length - 1
-                ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
-                : " text-white"
-            } p-2`}
+            className={`rounded-lg bg-[#484C5D] ${currentPage === paginatedTransactionArray.length - 1
+              ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
+              : " text-white"
+              } p-2`}
           >
             <ArrowRight />
           </button>
