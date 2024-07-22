@@ -231,13 +231,13 @@ export default function TransactionSection() {
     if (from === Chain.ETH) {
       const totalMinutes = (ethHead.timestamp - new Date(sourceTimestamp).getTime()) / 1000 / 60;
 
-      return `~ Estimated time: ${parseMinutes(totalMinutes)}`;
+      return `Est time remaining: ~${parseMinutes(totalMinutes)}`;
     }
 
     if (from === Chain.AVAIL) {
       const estimatedTimeMinutes = (((avlHead.data.end + 360) - sourceBlockNumber) * 12) / 60 + 60;
 
-      return `~ Estimated time: ${parseMinutes(estimatedTimeMinutes)}`;
+      return `Est time remaining: ~${parseMinutes(estimatedTimeMinutes)}`;
     }
   };
 
