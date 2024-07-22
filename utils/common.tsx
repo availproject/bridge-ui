@@ -3,7 +3,8 @@ import { substrateConfig, ethConfig } from "@/config/walletConfig";
 import { readContract } from "@wagmi/core";
 import { Chain } from "@/types/common";
 import { appConfig } from "@/config/default";
-import ethereumAvailTokenAbi from "@/constants/abis/ethereumAvailToken.json";
+import ethereumAvailTokenTuring from "@/constants/abis/ethereumAvailTokenTuring.json";
+import ethereumAvailTokenMainnet from "@/constants/abis/ethereumAvailTokenMainnet.json";
 import { toast } from "@/components/ui/use-toast";
 import { FaCheckCircle } from "react-icons/fa";
 import { ArrowUpRight } from "lucide-react";
@@ -21,14 +22,13 @@ export async function _getBalance(
     const oldBalance: any = await api.query.system.account(availAddress);
 
    const atomicBalance =  oldBalance.data.free.toHuman().replace(/,/g, "") - oldBalance.data.frozen.toHuman().replace(/,/g, "")
-  
     return atomicBalance.toString();
   }
 
   if (chain === Chain.ETH && ethAddress) {
     const balance = await readContract(ethConfig, {
       address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-      abi: ethereumAvailTokenAbi,
+      abi: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet" ? ethereumAvailTokenMainnet : ethereumAvailTokenTuring,
       functionName: "balanceOf",
       args: [ethAddress],
       chainId: networks.ethereum.id,
@@ -98,8 +98,8 @@ export const showSuccessMessage = ({
               className="flex flex-row underline"
               href={
                 chain === Chain.ETH
-                  ? `https://sepolia.etherscan.io/tx/${blockhash}`
-                  : `https://avail-turing.subscan.io/extrinsic/${txHash}`
+                  ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${blockhash}`
+                  : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txHash}`
               }
             >
               <p>View on Explorer. </p>

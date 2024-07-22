@@ -368,9 +368,9 @@ export default function TransactionSection() {
                         target="_blank"
                         href={
                           txn.sourceChain === Chain.ETH
-                            ? `https://sepolia.etherscan.io/tx/${txn.sourceTransactionHash}`
+                            ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txn.sourceTransactionHash}`
                             : //TODO: need to fix this, the local txn dosen't have all these, check indexer to see how they are fetching.
-                              `https://avail-turing.subscan.io/extrinsic/${txn.sourceTransactionHash}`
+                              `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.sourceTransactionHash}`
                         }
                       >
                         <ArrowUpRight className="w-4 h-4" />
@@ -491,9 +491,9 @@ export default function TransactionSection() {
                         target="_blank"
                         href={
                           txn.sourceChain === Chain.ETH
-                            ? `https://sepolia.etherscan.io/tx/${txn.sourceTransactionHash}`
+                            ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txn.sourceTransactionHash}`
                             : //TODO: need to fix this, the local txn dosen't have all these, check indexer to see how they are fetching.
-                              `https://avail-turing.subscan.io/extrinsic/${txn.sourceBlockNumber}-${txn.sourceTransactionIndex}`
+                              `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.sourceBlockNumber}-${txn.sourceTransactionIndex}`
                         }
                       >
                         <ArrowUpRight className="w-4 h-4" />
@@ -530,8 +530,8 @@ export default function TransactionSection() {
                         target="_blank"
                         href={
                           txn.sourceChain === Chain.AVAIL
-                            ? `https://sepolia.etherscan.io/tx/${txn.destinationTransactionHash}`
-                            : `https://avail-turing.subscan.io/extrinsic/${txn.destinationTransactionHash}`
+                            ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txn.destinationTransactionHash}`
+                            : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.destinationTransactionHash}`
                         }
                         className="flex flex-row !text-xs justify-end text-white text-opacity-75 underline"
                       >
