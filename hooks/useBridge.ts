@@ -54,15 +54,22 @@ export default function useBridge() {
     }
   };
 
+  const fetchHeads = async () => {
+    const ethHead = await fetchEthHead();
+    const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
+    setLatestBlockhash(LatestBlockhash.data);
+    const avlHead = await fetchAvlHead();
+    setEthHead(ethHead.data);
+    setAvlHead(avlHead.data);
+  };
+
   useEffect(() => {
-    setInterval(async () => {
-      const ethHead = await fetchEthHead();
-      const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
-      setLatestBlockhash(LatestBlockhash.data);
-      const avlHead = await fetchAvlHead();
-      setEthHead(ethHead.data);
-      setAvlHead(avlHead.data);
-    }, 50000);
+    //TODO: Improve this .then syntax.
+    fetchHeads().then(() => {
+      setInterval(async () => {
+        await fetchHeads();
+      }, 50000);
+    });
   }, []);
 
   const getAvailBalanceOnEth = useCallback(async () => {
