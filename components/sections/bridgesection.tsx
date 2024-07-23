@@ -35,7 +35,7 @@ import { toast } from "@/components/ui/use-toast";
 import { parseError } from "@/utils/parseError";
 import BigNumber from "bignumber.js";
 import { badgeVariants } from "../ui/badge";
-import { ArrowUpRight, CheckCircle2, Copy, Loader2 } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Copy, InfoIcon, Loader2 } from "lucide-react";
 import useTransactions from "@/hooks/useTransactions";
 import { parseAmount } from "@/utils/parseAmount";
 import { LoadingButton } from "../ui/loadingbutton";
@@ -66,6 +66,8 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card";
+import { CiCircleQuestion } from "react-icons/ci";
 
 const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -519,9 +521,16 @@ export default function BridgeSection() {
                                     value && form.setValue("fromAmount", value);
                                     setFromAmount(value);
                                   }}
-                                  className="font-thicccboisemibold text-[#3FB5F8] text-sm cursor-pointer"
+                                  className="font-thicccboisemibold flex flex-row space-x-1 text-[#3FB5F8] text-sm cursor-pointer"
                                 >
-                                  MAX
+                                  <span>MAX</span> <HoverCard>
+              <HoverCardTrigger className="cursor-pointer">
+                <InfoIcon className="w-3 h-3 " />
+              </HoverCardTrigger>
+              <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
+              Transfers the max available minus 1 AVAIL reserved to pay fees
+              </HoverCardContent>
+            </HoverCard>
                                 </div>
                               </div>
                             </div>
