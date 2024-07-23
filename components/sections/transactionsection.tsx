@@ -228,13 +228,32 @@ export default function TransactionSection() {
     if (status === "INITIATED") {
       return "Waiting for finalisation";
     }
+
+    //TODO: Change below to more accurate time
+    if (status === "PENDING" && from === Chain.ETH) {
+      return "Est time remaining: ~15 minutes";
+    }
+
+    //TODO: Change below to more accurate time
+    if (status === "PENDING" && from === Chain.AVAIL) {
+      return "Est time remaining: ~5 minutes";
+    }
+
     if (from === Chain.ETH) {
+      /** here we get a timestamp of  last update, considering the freq is 5 minutes, 
+       * i add that time to the lastupdated time, 
+       * and then substract from the current timestamp to get diff */
+      //another way, just use diff, subtract from 10minutes and you'll get next proof incoming when.
       const totalMinutes = (ethHead.timestamp - new Date(sourceTimestamp).getTime()) / 1000 / 60;
 
       return `Est time remaining: ~${parseMinutes(totalMinutes)}`;
     }
 
     if (from === Chain.AVAIL) {
+      /** we have the blocknumber of txn, we check the latest proof's blocknumber, 
+       * the max time from that should be 360 block's time + 1hr for proof, 
+       * just check form the sourceblocknumber how far along are we   
+       * */
       const estimatedTimeMinutes = (((avlHead.data.end + 360) - sourceBlockNumber) * 12) / 60 + 60;
 
       return `Est time remaining: ~${parseMinutes(estimatedTimeMinutes)}`;
