@@ -474,9 +474,9 @@ export default function BridgeSection() {
                                     );
                                   }}
                                 />
-                                <p className="text-white font-ppmori text-sm text-opacity-60">
+                                {/* <p className="text-white font-ppmori text-sm text-opacity-60">
                                   ~ {availAmountToDollars} $
-                                </p>
+                                </p> */}
                               </div>
 
                               <div className="rounded-xl bg-[#464A5B] flex flex-row  transform transition-transform duration-200 hover:scale-105 items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer">

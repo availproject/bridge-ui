@@ -710,7 +710,7 @@ export default function TransactionSection() {
                 <CiCircleQuestion className="w-6 h-6" />
               </HoverCardTrigger>
               <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
-                Transactions take about 1 hour to bridge, thank you for your
+                Transactions take around ~2 hours to bridge, thank you for your
                 patience.
               </HoverCardContent>
             </HoverCard>
