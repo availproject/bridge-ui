@@ -332,7 +332,7 @@ export default function BridgeSection() {
   }
 
   return (
-    <div className="text-white w-full m-4">   
+    <div className="text-white w-full my-4">   
       <Tabs
         defaultValue="bridge"
         id="container"
