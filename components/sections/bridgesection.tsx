@@ -508,12 +508,12 @@ export default function BridgeSection() {
                                     const value =
                                       fromChain === Chain.ETH
                                         ? ethBalance
-                                          ? parseFloat(ethBalance) * 0.98
+                                          ? parseFloat(parseAmount(ethBalance, 18) )
                                           : 0
                                         : availBalance
                                         ? parseFloat(
                                             parseAmount(availBalance, 18)
-                                          ) * 0.98
+                                          ) - 1
                                         : 0;
 
                                     value && form.setValue("fromAmount", value);
