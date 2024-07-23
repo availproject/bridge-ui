@@ -1,6 +1,8 @@
 import { appConfig } from "@/config/default";
+import { substrateConfig } from "@/config/walletConfig";
 import { LatestBlockInfo } from "@/stores/lastestBlockInfo";
 import { AccountStorageProof, merkleProof } from "@/types/transaction";
+import { initialize } from "avail-js-sdk";
 
 
 /**
@@ -26,9 +28,16 @@ export async function fetchAvlHead(): Promise<{
   data: LatestBlockInfo["avlHead"];
 }> {
   const response = await fetch(`${appConfig.bridgeApiBaseUrl}/avl/head`);
-
+  //TODO: Change below as response.json() does not contain endTimestamp.
   const avlHead: LatestBlockInfo["avlHead"] = await response.json();
-  return { data: avlHead };
+  const api = await initialize(substrateConfig.endpoint);
+  const blockHash = await api.rpc.chain.getBlockHash(avlHead.data.end);
+  const block = await api.rpc.chain.getBlock(blockHash);
+  //Get first extrinsic which is timestamp.set, and extract the arg with timestamp.
+  const timestamp = parseInt(block.block.extrinsics[0].args[0].toJSON() as string);
+
+  await api.disconnect();
+  return { data: { data: { ...avlHead.data, endTimestamp: timestamp } } };
 }
 
 
