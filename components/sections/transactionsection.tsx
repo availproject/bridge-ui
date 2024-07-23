@@ -327,10 +327,10 @@ export default function TransactionSection() {
   }
 
   const showPagination = () => {
-    if (paginatedCompletedTransactionArray.length > 4 && !pendingTab) {
+    if (paginatedCompletedTransactionArray.length > 1 && !pendingTab) {
       return true;
     }
-    if (paginatedTransactionArray.length > 4 && pendingTab) {
+    if (paginatedTransactionArray.length > 1 && pendingTab) {
       return true;
     }
     return false;
