@@ -36,7 +36,7 @@ export async function fetchAvlHead(): Promise<{
   //Get first extrinsic which is timestamp.set, and extract the arg with timestamp.
   const timestamp = parseInt(block.block.extrinsics[0].args[0].toJSON() as string);
 
-  await api.disconnect();
+  //TODO avoid opening multiple wss connections.
   return { data: { data: { ...avlHead.data, endTimestamp: timestamp } } };
 }
 
