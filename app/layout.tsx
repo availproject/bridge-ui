@@ -29,7 +29,7 @@ export default async function RootLayout({
           <NavBar/>
             {children}
            <Toaster />
-          <FooterSection title={"Accelerating the unification of web3"} description={"Mainnet is coming soon!"}/>
+          <FooterSection title={"Accelerating the unification of web3"} description={"DA Mainnet is now live!"}/>
           <Footer />
           </Providers>
       </body>
