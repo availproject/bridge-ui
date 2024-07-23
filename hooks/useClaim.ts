@@ -32,7 +32,7 @@ export default function useClaim() {
     try {
       //@ts-ignore config gives a wagmi dep type error
       const result = await writeContract(config, {
-        address: "0x967F7DdC4ec508462231849AE81eeaa68Ad01389",
+        address: process.env.NEXT_PUBLIC_BRIDGE_PROXY_CONTRACT,
         abi: bridgeContractAbi,
         functionName: "receiveAVAIL",
         args: [
