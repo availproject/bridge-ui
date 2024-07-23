@@ -19,10 +19,10 @@ export const FooterSection:FC<FooterSectionProps> = ({ title, description }) => 
             <div className={`!text-white !text-opacity-80 pb-12`}>{description}</div>
             
                 <div className={footersection.footer_section_button}>
-                    <Link href={ROUTES.DOCUMENTATION} target='_blank'>
+                    <Link href={"https://docs.availproject.org/"} target='_blank'>
                         <Button className="solution_button z-50 py-3 px-6 m-2 bg-[#3CA3FC] rounded-full font-thicccboisemibold  ">See Documentation</Button>
                     </Link>
-                    <Link href={ROUTES.NETWORK} target='_blank'>
+                    <Link href={"https://docs.availproject.org/docs/end-user-guide"} target='_blank'>
                         <Button className={'solution_button z-50 py-4 px-6 m-2 bg-white rounded-full !text-black font-thicccboisemibold '}>Try it now</Button>
                     </Link>
                 </div>
