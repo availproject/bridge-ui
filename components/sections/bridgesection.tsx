@@ -135,17 +135,17 @@ export default function BridgeSection() {
       appConfig.bridgeIndexerPollingInterval,
       () => true
     );
-    pollWithDelay(
-      getTokenPrice,
-      [
-        {
-          coin: "ethereum",
-          fiat: "usd",
-        },
-      ],
-      appConfig.bridgeIndexerPollingInterval,
-      () => true
-    );
+    // pollWithDelay(
+    //   getTokenPrice,
+    //   [
+    //     {
+    //       coin: "ethereum",
+    //       fiat: "usd",
+    //     },
+    //   ],
+    //   appConfig.bridgeIndexerPollingInterval,
+    //   () => true
+    // );
   };
   useEffect(() => {
     appInit();
