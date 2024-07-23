@@ -2,6 +2,9 @@ import { writeContract } from "@wagmi/core";
 import { encodeAbiParameters } from "viem";
 import { merkleProof } from "@/types/transaction";
 import { bridgeContractAbi } from "@/constants/abi";
+import ethereumBrigdeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
+import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
+
 import { config } from "@/app/providers";
 import {
   fetchLatestBlockhash,
@@ -33,7 +36,7 @@ export default function useClaim() {
       //@ts-ignore config gives a wagmi dep type error
       const result = await writeContract(config, {
         address: process.env.NEXT_PUBLIC_BRIDGE_PROXY_CONTRACT,
-        abi: bridgeContractAbi,
+        abi: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet" ? ethereumBrigdeMainnet : ethereumBridgeTuring,
         functionName: "receiveAVAIL",
         args: [
           [
