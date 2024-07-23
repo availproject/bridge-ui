@@ -130,7 +130,7 @@ export const Footer = () => {
                     id:7,
                     label:'Terms',
                     isInternal:true,
-                    link:"https://avail-project.notion.site/Avail-Mainnet-Ts-Cs-adab514839a74022a61bbfb3e3a6f548"
+                    link:"https://avail-project.notion.site/"
                 }
             ]
         },

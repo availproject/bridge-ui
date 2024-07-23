@@ -2,7 +2,7 @@
 
 "use client";
 
-import { FaHistory } from "react-icons/fa";
+import { FaCheckCircle, FaHistory } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { TableBody, TableCell, TableRow } from "../ui/table";
 import { Badge } from "../ui/badge";
@@ -37,6 +37,10 @@ import { CiCircleQuestion } from "react-icons/ci";
 import { parseError } from "@/utils/parseError";
 import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
 import { parseMinutes } from "@/utils/parseMinutes";
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Button } from "../ui/button";
+import Link from "next/link";
+import { set } from "zod";
 
 export default function TransactionSection() {
   const { pendingTransactions, completedTransactions } = useTransactions();
@@ -44,6 +48,7 @@ export default function TransactionSection() {
   const [paginatedTransactionArray, setPaginatedTransactionArray] = useState<
     Transaction[][]
   >([]);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [pendingTab, setPendingTab] = useState<boolean>(true);
   const [
     paginatedCompletedTransactionArray,
@@ -57,6 +62,8 @@ export default function TransactionSection() {
   const [inProcess, setInProcess] = useState<boolean[]>(
     Array(pendingTransactions.length).fill(false)
   );
+  const [availToEthHash, setAvailToEthHash] = useState<string>("");
+  const [ethToAvailHash, setEthToAvailHash] = useState<string>("");
 
   useEffect(() => {
     if (pendingTransactions && pendingTransactions.length > 0) {
@@ -134,10 +141,8 @@ export default function TransactionSection() {
           atomicAmount: atomicAmount,
         });
         if (successBlockhash) {
-          showSuccessMessage({
-            blockhash: successBlockhash,
-            chain: Chain.ETH,
-          });
+          setAvailToEthHash(successBlockhash);
+          setOpenDialog(true);
           setComplete((prevState) =>
             prevState.map((state, idx) => (idx === index ? true : state))
           );
@@ -151,12 +156,9 @@ export default function TransactionSection() {
           atomicAmount: atomicAmount,
           executeParams: executeParams,
         });
-        if (successBlockhash.blockhash) {
-          showSuccessMessage({
-            blockhash: successBlockhash.blockhash,
-            txHash: successBlockhash.txHash,
-            chain: Chain.AVAIL,
-          });
+        if (successBlockhash.txHash) {
+          setEthToAvailHash(successBlockhash.txHash);
+          setOpenDialog(true);
           setComplete((prevState) =>
             prevState.map((state, idx) => (idx === index ? true : state))
           );
@@ -345,9 +347,18 @@ export default function TransactionSection() {
 
   function PendingTransactions({
     pendingTransactions,
+    openDialog,
+    setOpenDialog,
+    availToEthHash,
+    ethToAvailHash,
   }: {
     pendingTransactions: Transaction[];
+    openDialog: boolean;
+    setOpenDialog: (value: boolean) => void;
+    availToEthHash: string;
+    ethToAvailHash: string;
   }) {
+
     return (
       <div className="flex h-[85%] overflow-y-scroll">
         <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
@@ -455,7 +466,59 @@ export default function TransactionSection() {
                     </p>
                   </div>
                 </TableCell>
+                <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                  <DialogContent className="sm:max-w-md bg-[#252831] !border-0">
+                    <DialogHeader>
+                      <DialogTitle className="font-thicccboisemibold text-white text-2xl mb-2">
+                        Claim Submitted
+                      </DialogTitle>
+                      <div className="border-b border border-white border-opacity-20"></div>
+                    </DialogHeader>
+                    <div className="flex flex-col items-center justify-center !space-x-3 mt-2  ">
+                      <div className="w-[100%] h-40 mx-auto rounded-xl bg-black flex flex-col items-center justify-center">
+                        <FaCheckCircle
+                          className="mr-4 h-10 w-10"
+                          color="0BDA51"
+                        />
+                      </div>
+
+                      <div className="flex flex-col space-y-2 ">
+                        <p className="font-ppmori text-white text-sm text-opacity-60 mt-4">
+                          Your{" "}
+                          <span className="text-white ">
+                          claim transaction
+                          </span>{" "}
+                          was successfully submitted to the chain. Your funds will be deposited to the destination account, generally
+                          within
+                          <span className="text-white italics"> ~15-30 minutes.</span>{" "}
+                         <br />
+                          <span>You can close this tab in the meantime, or initiate
+                          another transfer.</span>
+                        </p>
+                      </div>
+                    </div>
+                    <DialogFooter className="sm:justify-start mt-1">
+                      <DialogClose asChild>
+                        <Link href={
+                txn.sourceChain === Chain.AVAIL
+                  ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${availToEthHash}`
+                  : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${ethToAvailHash}`
+              } className="w-full !border-0">
+                        <Button
+                          type="button"
+                          variant="primary"
+                          
+                          className="w-full !border-0"
+                        >
+                          View on Explorer <ArrowUpRight className="h-3 w-6" />
+                        </Button>
+                        </Link>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </TableRow>
+              
             ))}
         </TableBody>
       </div>
@@ -614,6 +677,10 @@ export default function TransactionSection() {
             {pendingTransactions.length > 0 ? (
               <PendingTransactions
                 pendingTransactions={paginatedTransactionArray[currentPage]}
+                openDialog={openDialog}
+                setOpenDialog={setOpenDialog}
+                availToEthHash={availToEthHash}
+                ethToAvailHash={ethToAvailHash}
               />
             ) : (
               <NoTransactions />
