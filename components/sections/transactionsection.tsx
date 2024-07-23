@@ -240,11 +240,14 @@ export default function TransactionSection() {
     }
 
     if (from === Chain.ETH) {
-      /** here we get a timestamp of  last update, considering the freq is 5 minutes, 
-       * i add that time to the lastupdated time, 
-       * and then substract from the current timestamp to get diff */
+      /** We find the time passed since the last proof update on AvailDA at the time of bridge TX
+       * and then subtract that from 20 minutes which is the proof interval.
+       */
       //another way, just use diff, subtract from 10minutes and you'll get next proof incoming when.
-      const totalMinutes = (ethHead.timestamp - new Date(sourceTimestamp).getTime()) / 1000 / 60;
+      let totalMinutes = 20 - ((new Date(sourceTimestamp).getTime() - ethHead.timestamp) / 1000 / 60);
+      if (totalMinutes < 0) {
+        return `...`
+      }
 
       return `Est time remaining: ~${parseMinutes(totalMinutes)}`;
     }
@@ -255,6 +258,10 @@ export default function TransactionSection() {
        * just check form the sourceblocknumber how far along are we   
        * */
       const estimatedTimeMinutes = (((avlHead.data.end + 360) - sourceBlockNumber) * 12) / 60 + 60;
+
+      if (estimatedTimeMinutes < 0) {
+        return `...`
+      }
 
       return `Est time remaining: ~${parseMinutes(estimatedTimeMinutes)}`;
     }
