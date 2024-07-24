@@ -33,10 +33,10 @@ export default function useTransactionButtonState(
 async function getTokenPrice({ coin, fiat, id }: { coin: string, fiat: string, id: number }) {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_COINGECKO_API_URL}?ids=${coin}&vs_currencies=${fiat}`
+      `/api/getTokenPrice?coins=${coin}&fiats=${fiat}`
     );
     const data = await response.json();
-    setDollarAmount(data[coin][fiat]);
+    setDollarAmount(data.price[coin][fiat]);
   } catch (error) {
     console.error('Error fetching token price:', error);
     throw error;
