@@ -58,7 +58,7 @@ export default function useClaim() {
               ],
               [
                 merkleProof.message.message.fungibleToken.asset_id,
-                merkleProof.message.message.fungibleToken.amount,
+                BigInt(merkleProof.message.message.fungibleToken.amount),
               ],
             ),
             merkleProof.message.id,
