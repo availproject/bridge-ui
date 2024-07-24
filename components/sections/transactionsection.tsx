@@ -65,6 +65,11 @@ export default function TransactionSection() {
   const [availToEthHash, setAvailToEthHash] = useState<string>("");
   const [ethToAvailHash, setEthToAvailHash] = useState<string>("");
 
+  //In milliseconds - 20 minutes.
+  const TELEPATHY_INTERVAL = 1200000;
+  //In milliseconds - 120 minutes.
+  const VECTORX_INTERVAL = 7200000;
+
   useEffect(() => {
     if (pendingTransactions && pendingTransactions.length > 0) {
       const chunkSize = 4;
@@ -242,30 +247,30 @@ export default function TransactionSection() {
     }
 
     if (from === Chain.ETH) {
-      /** We find the time passed since the last proof update on AvailDA at the time of bridge TX
-       * and then subtract that from 20 minutes which is the proof interval.
-       */
-      //another way, just use diff, subtract from 10minutes and you'll get next proof incoming when.
-      let totalMinutes = 20 - ((new Date(sourceTimestamp).getTime() - ethHead.timestamp) / 1000 / 60);
-      if (totalMinutes < 0) {
-        return `...`
+      //Ethereum timestamp is in seconds, converting to ms here. 
+      const lastProofTimestamp = ethHead.timestamp * 1000;
+      const nextProofTimestamp = lastProofTimestamp + TELEPATHY_INTERVAL;
+      const timeNow = Date.now();
+      const timeLeft = nextProofTimestamp - timeNow;
+
+      if (timeLeft < 0) {
+        return `Est time remaining: Soon`
       }
 
-      return `Est time remaining: ~${parseMinutes(totalMinutes)}`;
+      return `Est time remaining: ~${parseMinutes(timeLeft / 1000 / 60)}`;
     }
 
     if (from === Chain.AVAIL) {
-      /** we have the blocknumber of txn, we check the latest proof's blocknumber, 
-       * the max time from that should be 360 block's time + 1hr for proof, 
-       * just check form the sourceblocknumber how far along are we   
-       * */
-      const estimatedTimeMinutes = (((avlHead.data.end + 360) - sourceBlockNumber) * 12) / 60 + 60;
+      const lastProofTimestamp = avlHead.data.endTimestamp;
+      const nextProofTimestamp = lastProofTimestamp + VECTORX_INTERVAL;
+      const timeNow = Date.now();
+      const timeLeft = nextProofTimestamp - timeNow;
 
-      if (estimatedTimeMinutes < 0) {
-        return `...`
+      if (timeLeft < 0) {
+        return `Est time remaining: Soon`
       }
 
-      return `Est time remaining: ~${parseMinutes(estimatedTimeMinutes)}`;
+      return `Est time remaining: ~${parseMinutes(timeLeft / 1000 / 60)}`;
     }
   };
 
@@ -486,39 +491,39 @@ export default function TransactionSection() {
                         <p className="font-ppmori text-white text-sm text-opacity-60 mt-4">
                           Your{" "}
                           <span className="text-white ">
-                          claim transaction
+                            claim transaction
                           </span>{" "}
                           was successfully submitted to the chain. Your funds will be deposited to the destination account, generally
                           within
                           <span className="text-white italics"> ~15-30 minutes.</span>{" "}
-                         <br />
+                          <br />
                           <span>You can close this tab in the meantime, or initiate
-                          another transfer.</span>
+                            another transfer.</span>
                         </p>
                       </div>
                     </div>
                     <DialogFooter className="sm:justify-start mt-1">
                       <DialogClose asChild>
                         <Link href={
-                txn.sourceChain === Chain.AVAIL
-                  ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${availToEthHash}`
-                  : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${ethToAvailHash}`
-              } className="w-full !border-0">
-                        <Button
-                          type="button"
-                          variant="primary"
-                          
-                          className="w-full !border-0"
-                        >
-                          View on Explorer <ArrowUpRight className="h-3 w-6" />
-                        </Button>
+                          txn.sourceChain === Chain.AVAIL
+                            ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${availToEthHash}`
+                            : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${ethToAvailHash}`
+                        } className="w-full !border-0">
+                          <Button
+                            type="button"
+                            variant="primary"
+
+                            className="w-full !border-0"
+                          >
+                            View on Explorer <ArrowUpRight className="h-3 w-6" />
+                          </Button>
                         </Link>
                       </DialogClose>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
               </TableRow>
-              
+
             ))}
         </TableBody>
       </div>
