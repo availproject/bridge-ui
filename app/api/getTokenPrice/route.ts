@@ -5,7 +5,6 @@ import { NextRequest, NextResponse } from 'next/server';
  * 
  * @param {coins, fiats}
  * @sets price of the token in dollars
- * TODO: prefix with paid api key, once you get, don't add next_public
  */
 async function getTokenPrices({ coins, fiats }: { coins: string; fiats: string }) {
   try {
