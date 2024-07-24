@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from 'next/server';
  * 
  * @param {coins, fiats}
  * @sets price of the token in dollars
+ * 
+ * @returns {price: {coin: {fiat: number} }[] }
  */
 async function getTokenPrices({ coins, fiats }: { coins: string; fiats: string }) {
   try {
