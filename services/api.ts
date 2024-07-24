@@ -1,7 +1,10 @@
 import { appConfig } from "@/config/default";
 import { LatestBlockInfo } from "@/stores/lastestBlockInfo";
 import { AccountStorageProof, merkleProof } from "@/types/transaction";
-
+import { initialize } from "avail-js-sdk";
+import axios from "axios";
+import jsonbigint from "json-bigint";
+const JSONBigInt = jsonbigint({ useNativeBigInt: true });
 
 /**
  * @description Fetches the merkle proof for a given blockhash and index
@@ -12,8 +15,12 @@ import { AccountStorageProof, merkleProof } from "@/types/transaction";
  * @returns merkleProof
  */
 export const getMerkleProof = async (blockhash: string, index: number) => {
-  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/eth/proof/${blockhash}?index=${index}`);
-  const proof: merkleProof = await response.json();
+  const response = await axios.get(`${appConfig.bridgeApiBaseUrl}/eth/proof/${blockhash}`, {
+    params: { index },
+    transformResponse: [data => data]
+  });
+  const proof: merkleProof = JSONBigInt.parse(response.data);
+
   return proof;
 };
 
