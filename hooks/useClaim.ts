@@ -76,8 +76,8 @@ export default function useClaim() {
         ],
       });
       return result;
-    } catch (e) {
-      throw new Error("Error while claiming AVAIL");
+    } catch (e: any) {
+      throw new Error(`Error while claiming AVAIL ${e}`);
     }
   }
 
