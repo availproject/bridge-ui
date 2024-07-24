@@ -58,7 +58,7 @@ export default function useClaim() {
               ],
               [
                 merkleProof.message.message.fungibleToken.asset_id,
-                merkleProof.message.message.fungibleToken.amount,
+                BigInt(merkleProof.message.message.fungibleToken.amount),
               ],
             ),
             merkleProof.message.id,
@@ -76,8 +76,8 @@ export default function useClaim() {
         ],
       });
       return result;
-    } catch (e) {
-      throw new Error("Error while claiming AVAIL");
+    } catch (e: any) {
+      throw new Error(`Error while claiming AVAIL ${e}`);
     }
   }
 
