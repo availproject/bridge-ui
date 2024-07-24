@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { ethers } from "ethers";
 import { useSwitchChain, useAccount } from "wagmi";
 
 /**
@@ -33,16 +32,10 @@ export default function useEthWallet() {
             return chainId
         }
 
-    const ethersProvider = useMemo(
-        (): ethers.providers.JsonRpcProvider => {
-            return new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_ETHEREUM_RPC_URL);
-        },
-        [],
-    );
+
 
     return {
         activeUserAddress,
-        ethersProvider,
         activeNetworkId,
         switchNetwork
     };

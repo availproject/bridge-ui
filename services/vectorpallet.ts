@@ -47,6 +47,7 @@ export async function sendMessage(
   status: string;
   message: string;
   blockhash?: string;
+  txHash?: string;
 }> {
   const injector = await getWalletBySource(account.source);
   const api = await initialize(substrateConfig.endpoint);
@@ -55,17 +56,17 @@ export async function sendMessage(
   //@ts-ignore
   await injector?.metadata?.provide(metadata);
 
-  const result: string = await new Promise((resolve, reject) => {
+  const result: {blockhash: string, txHash: string} = await new Promise((resolve, reject) => {
     const unsubscribe = api.tx.vector
       .sendMessage(props.message, props.to, props.domain)
       .signAndSend(
         account.address,
         { signer: injector?.signer, app_id: 0 } as Partial<SignerOptions>,
-        ({ status, events }) => {
+        ({ status, events, txHash }) => {
           if (status.isInBlock) {
             console.log()
             console.log(
-              `Transaction included at blockHash ${status.asInBlock} `
+              `Transaction included at blockHash ${status.asInBlock} ${txHash} `
             );
 
             events.forEach(({ event }) => {
@@ -99,7 +100,7 @@ export async function sendMessage(
                   "Transaction successful with hash:",
                   status.asInBlock
                 );
-                resolve(status.asInBlock.toString());
+                resolve({blockhash: status.asInBlock.toString(), txHash: txHash.toString()});
               }
             });
             //@ts-ignore
@@ -120,7 +121,8 @@ export async function sendMessage(
   return {
     status: "success",
     message: "Transaction successful",
-    blockhash: result,
+    blockhash: result.blockhash,
+    txHash: result.txHash
   };
 }
 
@@ -140,6 +142,7 @@ export async function executeTransaction(
   status: string;
   message: string;
   blockhash?: string;
+  txHash?: string;
 }> {
   const injector = await getWalletBySource(account.source);
   const api = await initialize(substrateConfig.endpoint);
@@ -148,7 +151,7 @@ export async function executeTransaction(
   //@ts-ignore
   await injector?.metadata?.provide(metadata);
 
-  const result: string = await new Promise((resolve, reject) => {
+  const result: {blockhash: string, txHash: string} = await new Promise((resolve, reject) => {
     const unsubscribe = api.tx.vector
       .execute(
         props.slot,
@@ -163,7 +166,7 @@ export async function executeTransaction(
           app_id: 0,
           nonce: -1,
         } as Partial<SignerOptions>,
-        ({ status, events }) => {
+        ({ status, events, txHash }) => {
           if (status.isInBlock) {
             console.log(
               `Transaction included at blockHash ${status.asInBlock}`
@@ -177,7 +180,7 @@ export async function executeTransaction(
                 if (dispatchError.isModule) {
                   //@ts-ignore
                   const decoded = api.registry.findMetaError(
-                      //@ts-ignore
+                  //@ts-ignore
                     dispatchError.asModule
                   );
                   errorInfo = `${decoded.section}.${decoded.name}`;
@@ -201,10 +204,9 @@ export async function executeTransaction(
                   "Transaction successful with hash:",
                   status.asInBlock
                 );
-                resolve(status.asInBlock.toString());
+                resolve({blockhash: status.asInBlock.toString(), txHash: txHash.toString()});
               }
             });
-
             //@ts-ignore
             unsubscribe();
           }
@@ -223,7 +225,8 @@ export async function executeTransaction(
   return {
     status: "success",
     message: "Transaction successful",
-    blockhash: result,
+    blockhash: result.blockhash,
+    txHash: result.txHash
   };
 }
 

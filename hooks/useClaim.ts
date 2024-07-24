@@ -2,6 +2,9 @@ import { writeContract } from "@wagmi/core";
 import { encodeAbiParameters } from "viem";
 import { merkleProof } from "@/types/transaction";
 import { bridgeContractAbi } from "@/constants/abi";
+import ethereumBrigdeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
+import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
+
 import { config } from "@/app/providers";
 import {
   fetchLatestBlockhash,
@@ -32,8 +35,8 @@ export default function useClaim() {
     try {
       //@ts-ignore config gives a wagmi dep type error
       const result = await writeContract(config, {
-        address: "0x967F7DdC4ec508462231849AE81eeaa68Ad01389",
-        abi: bridgeContractAbi,
+        address: process.env.NEXT_PUBLIC_BRIDGE_PROXY_CONTRACT,
+        abi: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet" ? ethereumBrigdeMainnet : ethereumBridgeTuring,
         functionName: "receiveAVAIL",
         args: [
           [
@@ -82,13 +85,13 @@ export default function useClaim() {
     blockhash,
     sourceTransactionHash,
     sourceTransactionIndex,
-    sourceTransactionTimestamp,
+    sourceTimestamp,
     atomicAmount,
   }: {
     blockhash: `0x${string}`;
     sourceTransactionHash: `0x${string}`;
     sourceTransactionIndex: number;
-    sourceTransactionTimestamp: string;
+    sourceTimestamp: string;
     atomicAmount: string;
   }) => {
     try {
@@ -118,9 +121,9 @@ export default function useClaim() {
           depositorAddress: "",
           receiverAddress: "",
           sourceBlockHash: "0x",
-          sourceTransactionBlockNumber: 0,
+          sourceBlockNumber: 0,
           sourceTransactionIndex: 0,
-          sourceTransactionTimestamp: sourceTransactionTimestamp,
+          sourceTimestamp: sourceTimestamp,
         });
       }
       console.log("added txn to local storage");
@@ -134,12 +137,12 @@ export default function useClaim() {
     blockhash,
     executeParams,
     sourceTransactionHash,
-    sourceTransactionTimestamp,
+    sourceTimestamp,
     atomicAmount,
   }: {
     blockhash: `0x${string}`;
     sourceTransactionHash: `0x${string}`;
-    sourceTransactionTimestamp: string;
+    sourceTimestamp: string;
     atomicAmount: string;
     executeParams: {
       messageid: number;
@@ -189,7 +192,7 @@ export default function useClaim() {
       sourceChain: Chain.ETH,
       destinationChain: Chain.AVAIL,
       sourceTransactionHash: sourceTransactionHash,
-      destinationTransactionHash: execute.blockhash,
+      destinationTransactionHash: execute.txHash,
       amount: atomicAmount,
       status: TransactionStatus.CLAIM_PENDING,
       messageId: 0,
@@ -197,9 +200,9 @@ export default function useClaim() {
       depositorAddress: "",
       receiverAddress: "",
       sourceBlockHash: "0x",
-      sourceTransactionBlockNumber: 0,
+      sourceBlockNumber: 0,
       sourceTransactionIndex: 0,
-      sourceTransactionTimestamp: sourceTransactionTimestamp,
+      sourceTimestamp: sourceTimestamp,
     });
     return execute;
   } catch (e : any) {

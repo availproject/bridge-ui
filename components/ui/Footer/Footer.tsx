@@ -124,13 +124,13 @@ export const Footer = () => {
                     id:6,
                     label:'Privacy Policy',
                     isInternal:true,
-                    link:ROUTES.HOMEPAGE
+                    link:"https://www.notion.so/avail-project/Privacy-Policy-e5f47df2f3a64055a7966bbaabe9a2eb"
                 },
                 {
                     id:7,
                     label:'Terms',
                     isInternal:true,
-                    link:ROUTES.HOMEPAGE
+                    link:"https://avail-project.notion.site/"
                 }
             ]
         },
@@ -219,6 +219,7 @@ export const Footer = () => {
                             <img src={"/images/linkedin.png"} width={'17px'} height={'16px'} alt='linkedin' />
                         </Link>
                     </div>
+                    <span className='!text-xs flex flex-row items-start justify-start'><p className='!text-xs !mt-2 '>This website is maintained by the Avail Project. All information contained herein is solely for providing information on the Avail ecosystem; it does not constitute an inducement or offer of any kind to invest in the Avail Project and is not directed at US persons.</p></span>
                 </div>
                 <div className={footerStyle.footer_links}>
                 {

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import '@rainbow-me/rainbowkit/styles.css';
@@ -24,12 +25,16 @@ export default async function RootLayout({
     <html lang="en">
      
       <body className={inter.className}>
-
+      <img
+          src="/images/bg.png"
+          className="-z-50 object-cover h-screen w-screen select-none absolute top-0 left-0 "
+          alt=""
+        />
         <Providers>  
           <NavBar/>
             {children}
            <Toaster />
-          <FooterSection title={"Accelerating the unification of web3"} description={"Mainnet is coming soon!"}/>
+          <FooterSection title={"Accelerating the unification of web3"} description={"DA Mainnet is now live!"}/>
           <Footer />
           </Providers>
       </body>

@@ -4,8 +4,10 @@ import BigNumber from "bignumber.js";
 import { useWriteContract } from "wagmi";
 import { readContract } from "@wagmi/core";
 
-import ethereumAvailTokenAbi from "@/constants/abis/ethereumAvailToken.json";
-import ethereumBridge from "@/constants/abis/ethereumBridge.json";
+import ethereumAvailTokenTuring from "@/constants/abis/ethereumAvailTokenTuring.json";
+import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
+import ethereumAvailTokenMainnet from "@/constants/abis/ethereumAvailTokenMainnet.json";
+import ethereumBridgeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
 
 import { ethConfig } from "@/config/walletConfig";
 import { Transaction, TRANSACTION_TYPES } from "@/types/transaction";
@@ -52,22 +54,29 @@ export default function useBridge() {
     }
   };
 
+  const fetchHeads = async () => {
+    const ethHead = await fetchEthHead();
+    const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
+    setLatestBlockhash(LatestBlockhash.data);
+    const avlHead = await fetchAvlHead();
+    setEthHead(ethHead.data);
+    setAvlHead(avlHead.data);
+  };
+
   useEffect(() => {
-    setInterval(async () => {
-      const ethHead = await fetchEthHead();
-      const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
-      setLatestBlockhash(LatestBlockhash.data);
-      const avlHead = await fetchAvlHead();
-      setEthHead(ethHead.data);
-      setAvlHead(avlHead.data);
-    }, 50000);
+    //TODO: Improve this .then syntax.
+    fetchHeads().then(() => {
+      setInterval(async () => {
+        await fetchHeads();
+      }, 50000);
+    });
   }, []);
 
   const getAvailBalanceOnEth = useCallback(async () => {
     // Get AVAIL balance on Ethereum chain
     const balance = await readContract(ethConfig, {
       address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-      abi: ethereumAvailTokenAbi,
+      abi: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet" ? ethereumAvailTokenMainnet : ethereumAvailTokenTuring,
       functionName: "balanceOf",
       args: [activeUserAddress],
       chainId: networks.ethereum.id,
@@ -84,7 +93,7 @@ export default function useBridge() {
       // Get current allowance on Ethereum chain
       const allowance = await readContract(ethConfig, {
         address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-        abi: ethereumAvailTokenAbi,
+        abi: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet" ? ethereumAvailTokenMainnet : ethereumAvailTokenTuring,
         functionName: "allowance",
         args: [activeUserAddress, appConfig.contracts.ethereum.bridge],
         chainId: networks.ethereum.id,
@@ -102,7 +111,7 @@ export default function useBridge() {
     // approve on ethereum chain
     const txHash = await writeContractAsync({
       address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-      abi: ethereumAvailTokenAbi,
+      abi: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet" ? ethereumAvailTokenMainnet : ethereumAvailTokenTuring,
       functionName: "approve",
       // args: [spender, amount]
       args: [appConfig.contracts.ethereum.bridge, atomicAmount],
@@ -125,7 +134,7 @@ export default function useBridge() {
 
       const txHash = await writeContractAsync({
         address: appConfig.contracts.ethereum.bridge as `0x${string}`,
-        abi: ethereumBridge,
+        abi: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet" ? ethereumBridgeMainnet : ethereumBridgeTuring,
         functionName: "sendAVAIL",
         // args: [recipient, amount]
         args: [byte32DestinationAddress, atomicAmount],
@@ -193,9 +202,9 @@ export default function useBridge() {
       depositorAddress: activeUserAddress,
       receiverAddress: destinationAddress,
       sourceBlockHash: "0x",
-      sourceTransactionBlockNumber: 0,
+      sourceBlockNumber: 0,
       sourceTransactionIndex: 0,
-      sourceTransactionTimestamp: new Date().toISOString(),
+      sourceTimestamp: new Date().toISOString(),
     });
 
     Logger.debug(`Burn transaction hash: ${burnTxHash}`);
@@ -242,7 +251,7 @@ export default function useBridge() {
       },
       selected!
     );
-    if (send.blockhash !== undefined) {
+    if (send.blockhash !== undefined && send.txHash !== undefined) {
       const tempLocalTransaction: Transaction = {
         status: TransactionStatus.INITIATED,
         destinationChain: Chain.ETH,
@@ -253,10 +262,10 @@ export default function useBridge() {
         depositorAddress: selected?.address,
         receiverAddress: "",
         sourceBlockHash: send.blockhash,
-        sourceTransactionBlockNumber: 5811152,
-        sourceTransactionHash: send.blockhash,
-        sourceTransactionIndex: 66,
-        sourceTransactionTimestamp: new Date().toISOString(),
+        sourceBlockNumber: 0,
+        sourceTransactionHash: send.txHash,
+        sourceTransactionIndex: 0,
+        sourceTimestamp: new Date().toISOString(),
       };
 
       await addToLocalTransaction(tempLocalTransaction);

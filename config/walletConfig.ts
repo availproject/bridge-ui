@@ -1,7 +1,7 @@
 /* eslint-disable import/no-anonymous-default-export */
 export const substrateConfig = {
   seed: "",
-  endpoint: "wss://turing-rpc.avail.so/ws",
+  endpoint: process.env.NEXT_PUBLIC_AVAIL_RPC || "",
   appId: 0,
 }
 

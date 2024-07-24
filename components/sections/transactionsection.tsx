@@ -2,7 +2,7 @@
 
 "use client";
 
-import { FaHistory } from "react-icons/fa";
+import { FaCheckCircle, FaHistory } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { TableBody, TableCell, TableRow } from "../ui/table";
 import { Badge } from "../ui/badge";
@@ -36,13 +36,19 @@ import { Transaction } from "@/types/transaction";
 import { CiCircleQuestion } from "react-icons/ci";
 import { parseError } from "@/utils/parseError";
 import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
+import { parseMinutes } from "@/utils/parseMinutes";
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Button } from "../ui/button";
+import Link from "next/link";
+import { set } from "zod";
 
 export default function TransactionSection() {
   const { pendingTransactions, completedTransactions } = useTransactions();
-  const {avlHead, ethHead} = useLatestBlockInfo();
+  const { avlHead, ethHead } = useLatestBlockInfo();
   const [paginatedTransactionArray, setPaginatedTransactionArray] = useState<
     Transaction[][]
   >([]);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [pendingTab, setPendingTab] = useState<boolean>(true);
   const [
     paginatedCompletedTransactionArray,
@@ -56,6 +62,13 @@ export default function TransactionSection() {
   const [inProcess, setInProcess] = useState<boolean[]>(
     Array(pendingTransactions.length).fill(false)
   );
+  const [availToEthHash, setAvailToEthHash] = useState<string>("");
+  const [ethToAvailHash, setEthToAvailHash] = useState<string>("");
+
+  //In milliseconds - 20 minutes.
+  const TELEPATHY_INTERVAL = 1200000;
+  //In milliseconds - 120 minutes.
+  const VECTORX_INTERVAL = 7200000;
 
   useEffect(() => {
     if (pendingTransactions && pendingTransactions.length > 0) {
@@ -63,8 +76,8 @@ export default function TransactionSection() {
       const chunks = [];
       const sortedTxns = pendingTransactions.sort((a, b) => {
         return (
-          new Date(b.sourceTransactionTimestamp).getTime() -
-          new Date(a.sourceTransactionTimestamp).getTime()
+          new Date(b.sourceTimestamp).getTime() -
+          new Date(a.sourceTimestamp).getTime()
         );
       });
       for (let i = 0; i < pendingTransactions.length; i += chunkSize) {
@@ -79,8 +92,8 @@ export default function TransactionSection() {
       const chunkSize = 4;
       const sortedTxns = completedTransactions.sort((a, b) => {
         return (
-          new Date(b.sourceTransactionTimestamp).getTime() -
-          new Date(a.sourceTransactionTimestamp).getTime()
+          new Date(b.sourceTimestamp).getTime() -
+          new Date(a.sourceTimestamp).getTime()
         );
       });
       const chunks = [];
@@ -101,7 +114,7 @@ export default function TransactionSection() {
     blockhash: `0x${string}`,
     index: number,
     sourceTransactionHash: `0x${string}`,
-    sourceTransactionTimestamp: string,
+    sourceTimestamp: string,
     atomicAmount: string,
     sourceTransactionIndex?: number,
     executeParams?: {
@@ -129,14 +142,12 @@ export default function TransactionSection() {
           blockhash: blockhash,
           sourceTransactionIndex: sourceTransactionIndex,
           sourceTransactionHash: sourceTransactionHash,
-          sourceTransactionTimestamp: sourceTransactionTimestamp,
+          sourceTimestamp: sourceTimestamp,
           atomicAmount: atomicAmount,
         });
         if (successBlockhash) {
-          showSuccessMessage({
-            blockhash: successBlockhash,
-            chain: Chain.ETH,
-          });
+          setAvailToEthHash(successBlockhash);
+          setOpenDialog(true);
           setComplete((prevState) =>
             prevState.map((state, idx) => (idx === index ? true : state))
           );
@@ -146,15 +157,13 @@ export default function TransactionSection() {
         const successBlockhash = await initClaimEthtoAvail({
           blockhash: blockhash,
           sourceTransactionHash: sourceTransactionHash,
-          sourceTransactionTimestamp: sourceTransactionTimestamp,
+          sourceTimestamp: sourceTimestamp,
           atomicAmount: atomicAmount,
           executeParams: executeParams,
         });
-        if (successBlockhash.blockhash) {
-          showSuccessMessage({
-            blockhash: successBlockhash.blockhash,
-            chain: Chain.AVAIL,
-          });
+        if (successBlockhash.txHash) {
+          setEthToAvailHash(successBlockhash.txHash);
+          setOpenDialog(true);
           setComplete((prevState) =>
             prevState.map((state, idx) => (idx === index ? true : state))
           );
@@ -182,14 +191,14 @@ export default function TransactionSection() {
           variant="primary"
           loading={inProcess[index]}
           className="!px-4 !py-0 rounded-xl whitespace-nowrap"
-          onClick={() =>
-            onSubmit(
+          onClick={async () => {
+            await onSubmit(
               txn.sourceChain,
               //@ts-ignore to be fixed later
               txn.sourceBlockHash,
               index,
               txn.sourceTransactionHash,
-              txn.sourceTransactionTimestamp,
+              txn.sourceTimestamp,
               txn.amount,
               txn.sourceTransactionIndex,
               {
@@ -201,7 +210,7 @@ export default function TransactionSection() {
                 destinationDomain: 2,
               }
             )
-          }
+          }}
         >
           {txn.status === "READY_TO_CLAIM" ? "Claim Ready" : txn.status}
         </LoadingButton>
@@ -212,45 +221,72 @@ export default function TransactionSection() {
   const getStatusTime = ({
     from,
     sourceTimestamp,
-    sourceTransactionBlockNumber,
+    sourceBlockNumber,
     status,
   }: {
     from: Chain;
-    sourceTimestamp: Transaction["sourceTransactionTimestamp"];
-    sourceTransactionBlockNumber: Transaction["sourceTransactionBlockNumber"];
+    sourceTimestamp: Transaction["sourceTimestamp"];
+    sourceBlockNumber: Transaction["sourceBlockNumber"];
     status: TransactionStatus;
   }) => {
-
     if (status === "READY_TO_CLAIM") {
       return "~";
     }
     if (status === "INITIATED") {
       return "Waiting for finalisation";
     }
-    if (from === Chain.ETH) {
-      /** here we get a timestamp of  last update, considering the freq is 5 minutes, i add that time to the lastupdated time, and then substract from the current timestamp to get diff */
-      //another way, just use diff, subtract from 10minutes and you'll get next proof incoming when.
-      return `~ ${((ethHead.timestamp +  - new Date(sourceTimestamp).getTime()) / 1000 / 60).toFixed(2)} minutes`;
+
+    //TODO: Change below to more accurate time
+    if (status === "PENDING" && from === Chain.ETH) {
+      return "Est time remaining: ~15 minutes";
     }
+
+    //TODO: Change below to more accurate time
+    if (status === "PENDING" && from === Chain.AVAIL) {
+      return "Est time remaining: ~5 minutes";
+    }
+
+    if (from === Chain.ETH) {
+      //Ethereum timestamp is in seconds, converting to ms here. 
+      const lastProofTimestamp = ethHead.timestamp * 1000;
+      const nextProofTimestamp = lastProofTimestamp + TELEPATHY_INTERVAL;
+      const timeNow = Date.now();
+      const timeLeft = nextProofTimestamp - timeNow;
+
+      if (timeLeft < 0) {
+        return `Est time remaining: Soon`
+      }
+
+      return `Est time remaining: ~${parseMinutes(timeLeft / 1000 / 60)}`;
+    }
+
     if (from === Chain.AVAIL) {
-      /** we have the blocknumber of txn, we check the latest proof's blocknumber, the max time from that should be 360 block's time + 1hr for proof, just check form the sourceblocknumber how far along are we   */
-      return `~ ${(((avlHead.data.end + 360) - sourceTransactionBlockNumber) * 12 )/ 60 + 60} minutes`;
+      const lastProofTimestamp = avlHead.data.endTimestamp;
+      const nextProofTimestamp = lastProofTimestamp + VECTORX_INTERVAL;
+      const timeNow = Date.now();
+      const timeLeft = nextProofTimestamp - timeNow;
+
+      if (timeLeft < 0) {
+        return `Est time remaining: Soon`
+      }
+
+      return `Est time remaining: ~${parseMinutes(timeLeft / 1000 / 60)}`;
     }
   };
 
   function ParsedDate({
-    sourceTransactionTimestamp,
+    sourceTimestamp,
   }: {
-    sourceTransactionTimestamp: string;
+    sourceTimestamp: string;
   }) {
     return (
       <span className="flex md:flex-col flex-row items-center justify-center mr-4  ">
         <span className="text-white text-opacity-60 flex md:flex-col flex-row space-x-1 items-center justify-center ml-2">
           <p className="text-white">
-            {parseDateTimeToDay(sourceTransactionTimestamp)}
+            {parseDateTimeToDay(sourceTimestamp)}
           </p>
           <p className=" text-xs">
-            {parseDateTimeToMonthShort(sourceTransactionTimestamp)}
+            {parseDateTimeToMonthShort(sourceTimestamp)}
           </p>
         </span>
       </span>
@@ -267,7 +303,7 @@ export default function TransactionSection() {
     return (
       <span className="cursor-pointer flex mt-2 text-white text-opacity-70 flex-row w-full text-sm underline">
         <HoverCard>
-          <HoverCardTrigger>Initator</HoverCardTrigger>
+          <HoverCardTrigger>From</HoverCardTrigger>
           <HoverCardContent className="bg-[#141414]">
             <p className="text-white text-opacity-80 !font-thicccboisemibold flex flex-row">
               <span>Depositor Address</span>{" "}
@@ -284,7 +320,7 @@ export default function TransactionSection() {
         </HoverCard>
         <ArrowUpRight className="w-4 h-4 mr-2" />
         <HoverCard>
-          <HoverCardTrigger className="">Reciever </HoverCardTrigger>
+          <HoverCardTrigger className="">To </HoverCardTrigger>
           <HoverCardContent>
             <p className="text-white text-opacity-80 !font-thicccboisemibold flex flex-row ">
               <span>Reciever Address</span>{" "}
@@ -305,10 +341,10 @@ export default function TransactionSection() {
   }
 
   const showPagination = () => {
-    if (paginatedCompletedTransactionArray.length > 4 && !pendingTab) {
+    if (paginatedCompletedTransactionArray.length > 1 && !pendingTab) {
       return true;
     }
-    if (paginatedTransactionArray.length > 4 && pendingTab) {
+    if (paginatedTransactionArray.length > 1 && pendingTab) {
       return true;
     }
     return false;
@@ -316,9 +352,18 @@ export default function TransactionSection() {
 
   function PendingTransactions({
     pendingTransactions,
+    openDialog,
+    setOpenDialog,
+    availToEthHash,
+    ethToAvailHash,
   }: {
     pendingTransactions: Transaction[];
+    openDialog: boolean;
+    setOpenDialog: (value: boolean) => void;
+    availToEthHash: string;
+    ethToAvailHash: string;
   }) {
+
     return (
       <div className="flex h-[85%] overflow-y-scroll">
         <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
@@ -331,8 +376,8 @@ export default function TransactionSection() {
                 <TableCell className="font-medium flex flex-row rounded-xl">
                   <div className="hidden md:flex">
                     <ParsedDate
-                      sourceTransactionTimestamp={
-                        txn.sourceTransactionTimestamp
+                      sourceTimestamp={
+                        txn.sourceTimestamp
                       }
                     />
                   </div>
@@ -347,11 +392,11 @@ export default function TransactionSection() {
                       <p className="md:px-4 px-2">
                         <MoveRight />
                       </p>{" "}
-                      <ChainLabel chain={txn.destinationChain} />
+                      <ChainLabel chain={txn.sourceChain === Chain.AVAIL ? Chain.ETH : Chain.AVAIL} />
                       <div className="md:hidden flex">
                         <ParsedDate
-                          sourceTransactionTimestamp={
-                            txn.sourceTransactionTimestamp
+                          sourceTimestamp={
+                            txn.sourceTimestamp
                           }
                         />
                       </div>
@@ -368,9 +413,9 @@ export default function TransactionSection() {
                         target="_blank"
                         href={
                           txn.sourceChain === Chain.ETH
-                            ? `https://sepolia.etherscan.io/tx/${txn.sourceTransactionHash}`
+                            ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txn.sourceTransactionHash}`
                             : //TODO: need to fix this, the local txn dosen't have all these, check indexer to see how they are fetching.
-                              `https://avail-turing.subscan.io/extrinsic/${txn.sourceTransactionBlockNumber}-${txn.sourceTransactionIndex}`
+                            `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.sourceTransactionHash}`
                         }
                       >
                         <ArrowUpRight className="w-4 h-4" />
@@ -394,30 +439,26 @@ export default function TransactionSection() {
                               {txn.status === "BRIDGED"
                                 ? `In Progress`
                                 : txn.status.charAt(0) +
-                                  txn.status.toLocaleLowerCase().slice(1)}
+                                txn.status.toLocaleLowerCase().slice(1)}
                             </p>
                             <span className="relative flex h-2 w-2">
                               <span
-                                className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
-                                  txn.status === "INITIATED"
-                                    ? "bg-yellow-600"
-                                    : `${
-                                        txn.status === "PENDING"
-                                          ? "bg-blue-600"
-                                          : "bg-orange-500"
-                                      }`
-                                } opacity-75`}
+                                className={`animate-ping absolute inline-flex h-full w-full rounded-full ${txn.status === "INITIATED"
+                                  ? "bg-yellow-600"
+                                  : `${txn.status === "PENDING"
+                                    ? "bg-blue-600"
+                                    : "bg-orange-500"
+                                  }`
+                                  } opacity-75`}
                               ></span>
                               <span
-                                className={`relative inline-flex rounded-full h-2 w-2  ${
-                                  txn.status === "INITIATED"
-                                    ? "bg-yellow-600"
-                                    : `${
-                                        txn.status === "PENDING"
-                                          ? "bg-blue-600"
-                                          : "bg-orange-500"
-                                      }`
-                                }`}
+                                className={`relative inline-flex rounded-full h-2 w-2  ${txn.status === "INITIATED"
+                                  ? "bg-yellow-600"
+                                  : `${txn.status === "PENDING"
+                                    ? "bg-blue-600"
+                                    : "bg-orange-500"
+                                  }`
+                                  }`}
                               ></span>
                             </span>
                           </Badge>
@@ -425,12 +466,64 @@ export default function TransactionSection() {
                       )}
                     </span>
                     <p className="text-xs flex flex-row items-end justify-end text-right text-white text-opacity-70 space-x-1">
-                      <span>{getStatusTime({from: txn.sourceChain, sourceTimestamp: txn.sourceTransactionTimestamp, sourceTransactionBlockNumber: txn.sourceTransactionBlockNumber, status: txn.status} )}</span>{" "}
+                      <span>{getStatusTime({ from: txn.sourceChain, sourceTimestamp: txn.sourceTimestamp, sourceBlockNumber: txn.sourceBlockNumber, status: txn.status })}</span>{" "}
                       <Clock className="w-4 h-4" />
                     </p>
                   </div>
                 </TableCell>
+                <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                  <DialogContent className="sm:max-w-md bg-[#252831] !border-0">
+                    <DialogHeader>
+                      <DialogTitle className="font-thicccboisemibold text-white text-2xl mb-2">
+                        Claim Submitted
+                      </DialogTitle>
+                      <div className="border-b border border-white border-opacity-20"></div>
+                    </DialogHeader>
+                    <div className="flex flex-col items-center justify-center !space-x-3 mt-2  ">
+                      <div className="w-[100%] h-40 mx-auto rounded-xl bg-black flex flex-col items-center justify-center">
+                        <FaCheckCircle
+                          className="mr-4 h-10 w-10"
+                          color="0BDA51"
+                        />
+                      </div>
+
+                      <div className="flex flex-col space-y-2 ">
+                        <p className="font-ppmori text-white text-sm text-opacity-60 mt-4">
+                          Your{" "}
+                          <span className="text-white ">
+                            claim transaction
+                          </span>{" "}
+                          was successfully submitted to the chain. Your funds will be deposited to the destination account, generally
+                          within
+                          <span className="text-white italics"> ~15-30 minutes.</span>{" "}
+                          <br />
+                          <span>You can close this tab in the meantime, or initiate
+                            another transfer.</span>
+                        </p>
+                      </div>
+                    </div>
+                    <DialogFooter className="sm:justify-start mt-1">
+                      <DialogClose asChild>
+                        <Link href={
+                          txn.sourceChain === Chain.AVAIL
+                            ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${availToEthHash}`
+                            : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${ethToAvailHash}`
+                        } className="w-full !border-0">
+                          <Button
+                            type="button"
+                            variant="primary"
+
+                            className="w-full !border-0"
+                          >
+                            View on Explorer <ArrowUpRight className="h-3 w-6" />
+                          </Button>
+                        </Link>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </TableRow>
+
             ))}
         </TableBody>
       </div>
@@ -454,8 +547,8 @@ export default function TransactionSection() {
                 <TableCell className="font-medium flex flex-row rounded-xl">
                   <div className="hidden md:flex">
                     <ParsedDate
-                      sourceTransactionTimestamp={
-                        txn.sourceTransactionTimestamp
+                      sourceTimestamp={
+                        txn.sourceTimestamp
                       }
                     />
                   </div>
@@ -470,11 +563,11 @@ export default function TransactionSection() {
                       <p className="md:px-4 px-2">
                         <MoveRight />
                       </p>{" "}
-                      <ChainLabel chain={txn.destinationChain} />
+                      <ChainLabel chain={txn.sourceChain === Chain.AVAIL ? Chain.ETH : Chain.AVAIL} />
                       <div className="md:hidden flex">
                         <ParsedDate
-                          sourceTransactionTimestamp={
-                            txn.sourceTransactionTimestamp
+                          sourceTimestamp={
+                            txn.sourceTimestamp
                           }
                         />
                       </div>
@@ -491,9 +584,9 @@ export default function TransactionSection() {
                         target="_blank"
                         href={
                           txn.sourceChain === Chain.ETH
-                            ? `https://sepolia.etherscan.io/tx/${txn.sourceTransactionHash}`
+                            ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txn.sourceTransactionHash}`
                             : //TODO: need to fix this, the local txn dosen't have all these, check indexer to see how they are fetching.
-                              `https://avail-turing.subscan.io/extrinsic/${txn.sourceTransactionBlockNumber}-${txn.sourceTransactionIndex}`
+                            `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.sourceBlockNumber}-${txn.sourceTransactionIndex}`
                         }
                       >
                         <ArrowUpRight className="w-4 h-4" />
@@ -512,7 +605,7 @@ export default function TransactionSection() {
                             {txn.status === "CLAIMED"
                               ? "Bridged"
                               : txn.status.charAt(0) +
-                                txn.status.toLocaleLowerCase().slice(1)}
+                              txn.status.toLocaleLowerCase().slice(1)}
                           </p>
                           <span className="relative flex h-2 w-2">
                             <span
@@ -530,8 +623,8 @@ export default function TransactionSection() {
                         target="_blank"
                         href={
                           txn.sourceChain === Chain.AVAIL
-                            ? `https://sepolia.etherscan.io/tx/${txn.destinationTransactionHash}`
-                            : `https://avail-turing.subscan.io/extrinsic/${txn.destinationTransactionHash}`
+                            ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txn.destinationTransactionHash}`
+                            : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.destinationTransactionHash}`
                         }
                         className="flex flex-row !text-xs justify-end text-white text-opacity-75 underline"
                       >
@@ -589,6 +682,10 @@ export default function TransactionSection() {
             {pendingTransactions.length > 0 ? (
               <PendingTransactions
                 pendingTransactions={paginatedTransactionArray[currentPage]}
+                openDialog={openDialog}
+                setOpenDialog={setOpenDialog}
+                availToEthHash={availToEthHash}
+                ethToAvailHash={ethToAvailHash}
               />
             ) : (
               <NoTransactions />
@@ -618,7 +715,7 @@ export default function TransactionSection() {
                 <CiCircleQuestion className="w-6 h-6" />
               </HoverCardTrigger>
               <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
-                Transactions take about 1 hour to bridge, thank you for your
+                Transactions take around ~2 hours to bridge, thank you for your
                 patience.
               </HoverCardContent>
             </HoverCard>
@@ -626,22 +723,20 @@ export default function TransactionSection() {
           <button
             disabled={currentPage === 0}
             onClick={() => setCurrentPage((prev) => prev - 1)}
-            className={`rounded-lg bg-[#484C5D] ${
-              currentPage === 0
-                ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
-                : " text-white"
-            } p-2`}
+            className={`rounded-lg bg-[#484C5D] ${currentPage === 0
+              ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
+              : " text-white"
+              } p-2`}
           >
             <ArrowLeft />
           </button>
           <button
             disabled={currentPage === paginatedTransactionArray.length - 1}
             onClick={() => setCurrentPage((prev) => prev + 1)}
-            className={`rounded-lg bg-[#484C5D] ${
-              currentPage === paginatedTransactionArray.length - 1
-                ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
-                : " text-white"
-            } p-2`}
+            className={`rounded-lg bg-[#484C5D] ${currentPage === paginatedTransactionArray.length - 1
+              ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
+              : " text-white"
+              } p-2`}
           >
             <ArrowRight />
           </button>

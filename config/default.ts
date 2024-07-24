@@ -1,5 +1,5 @@
 import { Chain } from 'viem'
-import { sepolia } from '@wagmi/core/chains'
+import { mainnet, sepolia } from '@wagmi/core/chains'
 
 type AppConfig = {
     networks: {
@@ -8,6 +8,7 @@ type AppConfig = {
     bridgeApiBaseUrl: string,
     bridgeIndexerBaseUrl: string,
     bridgeIndexerPollingInterval: number,
+    bridgePricePollingInterval: number,
     contracts: {
         ethereum: {
             availToken: string,
@@ -20,21 +21,22 @@ type AppConfig = {
     },
 }
 
-export const appConfig: AppConfig = Object.freeze({
+export const appConfig: AppConfig = {
     networks: {
-        ethereum: sepolia,
+    ethereum: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === 'mainnet' ? mainnet : sepolia,
     },
     bridgeApiBaseUrl: process.env.NEXT_PUBLIC_BRIDGE_API_URL || 'http://0.0.0.0:8080',
     bridgeIndexerBaseUrl: process.env.NEXT_PUBLIC_BRIDGE_INDEXER_URL ||'http://167.71.41.169:3000',
     bridgeIndexerPollingInterval: 30, // in seconds
+    bridgePricePollingInterval: 60,
     contracts: {
         ethereum: {
-            availToken: '0xb1C3Cb9b5e598d4E95a85870e7812B99f350982d',
-            bridge: '0x967F7DdC4ec508462231849AE81eeaa68Ad01389',
+            availToken: process.env.NEXT_PUBLIC_TOKEN_CONTRACT || '',
+            bridge: process.env.NEXT_PUBLIC_BRIDGE_PROXY_CONTRACT || '',
         },
         avail: {
             availToken: '',
             bridge: '',
         }
     }
-});
+};

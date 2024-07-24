@@ -6,6 +6,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
+import Link from "next/link";
 import {
   Form,
   FormControl,
@@ -34,7 +35,7 @@ import { toast } from "@/components/ui/use-toast";
 import { parseError } from "@/utils/parseError";
 import BigNumber from "bignumber.js";
 import { badgeVariants } from "../ui/badge";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Copy, InfoIcon, Loader2 } from "lucide-react";
 import useTransactions from "@/hooks/useTransactions";
 import { parseAmount } from "@/utils/parseAmount";
 import { LoadingButton } from "../ui/loadingbutton";
@@ -56,6 +57,17 @@ import TransactionSection from "./transactionsection";
 import { FaCheckCircle } from "react-icons/fa";
 import { pollWithDelay } from "@/utils/poller";
 import { appConfig } from "@/config/default";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import { Button } from "../ui/button";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card";
+import { CiCircleQuestion } from "react-icons/ci";
 
 const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -63,7 +75,7 @@ const formSchema = z.object({
     (a) => parseFloat(z.number().parse(a)),
     z.number({
       invalid_type_error: "Amount should be a number",
-    }),
+    })
   ),
   toAddress: z.string(),
 });
@@ -91,9 +103,12 @@ export default function BridgeSection() {
   const { pendingTransactions } = useTransactions();
   const [isChecked, setIsChecked] = useState<CheckedState>(false);
   const [open, setOpen] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [availToEthHash, setAvailToEthHash] = useState<string | undefined>('')
+  const [ethToAvailHash, setEthToAvailHash] = useState<string | undefined>('')
   const [ethBalance, setEthBalance] = useState<string | undefined | null>(null);
   const [availBalance, setAvailBalance] = useState<string | undefined | null>(
-    null,
+    null
   );
 
   const [transactionInProgress, setTransactionInProgress] =
@@ -106,7 +121,7 @@ export default function BridgeSection() {
     },
   });
 
-  const { buttonStatus, isDisabled, availAmountToDollars } =
+  const { buttonStatus, isDisabled, availAmountToDollars, getTokenPrice } =
     useTransactionButtonState(ethBalance, availBalance, transactionInProgress);
 
   const appInit = async () => {
@@ -120,8 +135,19 @@ export default function BridgeSection() {
         },
       ],
       appConfig.bridgeIndexerPollingInterval,
-      () => true,
+      () => true
     );
+    // pollWithDelay(
+    //   getTokenPrice,
+    //   [
+    //     {
+    //       coin: "ethereum",
+    //       fiat: "usd",
+    //     },
+    //   ],
+    //   appConfig.bridgeIndexerPollingInterval,
+    //   () => true
+    // );
   };
   useEffect(() => {
     appInit();
@@ -131,13 +157,13 @@ export default function BridgeSection() {
   useEffect(() => {
     setPendingTransactionsNumber(
       pendingTransactions.filter(
-        (transaction) => transaction.status !== TransactionStatus.CLAIMED,
-      ).length,
+        (transaction) => transaction.status !== TransactionStatus.CLAIMED
+      ).length
     );
     setReadyToClaimTransactionsNumber(
       pendingTransactions.filter(
-        (transaction) => transaction.status == TransactionStatus.READY_TO_CLAIM,
-      ).length,
+        (transaction) => transaction.status == TransactionStatus.READY_TO_CLAIM
+      ).length
     );
   }, [pendingTransactions]);
 
@@ -163,7 +189,7 @@ export default function BridgeSection() {
       .getElementById("transactions")
       ?.setAttribute(
         "style",
-        `height:${document.getElementById("bridge")?.clientHeight}px`,
+        `height:${document.getElementById("bridge")?.clientHeight}px`
       );
   }, []);
 
@@ -182,7 +208,6 @@ export default function BridgeSection() {
       setAvailBalance(undefined);
     }
   };
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       if (fromChain === Chain.ETH) {
@@ -197,10 +222,8 @@ export default function BridgeSection() {
           destinationAddress: destinationAddress,
         });
 
-        showSuccessMessage({
-          blockhash: blockhash,
-          chain: Chain.ETH,
-        });
+        setEthToAvailHash(blockhash);
+        setOpenDialog(true);
         setTransactionInProgress(false);
 
         // reset state
@@ -218,11 +241,10 @@ export default function BridgeSection() {
         });
 
         if (init.blockhash !== undefined) {
-          showSuccessMessage({
-            blockhash: init.blockhash,
-            chain: Chain.AVAIL,
-          });
+          setAvailToEthHash(init.txHash);
+          setOpenDialog(true);
         }
+ 
         setTransactionInProgress(false);
         resetState();
       }
@@ -319,7 +341,7 @@ export default function BridgeSection() {
   }
 
   return (
-    <div className="text-white w-full m-4">
+    <div className="text-white w-full my-4">
       <Tabs
         defaultValue="bridge"
         id="container"
@@ -447,16 +469,16 @@ export default function BridgeSection() {
                                   {...field}
                                   onChange={(event) => {
                                     field.onChange(
-                                      parseFloat(event.target.value),
+                                      parseFloat(event.target.value)
                                     );
                                     setFromAmount(
-                                      parseFloat(event.target.value),
+                                      parseFloat(event.target.value)
                                     );
                                   }}
                                 />
-                                <p className="text-white font-ppmori text-sm text-opacity-60">
-                                  ~ {availAmountToDollars}$
-                                </p>
+                                {/* <p className="text-white font-ppmori text-sm text-opacity-60">
+                                  ~ {availAmountToDollars} $
+                                </p> */}
                               </div>
 
                               <div className="rounded-xl bg-[#464A5B] flex flex-row  transform transition-transform duration-200 hover:scale-105 items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer">
@@ -466,13 +488,15 @@ export default function BridgeSection() {
                                   }
                                 >
                                   <img
-                                    src={`/images/${fromChain}small.png`}
+                                    src={`/images/AVAILsmall.png`}
                                     alt="logo"
                                   ></img>
                                   <p className="!text-lg !text-left">
-                                    {fromChain === Chain.ETH
+                                    {/* since we're doing just avail tokens for now, we'll just show avail here */}
+                                    {/* {fromChain === Chain.ETH
                                       ? "ETH"
-                                      : fromChain.toLocaleUpperCase()}
+                                      : fromChain.toLocaleUpperCase()} */}
+                                    {Chain.AVAIL}
                                   </p>
                                 </div>
                               </div>
@@ -486,20 +510,27 @@ export default function BridgeSection() {
                                     const value =
                                       fromChain === Chain.ETH
                                         ? ethBalance
-                                          ? parseFloat(ethBalance) * 0.98
+                                          ? parseFloat(parseAmount(ethBalance, 18) )
                                           : 0
                                         : availBalance
-                                          ? parseFloat(
-                                              parseAmount(availBalance, 18),
-                                            ) * 0.98
-                                          : 0;
+                                        ? parseFloat(
+                                            parseAmount(availBalance, 18)
+                                          ) - 1
+                                        : 0;
 
                                     value && form.setValue("fromAmount", value);
                                     setFromAmount(value);
                                   }}
-                                  className="font-thicccboisemibold text-[#3FB5F8] text-sm cursor-pointer"
+                                  className="font-thicccboisemibold flex flex-row space-x-1 text-[#3FB5F8] text-sm cursor-pointer"
                                 >
-                                  MAX
+                                  <span>MAX</span> <HoverCard>
+              <HoverCardTrigger className="cursor-pointer">
+                <InfoIcon className="w-3 h-3 " />
+              </HoverCardTrigger>
+              <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
+              Transfers the max available minus 1 AVAIL reserved to pay fees
+              </HoverCardContent>
+            </HoverCard>
                                 </div>
                               </div>
                             </div>
@@ -569,8 +600,8 @@ export default function BridgeSection() {
                                         ? selected.address.slice(0, 10) + "..."
                                         : "0x"
                                       : account?.address
-                                        ? account.address.slice(0, 10) + "..."
-                                        : "0x"
+                                      ? account.address.slice(0, 10) + "..."
+                                      : "0x"
                                   }
                                   {...field}
                                   onChange={(event) => {
@@ -654,6 +685,56 @@ export default function BridgeSection() {
                   )}
                 />
                 <br />
+                <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                  <DialogContent className="sm:max-w-md bg-[#252831] !border-0">
+                    <DialogHeader>
+                      <DialogTitle className="font-thicccboisemibold text-white text-2xl mb-2">
+                        Transaction Submitted
+                      </DialogTitle>
+                      <div className="border-b border border-white border-opacity-20"></div>
+                    </DialogHeader>
+                    <div className="flex flex-col items-center justify-center !space-x-3 mt-2  ">
+                      <div className="w-[100%] h-40 mx-auto rounded-xl bg-black flex flex-col items-center justify-center">
+                        <FaCheckCircle
+                          className="mr-4 h-10 w-10"
+                          color="0BDA51"
+                        />
+                      </div>
+
+                      <div className="flex flex-col space-y-2 ">
+                        <p className="font-ppmori text-white text-sm text-opacity-60 mt-4">
+                          Your{" "}
+                          <span className="text-white ">
+                            bridge transaction
+                          </span>{" "}
+                          was successfully submitted to the chain. Check back in{" "}
+                          <span className="text-white italics">~2 hours</span>{" "}
+                          to claim funds on the destination chain. <br />
+                          You can close this tab in the meantime, or initiate
+                          another transfer.
+                        </p>
+                      </div>
+                    </div>
+                    <DialogFooter className="sm:justify-start mt-1">
+                      <DialogClose asChild>
+                        <Link href={
+                fromChain === Chain.ETH
+                  ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${ethToAvailHash}`
+                  : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${availToEthHash}`
+              } className="w-full !border-0">
+                        <Button
+                          type="button"
+                          variant="primary"
+                          
+                          className="w-full !border-0"
+                        >
+                          View on Explorer <ArrowUpRight className="h-3 w-6" />
+                        </Button>
+                        </Link>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
                 <LoadingButton
                   variant={"primary"}
                   loading={transactionInProgress}
