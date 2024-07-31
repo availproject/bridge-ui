@@ -504,7 +504,7 @@ export default function TransactionSection() {
                     </div>
                     <DialogFooter className="sm:justify-start mt-1">
                       <DialogClose asChild>
-                        <Link href={
+                        <Link target="_blank" href={
                           txn.sourceChain === Chain.AVAIL
                             ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${availToEthHash}`
                             : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${ethToAvailHash}`
