@@ -373,7 +373,7 @@ export default function TransactionSection() {
   }) {
 
     return (
-      <div className="flex h-[85%] overflow-y-scroll">
+      <div className="flex h-[85%] ">
         <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
           {pendingTransactions &&
             pendingTransactions.map((txn, index) => (
@@ -544,7 +544,7 @@ export default function TransactionSection() {
     completedTransactions: Transaction[];
   }) {
     return (
-      <div className="flex h-[85%] overflow-y-scroll">
+      <div className="flex h-[85%]">
         <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
           {completedTransactions &&
             completedTransactions.map((txn, index) => (
