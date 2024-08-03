@@ -1,6 +1,6 @@
 import { writeContract } from "@wagmi/core";
 import { encodeAbiParameters } from "viem";
-import { merkleProof } from "@/types/transaction";
+import { merkleProof, TRANSACTION_TYPES } from "@/types/transaction";
 import { bridgeContractAbi } from "@/constants/abi";
 import ethereumBrigdeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
 import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
@@ -19,12 +19,29 @@ import { u8aToHex } from "@polkadot/util";
 import { Chain, TransactionStatus } from "@/types/common";
 import useTransactions from "./useTransactions";
 import { useAccount } from "wagmi";
+import { appConfig } from "@/config/default";
+import useEthWallet from "./useEthWallet";
 
 export default function useClaim() {
   const { ethHead, latestBlockhash } = useLatestBlockInfo();
+  const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
   const { selected } = useAvailAccount();
   const { address } = useAccount();
   const { addToLocalTransaction } = useTransactions();
+
+  const networks = appConfig.networks;
+
+  /**
+   * @description Validates chain according to transaction type, and changes chain if needed
+   * @param txType Transaction type
+   */
+  const validateChain = async() => {
+      if (networks.ethereum.id !== (await activeNetworkId())) {
+        await switchNetwork(networks.ethereum.id);
+      }
+    
+  };
+
 
   /**
    * @description Receive/Claim after the merkleProof is fetched from the api AVAIL on ETH
@@ -102,6 +119,14 @@ export default function useClaim() {
         sourceTransactionIndex,
       );
       if (!a) throw new Error("Failed to fetch proofs from api");
+
+      await validateChain();
+
+      if ((await activeNetworkId()) !== networks.ethereum.id) {
+        throw new Error(
+          `Network not supported, switching to ${networks.ethereum.name} network(id: ${networks.ethereum.id})`
+        );
+      }
 
       const receive = await receiveAvail(a);
       if (receive) {

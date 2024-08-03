@@ -23,12 +23,17 @@ export function parseError(error: unknown): string {
         return "You denied the network switch. Please allow the switching to continue.";
     } if (errorMessageString.match(/walletConnect network switch not supported/i)) {
         return "You may need to manually switch it to the correct network.";
-        
     } if (errorMessageString.match(/No account selected/i)) {
         return "Please connect your accounts";
     }
+    if (errorMessageString.match(/Failed to fetch proofs from api/i)) {
+        return "Failed to fetch proofs from API. Contact Support";
+    }
     if (errorMessageString.match(/invalid network/i)) {
-        return "You may need to manually switch it to the correct network.";
+        return "Network not supported. Please switch to the correct network.";
+    }
+    if (errorMessageString.match(/Network not supported/i)) {
+        return "Network not supported, switching to the correct network. Retry the transaction.";
     }
     if (
         errorMessageString.match(/denied transaction/i) || // Metamask browser message
