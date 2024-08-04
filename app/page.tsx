@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 // import BridgeSection from "@/components/sections/bridgesection";
+import ModClaimSection from "@/components/sections/modclaimsection";
 import { InfoIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 
@@ -16,7 +17,8 @@ export default function Home() {
     <main className="">
       <div className="relative !mt-12 w-screen items-center justify-center flex flex-col">
         <section className="z-10 flex flex-col items-center justify-center space-x-[2vw]">
-          <BridgeSection />
+          {/* <BridgeSection /> */}
+          <ModClaimSection/>
 
         </section>
         {/* <div className="absolute bottom-4 left-8 flex flex-row space-x-4 text-opacity-80 text-white">
