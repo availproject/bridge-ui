@@ -35,7 +35,13 @@ import { toast } from "@/components/ui/use-toast";
 import { parseError } from "@/utils/parseError";
 import BigNumber from "bignumber.js";
 import { badgeVariants } from "../ui/badge";
-import { ArrowUpRight, CheckCircle2, Copy, InfoIcon, Loader2 } from "lucide-react";
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  Copy,
+  InfoIcon,
+  Loader2,
+} from "lucide-react";
 import useTransactions from "@/hooks/useTransactions";
 import { parseAmount } from "@/utils/parseAmount";
 import { LoadingButton } from "../ui/loadingbutton";
@@ -66,20 +72,22 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card";
-import { CiCircleQuestion } from "react-icons/ci";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "../ui/hover-card";
+import { Input } from "../ui/input";
+import { transferAvailForGas } from "@/services/vectorpallet";
 
-const formSchema = z.object({
-  fromAmount: z.preprocess(
-    //@ts-ignore - preprocess is not in the types
-    (a) => parseFloat(z.number().parse(a)),
-    z.number({
-      invalid_type_error: "Amount should be a number",
-    })
-  ),
-  toAddress: z.string(),
-});
-type CheckedState = boolean | "indeterminate";
+const formSchema = z
+  .object({
+    availAddress: z.string().optional(),
+    ethAddress: z.string().optional(),
+  })
+  .refine((data) => data.availAddress || data.ethAddress, {
+    message: "At least one of availAddress or ethAddress is required",
+  });
 
 export default function BridgeSection() {
   const account = useAccount();
@@ -92,7 +100,6 @@ export default function BridgeSection() {
     setToAddress,
   } = useCommonStore();
   const { selected } = useAvailAccount();
-  const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
   const {
     pendingTransactionsNumber,
     setPendingTransactionsNumber,
@@ -101,48 +108,45 @@ export default function BridgeSection() {
   } = useCommonStore();
   const { fetchTransactions } = useTransactions();
   const { pendingTransactions } = useTransactions();
-  const [isChecked, setIsChecked] = useState<CheckedState>(false);
-  const [open, setOpen] = useState(false);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [availToEthHash, setAvailToEthHash] = useState<string | undefined>('')
-  const [ethToAvailHash, setEthToAvailHash] = useState<string | undefined>('')
+  const [loading, setLoading] = useState(false);
   const [ethBalance, setEthBalance] = useState<string | undefined | null>(null);
   const [availBalance, setAvailBalance] = useState<string | undefined | null>(
     null
   );
+  const [availAddress, setAvailAddress] = useState<string>("");
+  const [ethAddress, setEthAddress] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
 
-  const [transactionInProgress, setTransactionInProgress] =
-    useState<boolean>(false);
+  const handleChangeAvailAddress = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAvailAddress(e.target.value);
+  };
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      toAddress: "",
-    },
-  });
+  const handleChangeEthAddress = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEthAddress(e.target.value);
+  };
 
-  const { buttonStatus, isDisabled, availAmountToDollars, getTokenPrice } =
-    useTransactionButtonState(ethBalance, availBalance, transactionInProgress);
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      formSchema.parse({ availAddress, ethAddress });
+      setError(null);
+      // Handle valid input
+      console.log("Valid input:", { availAddress, ethAddress });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        setError(err.errors[0].message);
+      }
+    }
+  };
 
   const appInit = async () => {
-    if (!selected && !account.address) return;
+    console.log(availAddress, ethAddress);
     pollWithDelay(
       fetchTransactions,
       [
         {
-          availAddress: selected?.address,
-          ethAddress: account.address,
-        },
-      ],
-      appConfig.bridgeIndexerPollingInterval,
-      () => true
-    );
-    pollWithDelay(
-      getTokenPrice,
-      [
-        {
-          coin: "avail",
-          fiat: "usd",
+          availAddress: availAddress,
+          ethAddress: ethAddress,
         },
       ],
       appConfig.bridgeIndexerPollingInterval,
@@ -151,8 +155,7 @@ export default function BridgeSection() {
   };
   useEffect(() => {
     appInit();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
+  }, [availAddress, ethAddress]);
 
   useEffect(() => {
     setPendingTransactionsNumber(
@@ -192,68 +195,6 @@ export default function BridgeSection() {
         `height:${document.getElementById("bridge")?.clientHeight}px`
       );
   }, []);
-
-  const resetState = async () => {
-    form.reset();
-    if (account.address) {
-      const result = await _getBalance(Chain.ETH, undefined, account.address);
-      setEthBalance(result);
-    } else {
-      setEthBalance(undefined);
-    }
-    if (selected?.address) {
-      const result = await _getBalance(Chain.AVAIL, selected?.address);
-      setAvailBalance(result);
-    } else {
-      setAvailBalance(undefined);
-    }
-  };
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      if (fromChain === Chain.ETH) {
-        const fromAmountAtomic = new BigNumber(values.fromAmount)
-          .multipliedBy(new BigNumber(10).pow(18))
-          .toString(10);
-        const destinationAddress = selected?.address || values.toAddress;
-
-        setTransactionInProgress(true);
-        const blockhash = await initEthToAvailBridging({
-          atomicAmount: fromAmountAtomic,
-          destinationAddress: destinationAddress,
-        });
-
-        setEthToAvailHash(blockhash);
-        setOpenDialog(true);
-        setTransactionInProgress(false);
-
-        // reset state
-        resetState();
-      } else if (fromChain === Chain.AVAIL) {
-        const fromAmountAtomic = new BigNumber(values.fromAmount)
-          .multipliedBy(new BigNumber(10).pow(18))
-          .toString(10);
-
-        const destinationAddress = account?.address || values.toAddress;
-        setTransactionInProgress(true);
-        const init = await initAvailToEthBridging({
-          atomicAmount: fromAmountAtomic,
-          destinationAddress: destinationAddress,
-        });
-
-        if (init.blockhash !== undefined) {
-          setAvailToEthHash(init.txHash);
-          setOpenDialog(true);
-        }
- 
-        setTransactionInProgress(false);
-        resetState();
-      }
-    } catch (error) {
-      console.error(error);
-      setTransactionInProgress(false);
-      showFailedMessage({ title: parseError(error) });
-    }
-  }
 
   function Balance() {
     return (
@@ -301,59 +242,14 @@ export default function BridgeSection() {
     );
   }
 
-  async function PasteAddressAction() {
-    const address = await navigator.clipboard.readText();
-    const a = await validAddress(address, toChain);
-    a &&
-      (form.setValue("toAddress", address),
-      setOpen(false),
-      toast({
-        title: (
-          <div className="flex flex-row items-center justify-center !space-x-3 ">
-            <FaCheckCircle className="mr-4 h-10 w-10" color="0BDA51" />
-            <div className="flex flex-col space-y-2">
-              <p className="mr-2 font-thicccboisemibold">
-                Address Added Successfully
-              </p>
-              <p className="!text-xs !text-white !text-opacity-40 font-thicccboisemibold">
-                The Address has been added successfully and would be used for
-                future txns.
-              </p>
-            </div>
-          </div>
-        ),
-      }));
-
-    !a &&
-      toast({
-        title: (
-          <div className="flex flex-row items-center justify-center !space-x-3 ">
-            <RxCrossCircled className="mr-2 h-10 w-10" color="FF0000" />
-            <div className="flex flex-col space-y-2">
-              <p className="mr-2 font-thicccboisemibold">Invalid Address</p>
-              <p className="!text-xs !text-white !text-opacity-40 font-thicccboisemibold">
-                Please Check the Address you have copied
-              </p>
-            </div>
-          </div>
-        ),
-      });
-  }
-
   return (
     <div className="text-white w-full my-4">
       <Tabs
-        defaultValue="bridge"
+        defaultValue="transactions"
         id="container"
         className="section_bg p-2 w-[90vw] sm:w-[70vw] lg:w-[55vw] xl:w-[45vw] "
       >
         <TabsList className="flex flex-row items-start justify-start bg-transparent !border-0 p-2 mb-6 mx-2 mt-1">
-          <TabsTrigger
-            value="bridge"
-            className="data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 data-[state=active]:border-b !rounded-none"
-          >
-            <h1 className="font-ppmori text-lg">Bridge</h1>
-          </TabsTrigger>
           <div className="flex flex-row pb-[2vh] items-center justify-between">
             <h1 className="font-ppmori items-center flex flex-row space-x-2 text-white text-opacity-80 text-2xl w-full ">
               <span className="relative flex flex-row items-center justify-center">
@@ -416,346 +312,84 @@ export default function BridgeSection() {
             )}
           </div>
         )}
-        <TabsContent id="bridge" value="bridge" className="flex-1 ">
-          <div className="lg:p-4 p-2">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="md:space-y-4 w-full"
-              >
-                {/* FROM FIELD*/}
-                <FormField
-                  control={form.control}
-                  name="fromAmount"
-                  render={({ field }) => (
-                    <>
-                      <FormItem>
-                        <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end  ">
-                          <span className="font-ppmori flex flex-row items-center space-x-2">
-                            <p className="text-opacity-80 text-white ">From</p>
-                            <div
-                              className={badgeVariants({ variant: "avail" })}
-                            >
-                              <img
-                                src={`/images/${fromChain}small.png`}
-                                alt="logo"
-                              ></img>
-                              <p className="!text-left">{fromChain}</p>
-                            </div>
-                          </span>
-
-                          <div className="flex flex-row items-center justify-center ">
-                            {fromChain === Chain.ETH ? <Eth /> : <Avail />}
-                          </div>
-                        </FormLabel>
-                        <FormControl>
-                          <>
-                            <div className="!mt-3 card_background pl-2 !rounded-xl !space-y-2 p-2 flex flex-row items-center justify-between">
-                              <div className="!space-y-2 p-1 flex flex-col items-start justify-start">
-                                <p className="text-white font-ppmori text-sm text-opacity-60">
-                                  You send
-                                </p>
-                                <input
-                                  className="!bg-inherit  max-md:w-24 placeholder:text-white text-white placeholder:text-2xl text-2xl p-2 !h-8"
-                                  style={{
-                                    border: "none",
-                                    background: "none",
-                                    padding: 0,
-                                    margin: 0,
-                                    outline: "none",
-                                  }}
-                                  type="number"
-                                  placeholder="0.0"
-                                  {...field}
-                                  onChange={(event) => {
-                                    field.onChange(
-                                      parseFloat(event.target.value)
-                                    );
-                                    setFromAmount(
-                                      parseFloat(event.target.value)
-                                    );
-                                  }}
-                                />
-                                <p className="text-white font-ppmori text-sm text-opacity-60">
-                                  ~ {availAmountToDollars.toFixed(3)}$
-                                </p>
-                              </div>
-
-                              <div className="rounded-xl bg-[#464A5B] flex flex-row  transform transition-transform duration-200 hover:scale-105 items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer">
-                                <div
-                                  className={
-                                    "flex flex-row items-center justify-center space-x-2  font-ppmori"
-                                  }
-                                >
-                                  <img
-                                    src={`/images/AVAILsmall.png`}
-                                    alt="logo"
-                                  ></img>
-                                  <p className="!text-lg !text-left">
-                                    {/* since we're doing just avail tokens for now, we'll just show avail here */}
-                                    {/* {fromChain === Chain.ETH
-                                      ? "ETH"
-                                      : fromChain.toLocaleUpperCase()} */}
-                                    {Chain.AVAIL}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="flex flex-row items-center justify-between">
-                              <Balance />
-                              <div className="flex flex-row items-center justify-center ">
-                                <div
-                                  onClick={() => {
-                                    const value =
-                                      fromChain === Chain.ETH
-                                        ? ethBalance
-                                          ? parseFloat(parseAmount(ethBalance, 18) )
-                                          : 0
-                                        : availBalance
-                                        ? parseFloat(
-                                            parseAmount(availBalance, 18)
-                                          ) - 1
-                                        : 0;
-
-                                    value && form.setValue("fromAmount", value);
-                                    setFromAmount(value);
-                                  }}
-                                  className="font-thicccboisemibold flex flex-row space-x-1 text-[#3FB5F8] text-sm cursor-pointer"
-                                >
-                                  <span>MAX</span> <HoverCard>
-              <HoverCardTrigger className="cursor-pointer">
-                <InfoIcon className="w-3 h-3 " />
-              </HoverCardTrigger>
-              <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
-              Transfers the max available minus 1 AVAIL reserved to pay fees
-              </HoverCardContent>
-            </HoverCard>
-                                </div>
-                              </div>
-                            </div>
-                          </>
-                        </FormControl>
-
-                        <FormMessage />
-                      </FormItem>
-                    </>
-                  )}
-                />
-                <div className="relative flex items-center justify-center">
-                  <div className="absolute border-b border-white border-opacity-30 w-[95%] mx-auto hover:border-opacity-60"></div>
-                  <HiOutlineSwitchVertical
-                    onClick={() => {
-                      setFromChain(toChain);
-                      setToChain(fromChain);
-                    }}
-                    className="h-12 w-12 bg-[#3A3E4A] transform transition-transform duration-1000 hover:p-2.5 p-3 rounded-full mx-auto cursor-pointer relative z-10"
-                  />
-                </div>
-                {/* TO FIELD*/}
-                <FormField
-                  control={form.control}
-                  name="toAddress"
-                  render={({ field }) => (
-                    <>
-                      <FormItem>
-                        <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end  ">
-                          <span className="font-ppmori flex flex-row items-center space-x-2">
-                            <p className="text-opacity-80 text-white ">To</p>
-                            <div
-                              className={badgeVariants({ variant: "avail" })}
-                            >
-                              <img
-                                src={`/images/${toChain}small.png`}
-                                alt="logo"
-                              ></img>
-                              <p className="!text-left">{toChain}</p>
-                            </div>
-                          </span>
-                          {/* this will be opposite here since it's the To feild*/}
-                          {fromChain === Chain.ETH ? <Avail /> : <Eth />}
-                        </FormLabel>
-                        <FormControl>
-                          <>
-                            <div className="!mt-3 card_background pl-2 !rounded-xl !space-y-2 p-2 flex flex-row items-center justify-between">
-                              <div className="!space-y-2 p-1 flex flex-col items-start justify-start">
-                                <p className="text-white font-ppmori text-sm text-opacity-60">
-                                  To Address
-                                </p>
-
-                                <input
-                                  className="!bg-inherit max-md:w-24 placeholder:text-white text-white text-opacity-90 placeholder:text-opacity-90 placeholder:text-2xl text-2xl "
-                                  style={{
-                                    border: "none",
-                                    background: "none",
-                                    padding: 0,
-                                    margin: 0,
-                                    outline: "none",
-                                  }}
-                                  disabled={true}
-                                  min={0}
-                                  placeholder={
-                                    fromChain === Chain.ETH
-                                      ? selected?.address
-                                        ? selected.address.slice(0, 10) + "..."
-                                        : "0x"
-                                      : account?.address
-                                      ? account.address.slice(0, 10) + "..."
-                                      : "0x"
-                                  }
-                                  {...field}
-                                  onChange={(event) => {
-                                    field.onChange(+event.target.value);
-                                    setToAddress(event.target.value);
-                                  }}
-                                />
-                              </div>
-                              <AlertDialog open={open}>
-                                <AlertDialogTrigger
-                                  onClick={() => {
-                                    setOpen(!open);
-                                  }}
-                                  className="rounded-xl bg-[#464A5B] flex flex-row  transform transition-transform duration-200 hover:scale-105 items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer"
-                                >
-                                  <span>+</span>
-                                  <span className="text-sm text-white text-opacity-70">
-                                    Add Address
-                                  </span>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent className="bg-[#252831] border-2 border-[#3a3b3cb1] !rounded-[1rem]">
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle className="text-white font-ppmoribsemibold !text-lg">
-                                      Transfer to different Address
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription className="text-[#B6B7BB] font-thicccboisemibold text-md">
-                                      <div className=" border-white border-t border-opacity-25 w-full !h-1 mb-4"></div>
-                                      <div className="flex flex-row items-bottom pt-2"></div>
-                                      <div className="items-start flex  space-x-2 px-2 pb-4">
-                                        <Checkbox
-                                          id="terms1"
-                                          checked={isChecked}
-                                          onCheckedChange={setIsChecked}
-                                          className="text-white border-white border-opacity-70 border rounded-md mt-1"
-                                        ></Checkbox>
-                                        <div className="grid gap-1.5 leading-none">
-                                          <label
-                                            htmlFor="terms1"
-                                            className="text-sm font-light leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white text-opacity-60"
-                                          >
-                                            Please double-check if the address
-                                            is correct. Any tokens sent to an
-                                            incorrect address will be
-                                            unrecoverable.
-                                          </label>
-                                        </div>
-                                      </div>
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel
-                                      onClick={() => {
-                                        setOpen(false);
-                                      }}
-                                      className="!bg-inherit !border-0 text-red-600 hover:text-red-800 "
-                                    >
-                                      Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                      disabled={!isChecked}
-                                      className="rounded-xl bg-[#464A5B] flex flex-row  items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer"
-                                      onClick={PasteAddressAction}
-                                    >
-                                      <span>+</span>
-                                      <span className="text-sm text-white text-opacity-70">
-                                        Copy Address from Clipboard
-                                      </span>
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                          </>
-                        </FormControl>
-                        <div className="flex flex-row items-center justify-between">
-                          <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70"></div>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    </>
-                  )}
-                />
-                <br />
-                <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-                  <DialogContent className="sm:max-w-md bg-[#252831] !border-0">
-                    <DialogHeader>
-                      <DialogTitle className="font-thicccboisemibold text-white text-2xl mb-2">
-                        Transaction Submitted
-                      </DialogTitle>
-                      <div className="border-b border border-white border-opacity-20"></div>
-                    </DialogHeader>
-                    <div className="flex flex-col items-center justify-center !space-x-3 mt-2  ">
-                      <div className="w-[100%] h-40 mx-auto rounded-xl bg-black flex flex-col items-center justify-center">
-                        <FaCheckCircle
-                          className="mr-4 h-10 w-10"
-                          color="0BDA51"
-                        />
-                      </div>
-
-                      <div className="flex flex-col space-y-2 ">
-                        <p className="font-ppmori text-white text-sm text-opacity-60 mt-4">
-                          Your{" "}
-                          <span className="text-white ">
-                            bridge transaction
-                          </span>{" "}
-                          was successfully submitted to the chain. Check back in{" "}
-                          <span className="text-white italics">~2 hours</span>{" "}
-                          to claim funds on the destination chain. <br />
-                          You can close this tab in the meantime, or initiate
-                          another transfer.
-                        </p>
-                      </div>
-                    </div>
-                    <DialogFooter className="sm:justify-start mt-1">
-                      <DialogClose asChild>
-                        <Link target="_blank" href={
-                fromChain === Chain.ETH
-                  ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${ethToAvailHash}`
-                  : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${availToEthHash}`
-              } className="w-full !border-0">
-                        <Button
-                          type="button"
-                          variant="primary"
-                          
-                          className="w-full !border-0"
-                        >
-                          View on Explorer <ArrowUpRight className="h-3 w-6" />
-                        </Button>
-                        </Link>
-                      </DialogClose>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-                <LoadingButton
-                  variant={"primary"}
-                  loading={transactionInProgress}
-                  type="submit"
-                  className="!rounded-xl w-full !text-[15px] !py-8  font-ppmori"
-                  disabled={isDisabled}
-                >
-                  {buttonStatus}
-                </LoadingButton>
-              </form>
-            </Form>
-          </div>
-        </TabsContent>
         <TabsContent
           id="transactions"
           value="transactions"
           className="text-white h-full"
         >
+          <div className="flex flex-row items-center justify-center pb-6">
+            {" "}
+            Connect Accounts <Eth /> <Avail />
+          </div>
+          <div className="flex flex-row"></div>
+          <form onSubmit={handleSubmit}>
+            <p className="font-ppmori text-md mb-2 px-4">
+              Search for Transactions{" "}
+            </p>
+            <div className="px-4 pb-2">
+              <Input
+                type="text"
+                placeholder="Enter Avail Address"
+                id="availAddress"
+                value={availAddress}
+                onChange={handleChangeAvailAddress}
+              />
+            </div>
+            <div className="px-4 pb-4">
+              <Input
+                placeholder="Enter Eth Address"
+                type="text"
+                id="ethAddress"
+                value={ethAddress}
+                onChange={handleChangeEthAddress}
+              />
+              <LoadingButton
+                loading={loading}
+                onClick={async () => {
+                  setLoading(true);
+                  if (!availAddress && !selected?.address) {
+                    showFailedMessage({
+                      title: "Add and Connect an Avail Account",
+                    });
+                    setLoading(false);
+                    return;
+                  }
+                  if (!(await validAddress(availAddress, Chain.AVAIL))) {
+                    showFailedMessage({ title: "Enter a Valid Avail Address" });
+                    setLoading(false);
+                    return;
+                  } 
+                  if (selected) {
+                    try{
+                      const transfer = await transferAvailForGas(
+                        availAddress,
+                        selected
+                      );
+                      showSuccessMessage({txHash: transfer.txHash, title: "Transfer Submitted successfully"})
+                      setLoading(false);
+                      return;
+                    } catch(e: any) {
+                      showFailedMessage({title: e.message})
+                      setLoading(false);
+                    }
+                  
+                  }
+                }}
+                variant="primary"
+                className="rounded-lg my-4"
+              >
+                Send .25 AVAIL for gas to added Avail Account
+              </LoadingButton>
+            </div>
+          </form>
           <TransactionSection />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
+
+/**
+ * not doing a balance check before transfer
+ *
+ */

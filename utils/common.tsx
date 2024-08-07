@@ -93,7 +93,7 @@ export const showSuccessMessage = ({
           </p>
           <p className="!text-xs !text-white !text-opacity-40 font-thicccboisemibold">
             {desc ? desc : "Your Transaction of was Initiated Successfully."}
-            {blockhash && <a
+            {txHash && <a
               target="_blank"
               className="flex flex-row underline"
               href={

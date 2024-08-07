@@ -10,6 +10,7 @@ import { substrateConfig } from "@/config/walletConfig";
 import { getWalletBySource, WalletAccount } from "@talismn/connect-wallets";
 import { SignerOptions } from "@polkadot/api/types";
 import { executeParams, sendMessageParams } from "@/types/transaction";
+import BigNumber from "bignumber.js";
 
 
 /**
@@ -126,6 +127,93 @@ export async function sendMessage(
   };
 }
 
+export async function transferAvailForGas(
+account: string,
+sender: WalletAccount, 
+): Promise<{
+  status: string;
+  message: string;
+  blockhash?: string;
+  txHash?: string;
+}> {
+  const injector = await getWalletBySource(sender.source);
+  const api = await initialize(substrateConfig.endpoint);
+  const metadata = getInjectorMetadata(api);
+
+  //@ts-ignore
+  await injector?.metadata?.provide(metadata);
+  const amount = BigInt(.25 * (10 ** 18))
+  console.log(amount)
+
+  const result: {blockhash: string, txHash: string} = await new Promise((resolve, reject) => {
+    const unsubscribe = api.tx.balances
+      .transferKeepAlive(account, amount)
+      .signAndSend(
+        sender.address,
+        { signer: injector?.signer, app_id: 0 } as Partial<SignerOptions>,
+        ({ status, events, txHash }) => {
+          if (status.isInBlock) {
+            console.log(
+              `Transaction included at blockHash ${status.asInBlock} ${txHash} `
+            );
+
+            events.forEach(({ event }) => {
+              if (api.events.system.ExtrinsicFailed.is(event)) {
+                const [dispatchError] = event.data;
+                let errorInfo: string;
+                //@ts-ignore
+                if (dispatchError.isModule) {
+                  const decoded = api.registry.findMetaError(
+                               //@ts-ignore
+                    dispatchError.asModule
+                  );
+                  errorInfo = `${decoded.section}.${decoded.name}`;
+                } else {
+                  errorInfo = dispatchError.toString();
+                }
+
+                toast({
+                  title: `Transaction failed. Status: ${status} with error: ${errorInfo}`,
+                });
+                console.log(`ExtrinsicFailed: ${errorInfo}`);
+                reject(
+                  new Error(
+                    `Transaction failed. Status: ${status} with error: ${errorInfo}`
+                  )
+                );
+              }
+
+              if (api.events.system.ExtrinsicSuccess.is(event)) {
+                console.log(
+                  "Transaction successful with hash:",
+                  status.asInBlock
+                );
+                resolve({blockhash: status.asInBlock.toString(), txHash: txHash.toString()});
+              }
+            });
+            //@ts-ignore
+            unsubscribe();
+          }
+        }
+      )
+      .catch((error) => {
+        console.error("Error in signAndSend:", error);
+        reject(error);
+        return {
+          status: "failed",
+          message: error,
+        };
+      });
+  });
+
+  return {
+    status: "success",
+    message: "Transaction successful",
+    blockhash: result.blockhash,
+    txHash: result.txHash
+  };
+}
+ 
 
 /**
  * 

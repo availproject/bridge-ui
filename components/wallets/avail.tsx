@@ -271,7 +271,7 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
                       <ArrowLeft />
                     </Button>
                   )}
-                  <p>Connect Wallet</p>
+                  <p>Connect Avail Wallet</p>
                 </DialogTitle>
                 <div className="border-b border-white border-opacity-25 w-full !h-1 pt-2 "></div>
                 {enabledAccounts.length <= 0 && (

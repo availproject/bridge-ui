@@ -73,7 +73,7 @@ export default function TransactionSection() {
 
   useEffect(() => {
     if (pendingTransactions && pendingTransactions.length > 0) {
-      const chunkSize = 4;
+      const chunkSize = 3;
       const chunks = [];
       const sortedTxns = pendingTransactions.sort((a, b) => {
         return (
@@ -94,7 +94,7 @@ export default function TransactionSection() {
 
   useEffect(() => {
     if (completedTransactions && completedTransactions.length > 0) {
-      const chunkSize = 4;
+      const chunkSize = 3;
       const sortedTxns = completedTransactions.sort((a, b) => {
         return (
           new Date(b.sourceTimestamp).getTime() -
@@ -373,7 +373,7 @@ export default function TransactionSection() {
   }) {
 
     return (
-      <div className="flex h-[85%] overflow-y-scroll">
+      <div className="flex h-[85%] ">
         <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
           {pendingTransactions &&
             pendingTransactions.map((txn, index) => (
@@ -512,7 +512,7 @@ export default function TransactionSection() {
                     </div>
                     <DialogFooter className="sm:justify-start mt-1">
                       <DialogClose asChild>
-                        <Link href={
+                        <Link target="_blank" href={
                           txn.sourceChain === Chain.AVAIL
                             ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${availToEthHash}`
                             : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${ethToAvailHash}`
@@ -544,7 +544,7 @@ export default function TransactionSection() {
     completedTransactions: Transaction[];
   }) {
     return (
-      <div className="flex h-[85%] overflow-y-scroll">
+      <div className="flex h-[85%]">
         <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
           {completedTransactions &&
             completedTransactions.map((txn, index) => (
@@ -719,7 +719,7 @@ export default function TransactionSection() {
       </Tabs>
       {/* Pagination */}
       {showPagination ? (
-        <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
+        <div className=" w-[100%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end ">
           <p className="font-thicccboisemibold text-sm text-white mr-2">
             <HoverCard>
               <HoverCardTrigger className="cursor-pointer">

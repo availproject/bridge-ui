@@ -68,7 +68,7 @@ export default function Eth() {
                         size={"sm"}
                         type="button"
                       >
-                        Connect Wallet
+                        Connect Eth Wallet
                       </Button>
                     );
                   }
