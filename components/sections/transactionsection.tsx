@@ -651,7 +651,7 @@ export default function TransactionSection() {
 
   function NoTransactions() {
     return (
-      <div className="flex flex-col items-center justify-center space-y-4 !h-[100%] py-[20vh]">
+      <div className="flex flex-col items-center justify-center space-y-4 !h-[100%] py-[10vh]">
         <img
           src="/images/notransactions.svg"
           alt="no transactions"
