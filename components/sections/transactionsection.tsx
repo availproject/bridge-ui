@@ -513,6 +513,7 @@ export default function TransactionSection() {
                     <DialogFooter className="sm:justify-start mt-1">
                       <DialogClose asChild>
                         <Link target="_blank" href={
+                          //TODO: this is erroring out sometimes, have a look.
                           txn.sourceChain === Chain.AVAIL
                             ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${availToEthHash}`
                             : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${ethToAvailHash}`
@@ -650,7 +651,7 @@ export default function TransactionSection() {
 
   function NoTransactions() {
     return (
-      <div className="flex flex-col items-center justify-center space-y-4 !h-[100%]">
+      <div className="flex flex-col items-center justify-center space-y-4 !h-[100%] py-[20vh]">
         <img
           src="/images/notransactions.svg"
           alt="no transactions"

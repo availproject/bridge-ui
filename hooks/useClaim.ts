@@ -7,6 +7,8 @@ import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
 
 import { config } from "@/app/providers";
 import {
+  fetchAvlHead,
+  fetchEthHead,
   fetchLatestBlockhash,
   getAccountStorageProofs,
   getMerkleProof,
@@ -19,12 +21,31 @@ import { u8aToHex } from "@polkadot/util";
 import { Chain, TransactionStatus } from "@/types/common";
 import useTransactions from "./useTransactions";
 import { useAccount } from "wagmi";
+import { useEffect } from "react";
 
 export default function useClaim() {
-  const { ethHead, latestBlockhash } = useLatestBlockInfo();
+  const { ethHead, latestBlockhash, setLatestBlockhash, setEthHead, setAvlHead } = useLatestBlockInfo();
   const { selected } = useAvailAccount();
   const { address } = useAccount();
   const { addToLocalTransaction } = useTransactions();
+
+  const fetchHeads = async () => {
+    const ethHead = await fetchEthHead();
+    const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
+    setLatestBlockhash(LatestBlockhash.data);
+    const avlHead = await fetchAvlHead();
+    setEthHead(ethHead.data);
+    setAvlHead(avlHead.data);
+  };
+
+  useEffect(() => {
+    //TODO: Improve this .then syntax.
+    fetchHeads().then(() => {
+      setInterval(async () => {
+        await fetchHeads();
+      }, 50000);
+    });
+  }, []);
 
   /**
    * @description Receive/Claim after the merkleProof is fetched from the api AVAIL on ETH

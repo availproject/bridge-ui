@@ -64,9 +64,8 @@ async function getTokenPrice({ coin, fiat, id }: { coin: string, fiat: string, i
   },[toAddress])
 
   const hasInsufficientBalance = useMemo(() => {
-    if (!fromAmount || isNaN(fromAmount)) return false;
     
-    const amount = parseFloat(fromAmount?.toString()) * 10**18;
+    const amount = .25 * 10 **18;
     if (isNaN(amount)) return false;
   
     const balanceMap = {
@@ -78,7 +77,7 @@ async function getTokenPrice({ coin, fiat, id }: { coin: string, fiat: string, i
     if (currentBalance === undefined || currentBalance === null) return false;
   
     return parseFloat(currentBalance) < amount;
-  }, [ethBalance, availBalance, fromAmount, fromChain]);
+  }, [ethBalance, availBalance, fromChain]);
 
   const buttonStatus = useMemo(() => {
     if (!isWalletConnected) {
@@ -104,5 +103,5 @@ async function getTokenPrice({ coin, fiat, id }: { coin: string, fiat: string, i
     return fromAmount ? fromAmount * dollarAmount : 0;
   },[fromAmount, dollarAmount]);
 
-  return { buttonStatus, isDisabled, availAmountToDollars, getTokenPrice };
+  return { buttonStatus, isDisabled, availAmountToDollars, getTokenPrice, hasInsufficientBalance };
 }

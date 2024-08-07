@@ -86,7 +86,7 @@ const formSchema = z
     ethAddress: z.string().optional(),
   })
   .refine((data) => data.availAddress || data.ethAddress, {
-    message: "At least one of availAddress or ethAddress is required",
+    message: "Add an address and Retry fetching",
   });
 
 export default function BridgeSection() {
@@ -116,7 +116,7 @@ export default function BridgeSection() {
   const [availAddress, setAvailAddress] = useState<string>("");
   const [ethAddress, setEthAddress] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-
+  const {hasInsufficientBalance} = useTransactionButtonState(ethBalance, availBalance, false);
   const handleChangeAvailAddress = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAvailAddress(e.target.value);
   };
@@ -196,51 +196,6 @@ export default function BridgeSection() {
       );
   }, []);
 
-  function Balance() {
-    return (
-      <>
-        <div className="flex flex-row items-end justify-start pl-1 font-ppmori ">
-          {fromChain === Chain.ETH ? (
-            <span className="font-ppmori flex flex-row items-center justify-center space-x-2 text-white text-opacity-70 pt-1">
-              Balance{" "}
-              <span className="text-white font-bold mx-1 flex flex-row">
-                {account.address ? (
-                  ethBalance !== undefined && ethBalance !== null ? (
-                    parseFloat(parseAmount(ethBalance, 18)).toFixed(2)
-                  ) : (
-                    <RiLoopLeftFill
-                      className={`h-4 w-4 animate-spin font-bold`}
-                    />
-                  )
-                ) : (
-                  "--"
-                )}{" "}
-                <p className="pl-1">AVAIL</p>
-              </span>
-            </span>
-          ) : (
-            <span className="font-ppmori flex flex-row text-white text-opacity-70">
-              Balance{" "}
-              <span className="text-white font-bold mx-1 flex flex-row">
-                {selected ? (
-                  availBalance ? (
-                    parseFloat(parseAmount(availBalance, 18)).toFixed(2)
-                  ) : (
-                    <RiLoopLeftFill
-                      className={`h-4 w-4 animate-spin font-bold`}
-                    />
-                  )
-                ) : (
-                  "--"
-                )}{" "}
-                <p className="pl-1">AVAIL</p>
-              </span>
-            </span>
-          )}
-        </div>
-      </>
-    );
-  }
 
   return (
     <div className="text-white w-full my-4">
@@ -343,11 +298,20 @@ export default function BridgeSection() {
                 value={ethAddress}
                 onChange={handleChangeEthAddress}
               />
-              <LoadingButton
+            </div>
+            <LoadingButton
+               type="submit"
+                variant="outline"
+                className="rounded-lg mx-4 !border-opacity-40 !border-white"
+              >
+              {error ? <p className="text-red-400">{error}</p> : <p>Refetch Transactions from Indexer</p> }
+              </LoadingButton>
+          </form>
+          <LoadingButton
                 loading={loading}
                 onClick={async () => {
                   setLoading(true);
-                  if (!availAddress && !selected?.address) {
+                  if (!availAddress || !selected) {
                     showFailedMessage({
                       title: "Add and Connect an Avail Account",
                     });
@@ -359,7 +323,7 @@ export default function BridgeSection() {
                     setLoading(false);
                     return;
                   } 
-                  if (selected) {
+                  if (selected && !hasInsufficientBalance ) {
                     try{
                       const transfer = await transferAvailForGas(
                         availAddress,
@@ -373,23 +337,20 @@ export default function BridgeSection() {
                       setLoading(false);
                     }
                   
+                  } else {
+                    showFailedMessage({title: 'Account has Insufficient balance'})
+                    setLoading(false);
+                    return;
                   }
-                }}
+                }} 
                 variant="primary"
-                className="rounded-lg my-4"
+                className="rounded-lg my-4 mx-4"
               >
                 Send .25 AVAIL for gas to added Avail Account
               </LoadingButton>
-            </div>
-          </form>
           <TransactionSection />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
-
-/**
- * not doing a balance check before transfer
- *
- */
