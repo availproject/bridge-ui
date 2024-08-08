@@ -260,7 +260,7 @@ export default function useBridge() {
         amount: atomicAmount,
         dataType: "ERC20",
         depositorAddress: selected?.address,
-        receiverAddress: "",
+        receiverAddress: destinationAddress,
         sourceBlockHash: send.blockhash,
         sourceBlockNumber: 0,
         sourceTransactionHash: send.txHash,

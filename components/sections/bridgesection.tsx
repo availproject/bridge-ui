@@ -214,8 +214,13 @@ export default function BridgeSection() {
         const fromAmountAtomic = new BigNumber(values.fromAmount)
           .multipliedBy(new BigNumber(10).pow(18))
           .toString(10);
-        const destinationAddress = selected?.address || values.toAddress;
+        
+        let destinationAddress = selected?.address || values.toAddress;
 
+        if(await validAddress(values.toAddress, Chain.AVAIL)) {
+          destinationAddress = values.toAddress;
+        }
+       
         setTransactionInProgress(true);
         const blockhash = await initEthToAvailBridging({
           atomicAmount: fromAmountAtomic,
@@ -233,7 +238,12 @@ export default function BridgeSection() {
           .multipliedBy(new BigNumber(10).pow(18))
           .toString(10);
 
-        const destinationAddress = account?.address || values.toAddress;
+          let destinationAddress = account?.address || values.toAddress;
+        
+          if(await validAddress(values.toAddress, Chain.ETH)) {
+            destinationAddress = values.toAddress;
+          }
+
         setTransactionInProgress(true);
         const init = await initAvailToEthBridging({
           atomicAmount: fromAmountAtomic,

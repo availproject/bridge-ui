@@ -55,10 +55,7 @@ export async function validAddress(address: string, chain: Chain) {
     if (isValidAddress(address)) {
       return true;
     } else {
-      toast({
-        title: "Invalid Address",
-        description: "Please enter a valid address",
-      });
+    return false;
     }
   }
   if (chain === Chain.ETH) {

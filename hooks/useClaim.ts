@@ -39,7 +39,6 @@ export default function useClaim() {
       if (networks.ethereum.id !== (await activeNetworkId())) {
         await switchNetwork(networks.ethereum.id);
       }
-    
   };
 
 
