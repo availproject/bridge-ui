@@ -64,6 +64,7 @@ export default function TransactionSection() {
   );
   const [availToEthHash, setAvailToEthHash] = useState<string>("");
   const [ethToAvailHash, setEthToAvailHash] = useState<string>("");
+  const [showPagination, setShowPagination] = useState<boolean>(false);
 
   //In milliseconds - 20 minutes.
   const TELEPATHY_INTERVAL = 1200000;
@@ -86,6 +87,10 @@ export default function TransactionSection() {
       setPaginatedTransactionArray(chunks);
     }
   }, [pendingTransactions]);
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [pendingTab]);
 
   useEffect(() => {
     if (completedTransactions && completedTransactions.length > 0) {
@@ -340,15 +345,18 @@ export default function TransactionSection() {
     );
   }
 
-  const showPagination = () => {
-    if (paginatedCompletedTransactionArray.length > 1 && !pendingTab) {
-      return true;
-    }
-    if (paginatedTransactionArray.length > 1 && pendingTab) {
-      return true;
-    }
-    return false;
-  };
+  useEffect(() => {
+    const showPagination = () => {
+      if (paginatedCompletedTransactionArray.length > 1 && !pendingTab) {
+        return setShowPagination(true);
+      }
+      if (paginatedTransactionArray.length > 1 && pendingTab) {
+        return setShowPagination(true);
+      }
+      return setShowPagination(false);
+    };
+    showPagination();
+  }, [paginatedCompletedTransactionArray, paginatedTransactionArray, pendingTab]);
 
   function PendingTransactions({
     pendingTransactions,
@@ -365,7 +373,7 @@ export default function TransactionSection() {
   }) {
 
     return (
-      <div className="flex h-[85%] overflow-y-scroll">
+      <div className="flex h-[85%] ">
         <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
           {pendingTransactions &&
             pendingTransactions.map((txn, index) => (
@@ -504,7 +512,7 @@ export default function TransactionSection() {
                     </div>
                     <DialogFooter className="sm:justify-start mt-1">
                       <DialogClose asChild>
-                        <Link href={
+                        <Link target="_blank" href={
                           txn.sourceChain === Chain.AVAIL
                             ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${availToEthHash}`
                             : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${ethToAvailHash}`
@@ -536,7 +544,7 @@ export default function TransactionSection() {
     completedTransactions: Transaction[];
   }) {
     return (
-      <div className="flex h-[85%] overflow-y-scroll">
+      <div className="flex h-[85%]">
         <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
           {completedTransactions &&
             completedTransactions.map((txn, index) => (
@@ -672,6 +680,9 @@ export default function TransactionSection() {
           <TabsTrigger
             value="history"
             className="flex flex-row items-center justify-center space-x-1"
+            onClick={() => {
+              setPendingTab(false);
+            }}
           >
             <p>History</p>
             <FaHistory />
@@ -707,7 +718,7 @@ export default function TransactionSection() {
         </TabsContent>
       </Tabs>
       {/* Pagination */}
-      {showPagination() ? (
+      {showPagination ? (
         <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
           <p className="font-thicccboisemibold text-sm text-white mr-2">
             <HoverCard>
@@ -731,9 +742,9 @@ export default function TransactionSection() {
             <ArrowLeft />
           </button>
           <button
-            disabled={currentPage === paginatedTransactionArray.length - 1}
+            disabled={pendingTab ? currentPage === paginatedTransactionArray.length - 1 : currentPage === paginatedCompletedTransactionArray.length - 1}
             onClick={() => setCurrentPage((prev) => prev + 1)}
-            className={`rounded-lg bg-[#484C5D] ${currentPage === paginatedTransactionArray.length - 1
+            className={`rounded-lg bg-[#484C5D] ${pendingTab ? currentPage === paginatedTransactionArray.length - 1 : currentPage === paginatedCompletedTransactionArray.length - 1
               ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
               : " text-white"
               } p-2`}

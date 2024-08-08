@@ -214,8 +214,13 @@ export default function BridgeSection() {
         const fromAmountAtomic = new BigNumber(values.fromAmount)
           .multipliedBy(new BigNumber(10).pow(18))
           .toString(10);
-        const destinationAddress = selected?.address || values.toAddress;
+        
+        let destinationAddress = selected?.address || values.toAddress;
 
+        if(await validAddress(values.toAddress, Chain.AVAIL)) {
+          destinationAddress = values.toAddress;
+        }
+       
         setTransactionInProgress(true);
         const blockhash = await initEthToAvailBridging({
           atomicAmount: fromAmountAtomic,
@@ -233,7 +238,12 @@ export default function BridgeSection() {
           .multipliedBy(new BigNumber(10).pow(18))
           .toString(10);
 
-        const destinationAddress = account?.address || values.toAddress;
+          let destinationAddress = account?.address || values.toAddress;
+        
+          if(await validAddress(values.toAddress, Chain.ETH)) {
+            destinationAddress = values.toAddress;
+          }
+
         setTransactionInProgress(true);
         const init = await initAvailToEthBridging({
           atomicAmount: fromAmountAtomic,
@@ -348,15 +358,15 @@ export default function BridgeSection() {
         className="section_bg p-2 w-[90vw] sm:w-[70vw] lg:w-[55vw] xl:w-[45vw] "
       >
         <TabsList className="flex flex-row items-start justify-start bg-transparent !border-0 p-2 mb-6 mx-2 mt-1">
-          <TabsTrigger
+          <div className="flex flex-row pb-[2vh] items-center justify-between">
+            <h1 className="font-ppmori items-center flex flex-row space-x-2 text-white text-opacity-80 text-2xl w-full ">
+              <span className="relative flex flex-row items-center justify-center">
+              <TabsTrigger
             value="bridge"
             className="data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 data-[state=active]:border-b !rounded-none"
           >
             <h1 className="font-ppmori text-lg">Bridge</h1>
           </TabsTrigger>
-          <div className="flex flex-row pb-[2vh] items-center justify-between">
-            <h1 className="font-ppmori items-center flex flex-row space-x-2 text-white text-opacity-80 text-2xl w-full ">
-              <span className="relative flex flex-row items-center justify-center">
                 <TabsTrigger
                   value="transactions"
                   className="relative font-ppmori text-lg data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 data-[state=active]:border-b !rounded-none"
@@ -717,7 +727,7 @@ export default function BridgeSection() {
                     </div>
                     <DialogFooter className="sm:justify-start mt-1">
                       <DialogClose asChild>
-                        <Link href={
+                        <Link target="_blank" href={
                 fromChain === Chain.ETH
                   ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${ethToAvailHash}`
                   : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${availToEthHash}`
