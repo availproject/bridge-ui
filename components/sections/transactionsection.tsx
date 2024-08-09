@@ -8,7 +8,7 @@ import { TableBody, TableCell, TableRow } from "../ui/table";
 import { Badge } from "../ui/badge";
 import { Chain, TransactionStatus } from "@/types/common";
 import useTransactions from "@/hooks/useTransactions";
-import { parseAvailAmount } from "@/utils/parseAmount";
+import { parseAmount, parseAvailAmount } from "@/utils/parseAmount";
 import { ChainLabel } from "../ui/chainLabel";
 import {
   HoverCard,
@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import useClaim from "@/hooks/useClaim";
 import { useEffect, useState } from "react";
-import { showFailedMessage, showSuccessMessage } from "@/utils/common";
+import { _getBalance, showFailedMessage, showSuccessMessage } from "@/utils/common";
 import { LoadingButton } from "../ui/loadingbutton";
 import { Transaction } from "@/types/transaction";
 import { CiCircleQuestion } from "react-icons/ci";
@@ -41,6 +41,7 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogT
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { set } from "zod";
+import { RiLoopLeftFill } from "react-icons/ri";
 
 export default function TransactionSection() {
   const { pendingTransactions, completedTransactions } = useTransactions();
@@ -298,13 +299,29 @@ export default function TransactionSection() {
     );
   }
 
-  function TxnAddresses({
+function TxnAddresses({
     depositor,
     receiver,
+    fromChain,
   }: {
     depositor: string;
     receiver: string;
+    fromChain: Chain;
   }) {
+
+    const [balance, setBalance] = useState<string | undefined>();
+
+    useEffect(() => {
+      const fetchBalance = async () => {
+        const balance = fromChain === Chain.ETH 
+          ? await _getBalance(Chain.AVAIL, receiver)
+          : await _getBalance(Chain.ETH, undefined, receiver as `0x${string}`);
+        setBalance(balance);
+      };
+  
+      fetchBalance();
+    }, [fromChain, receiver]);
+
     return (
       <span className="cursor-pointer flex mt-2 text-white text-opacity-70 flex-row w-full text-sm underline">
         <HoverCard>
@@ -338,6 +355,15 @@ export default function TransactionSection() {
             <p className="text-white text-opacity-70 overflow-scroll">
               {receiver}
             </p>
+            {fromChain === Chain.ETH && <p className="text-white text-opacity-70 overflow-scroll flex flex-row space-x-2">
+         balance: {balance ? (
+                    parseFloat(parseAmount(balance, 18)).toFixed(2) + " AVAIL"
+                  ) : (
+                    <RiLoopLeftFill
+                      className={`h-4 w-4 ml-2 animate-spin font-bold`}
+                    />
+                  )}
+            </p> }
           </HoverCardContent>
         </HoverCard>{" "}
         <ArrowDownLeft className="w-4 h-4" />
@@ -394,6 +420,7 @@ export default function TransactionSection() {
                     <TxnAddresses
                       depositor={txn.depositorAddress}
                       receiver={txn.receiverAddress}
+                      fromChain={txn.sourceChain}
                     />
                     <span className="flex flex-row w-full">
                       <ChainLabel chain={txn.sourceChain} />
@@ -566,6 +593,7 @@ export default function TransactionSection() {
                     <TxnAddresses
                       depositor={txn.depositorAddress}
                       receiver={txn.receiverAddress}
+                      fromChain={txn.sourceChain}
                     />
                     <span className="flex flex-row w-full">
                       <ChainLabel chain={txn.sourceChain} />
