@@ -55,11 +55,12 @@ export default function useBridge() {
   };
 
   const fetchHeads = async () => {
+    console.log("fetching heads");
     const ethHead = await fetchEthHead();
+    setEthHead(ethHead.data);
     const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
     setLatestBlockhash(LatestBlockhash.data);
     const avlHead = await fetchAvlHead();
-    setEthHead(ethHead.data);
     setAvlHead(avlHead.data);
   };
 

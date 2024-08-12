@@ -39,7 +39,8 @@ export function parseError(error: unknown): string {
         errorMessageString.match(/denied transaction/i) || // Metamask browser message
         errorMessageString.match(/User rejected the transaction/i) || // Metamask mobile message
         errorMessageString.match(/User rejected the request/i) || // Rabby message
-        errorMessageString.match(/user rejected transaction/i)
+        errorMessageString.match(/user rejected transaction/i) || // subwallet message
+        errorMessageString.match(/Rejected by user/i)
     ) {
         return "You have rejected the transaction on your connected wallet.";
     } if (errorMessageString.match(/intrinsic gas too low/i)) {

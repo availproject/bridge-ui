@@ -179,6 +179,8 @@ export default function useClaim() {
   }) => {
     try {
     if (!selected) throw new Error("Connect a Avail account");
+    if(ethHead.slot === 0) throw new Error("Failed to fetch latest slot");
+
     const proofs = await getAccountStorageProofs(
       latestBlockhash.blockHash,
       executeParams.messageid,
