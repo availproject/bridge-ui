@@ -55,11 +55,12 @@ export default function useBridge() {
   };
 
   const fetchHeads = async () => {
+    console.log("fetching heads");
     const ethHead = await fetchEthHead();
+    setEthHead(ethHead.data);
     const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
     setLatestBlockhash(LatestBlockhash.data);
     const avlHead = await fetchAvlHead();
-    setEthHead(ethHead.data);
     setAvlHead(avlHead.data);
   };
 
@@ -260,7 +261,7 @@ export default function useBridge() {
         amount: atomicAmount,
         dataType: "ERC20",
         depositorAddress: selected?.address,
-        receiverAddress: "",
+        receiverAddress: destinationAddress,
         sourceBlockHash: send.blockhash,
         sourceBlockNumber: 0,
         sourceTransactionHash: send.txHash,

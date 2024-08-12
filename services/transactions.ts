@@ -78,11 +78,15 @@ export const getTransactionsFromIndexer = async (
     if (ethAddress) {
         const ethTransactions = await fetchTransactions(ethAddress, Chain.ETH, destinationChain);
         addUniqueTransactions(ethTransactions);
+        const receiverEthTransactions = await fetchTransactions(ethAddress, Chain.AVAIL, destinationChain);
+        addUniqueTransactions(receiverEthTransactions);
     }
 
     if (availAddress) {
         const availTransactions = await fetchTransactions(availAddress, Chain.AVAIL, destinationChain);
         addUniqueTransactions(availTransactions);
+        const receiverAvailTransactions = await fetchTransactions(availAddress, Chain.ETH, destinationChain);
+        addUniqueTransactions(receiverAvailTransactions);
     }
 
     return allTransactions;
