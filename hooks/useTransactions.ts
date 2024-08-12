@@ -50,7 +50,7 @@ export default function useTransactions() {
     const indexedTransactions = await getTransactionsFromIndexer(
      { availAddress: availAddress, ethAddress: ethAddress, sourceChain: sourceChain, destinationChain: destinationChain}
     );
-    setIndexedTransactions(indexedTransactions);
+    setIndexedTransactions(indexedTransactions.filter((txn) => txn.sourceChain !== Chain.AVAIL));
   };
 
   // allTransactions = indexedTransactions + localTransactions

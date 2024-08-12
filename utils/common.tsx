@@ -43,6 +43,15 @@ export async function _getBalance(
   }
 }
 
+/**
+ * @description check if ip is IpV4
+ * @param ip 
+ * @returns boolean
+ */
+export function isValidIPv4(ip: string): boolean {
+  const regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){2}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  return regex.test(ip);
+}
 
 /**
  * @description check if the address is valid
