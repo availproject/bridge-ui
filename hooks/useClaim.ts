@@ -113,11 +113,11 @@ export default function useClaim() {
     try {
 
       if (!address) throw new Error("Connect a Eth account");
-      const a: merkleProof = await getMerkleProof(
+      const proof: merkleProof = await getMerkleProof(
         blockhash,
         sourceTransactionIndex,
       );
-      if (!a) throw new Error("Failed to fetch proofs from api");
+      if (!proof) throw new Error("Failed to fetch proofs from api");
 
       await validateChain();
 
@@ -127,7 +127,7 @@ export default function useClaim() {
         );
       }
 
-      const receive = await receiveAvail(a);
+      const receive = await receiveAvail(proof);
       if (receive) {
         console.log(
           "source txn hash of the txn to be added locally",
