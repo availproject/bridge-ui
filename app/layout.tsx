@@ -8,12 +8,13 @@ import { Toaster } from "@/components/ui/toaster";
 import NavBar from "@/components/ui/header";
 import { FooterSection } from "@/components/ui/FooterSection/FooterSection";
 import { Footer } from "@/components/ui/Footer/Footer";
+import DatadogInit from "./datadog-init";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Avail | Bridge",
-  description: "",
+  description: "Official Avail Bridge between AVAIL and ETHEREUM",
 };
 
 export default async function RootLayout({
@@ -32,6 +33,7 @@ export default async function RootLayout({
         />
         <Providers>  
           <NavBar/>
+          <DatadogInit />
             {children}
            <Toaster />
           <FooterSection title={"Accelerating the unification of web3"} description={"DA Mainnet is now live!"}/>

@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@datadog/browser-rum':
+    specifier: ^5.23.3
+    version: 5.23.3
   '@hookform/resolvers':
     specifier: ^3.3.4
     version: 3.3.4(react-hook-form@7.51.1)
@@ -2174,6 +2177,28 @@ packages:
       postcss-selector-parser: ^6.0.10
     dependencies:
       postcss-selector-parser: 6.0.16
+    dev: false
+
+  /@datadog/browser-core@5.23.3:
+    resolution: {integrity: sha512-WaVJfTIHqU1m6voRlxVOEPXBBjHzr/ygE8tYTQRIVCWo7w/3yGOpc6dqlclHM/dpAHBVJ/L8/rQZLp0FoOAmOA==}
+    dev: false
+
+  /@datadog/browser-rum-core@5.23.3:
+    resolution: {integrity: sha512-kJBbRCttzSwUe4T6Hz2swhnX1V9uhmmkxuRY7hE1JExsii8Ub9VSILIXQ9EkkwRm+Ax2/BxJAgsAscSzF+wqFQ==}
+    dependencies:
+      '@datadog/browser-core': 5.23.3
+    dev: false
+
+  /@datadog/browser-rum@5.23.3:
+    resolution: {integrity: sha512-T8tt3M0muq3Wwm6RzAZFnOM1xoXo/fY4vJPMCexgyO/SSxl39p9UkkGn8K5Dq1Ry8XQQnf3XoO9IJvfcFVo7ew==}
+    peerDependencies:
+      '@datadog/browser-logs': 5.23.3
+    peerDependenciesMeta:
+      '@datadog/browser-logs':
+        optional: true
+    dependencies:
+      '@datadog/browser-core': 5.23.3
+      '@datadog/browser-rum-core': 5.23.3
     dev: false
 
   /@discoveryjs/json-ext@0.5.7:
