@@ -42,6 +42,7 @@
     "@talisman-connect/components": "^1.1.1",
     "@talismn/connect-ui": "^1.1.3",
     "@tanstack/react-query": "^5.24.8",
+    "@vercel/analytics": "^1.3.1",
     "@wagmi/core": "^2.6.17",
     "avail-js-sdk": "^0.2.11",
     "axios": "^1.6.7",
