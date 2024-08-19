@@ -3,82 +3,26 @@
 "use client";
 
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { HiOutlineSwitchVertical } from "react-icons/hi";
-import Link from "next/link";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { RiLoopLeftFill } from "react-icons/ri";
 import { useEffect, useState } from "react";
-import Avail from "../wallets/avail";
-import Eth from "../wallets/eth";
 import {
   _getBalance,
   showFailedMessage,
   showSuccessMessage,
   validAddress,
 } from "@/utils/common";
-import { useAccount } from "wagmi";
-import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Chain, TransactionStatus } from "@/types/common";
-import useBridge from "@/hooks/useBridge";
-import { toast } from "@/components/ui/use-toast";
-import { parseError } from "@/utils/parseError";
-import BigNumber from "bignumber.js";
 import { badgeVariants } from "../ui/badge";
-import {
-  ArrowUpRight,
-  CheckCircle2,
-  Copy,
-  InfoIcon,
-  Loader2,
-} from "lucide-react";
+import { CheckCircle2, Loader2, RotateCcw } from "lucide-react";
 import useTransactions from "@/hooks/useTransactions";
-import { parseAmount } from "@/utils/parseAmount";
 import { LoadingButton } from "../ui/loadingbutton";
-import useTransactionButtonState from "@/hooks/useTransactionButtonState";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../ui/alert-dialog";
-import { Checkbox } from "../ui/checkbox";
-import { RxCrossCircled } from "react-icons/rx";
 import TransactionSection from "./transactionsection";
-import { FaCheckCircle } from "react-icons/fa";
 import { pollWithDelay } from "@/utils/poller";
 import { appConfig } from "@/config/default";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "../ui/hover-card";
 import { Input } from "../ui/input";
-import { transferAvailForGas } from "@/services/vectorpallet";
+import { isValidAddress } from "avail-js-sdk";
+import { FaSpinner } from "react-icons/fa";
 
 const formSchema = z
   .object({
@@ -90,16 +34,6 @@ const formSchema = z
   });
 
 export default function BridgeSection() {
-  const account = useAccount();
-  const {
-    fromChain,
-    setFromChain,
-    toChain,
-    setToChain,
-    setFromAmount,
-    setToAddress,
-  } = useCommonStore();
-  const { selected } = useAvailAccount();
   const {
     pendingTransactionsNumber,
     setPendingTransactionsNumber,
@@ -109,14 +43,12 @@ export default function BridgeSection() {
   const { fetchTransactions } = useTransactions();
   const { pendingTransactions } = useTransactions();
   const [loading, setLoading] = useState(false);
-  const [ethBalance, setEthBalance] = useState<string | undefined | null>(null);
   const [availBalance, setAvailBalance] = useState<string | undefined | null>(
     null
   );
   const [availAddress, setAvailAddress] = useState<string>("");
   const [ethAddress, setEthAddress] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-  const {hasInsufficientBalance} = useTransactionButtonState(ethBalance, availBalance, false);
   const handleChangeAvailAddress = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAvailAddress(e.target.value);
   };
@@ -138,6 +70,20 @@ export default function BridgeSection() {
       }
     }
   };
+
+  useEffect(() => {
+    (async () => {
+      if (availAddress && (await isValidAddress(availAddress))) {
+        setAvailBalance(
+          (Number(await _getBalance(Chain.AVAIL, availAddress)) / 1e18).toFixed(
+            2
+          )
+        );
+      } else {
+        setAvailBalance(null);
+      }
+    })();
+  }, [availAddress]);
 
   const appInit = async () => {
     console.log(availAddress, ethAddress);
@@ -169,33 +115,6 @@ export default function BridgeSection() {
       ).length
     );
   }, [pendingTransactions]);
-
-  useEffect(() => {
-    (async () => {
-      if (account.address) {
-        const result = await _getBalance(Chain.ETH, undefined, account.address);
-        setEthBalance(result);
-      } else {
-        setEthBalance(undefined);
-      }
-      if (selected?.address) {
-        const result = await _getBalance(Chain.AVAIL, selected?.address);
-        setAvailBalance(result);
-      } else {
-        setAvailBalance(undefined);
-      }
-    })();
-  }, [account.address, selected?.address]);
-
-  useEffect(() => {
-    document
-      .getElementById("transactions")
-      ?.setAttribute(
-        "style",
-        `height:${document.getElementById("bridge")?.clientHeight}px`
-      );
-  }, []);
-
 
   return (
     <div className="text-white w-full my-4">
@@ -295,62 +214,105 @@ export default function BridgeSection() {
                 onChange={handleChangeEthAddress}
               />
             </div>
-            <LoadingButton
-               type="submit"
+            <div className="flex flex-row items-center justify-start space-x-3">
+              <LoadingButton
+                type="submit"
                 variant="outline"
                 className="rounded-lg mx-4 !border-opacity-40 !border-white"
               >
-              {error ? <p className="text-red-400">{error}</p> : <p>Refetch Transactions from Indexer</p> }
+                {error ? (
+                  <p className="text-red-400">{error}</p>
+                ) : (
+                  <p>Refetch Transactions from Indexer</p>
+                )}
               </LoadingButton>
+              {isValidAddress(availAddress) ? (
+                <p className="flex flex-row items-center justify-center">
+                  Balance:{" "}
+                  {availBalance ? (
+                    `${availBalance} AVAIL`
+                  ) : (
+                    <Loader2 className={`h-4 w-4 ml-2 animate-spin`} />
+                  )}{" "}
+                  <RotateCcw
+                    className="ml-3 cursor-pointer"
+                    onClick={async () => {
+                      if (availAddress && isValidAddress(availAddress)) {
+                        setAvailBalance(
+                          (
+                            Number(
+                              await _getBalance(Chain.AVAIL, availAddress)
+                            ) / 1e18
+                          ).toFixed(2)
+                        );
+                        showSuccessMessage({
+                          title: "Balance Updated",
+                          desc: "Balance has been refreshed",
+                        })
+                      } else {
+                        setAvailBalance(null);
+                      }
+                    }}
+                  ></RotateCcw>
+                </p>
+              ) : (
+                <p/>
+              )}
+            </div>
           </form>
           <LoadingButton
-                loading={loading}
-                onClick={async () => {
-                  setLoading(true);
-                  if (!(await validAddress(availAddress, Chain.AVAIL))) {
-                    showFailedMessage({ title: "Enter a Valid Avail Address" });
-                    setLoading(false);
-                    return;
-                  } 
-                  if(pendingTransactionsNumber <= 0) {
-                    showFailedMessage({title: "There are no pending transactions. This account is not eligible to claim any funds"})
-                    setLoading(false);
-                    return;
-                  }
-                  if ( pendingTransactionsNumber > 0) {
-                    try{
-                      const response = await fetch(`/api/claim?address=${encodeURIComponent(availAddress)}&network=${encodeURIComponent('turing')}`, {
-                        method: 'GET',
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                      });
-                  
-                      if (!response.ok) {
-                        throw new Error(`Request failed with status ${response.status}`);
-                      }
-                  
-                      const data = await response.json();
-                      console.log('Response:', data);
-                      showSuccessMessage({ title: (await data.message) });
-                      setLoading(false);
-                      return data;
-                    } catch(e: any) {
-                      showFailedMessage({title: e.message})
-                      setLoading(false);
+            loading={loading}
+            onClick={async () => {
+              setLoading(true);
+              if (!(await validAddress(availAddress, Chain.AVAIL))) {
+                showFailedMessage({ title: "Enter a Valid Avail Address" });
+                setLoading(false);
+                return;
+              }
+              if (pendingTransactionsNumber <= 0) {
+                showFailedMessage({
+                  title:
+                    "There are no pending transactions. This account is not eligible to claim any funds",
+                });
+                setLoading(false);
+                return;
+              } else {
+                try {
+                  const response = await fetch(
+                    `/api/claim?address=${encodeURIComponent(
+                      availAddress
+                    )}&network=${encodeURIComponent("turing")}`,
+                    {
+                      method: "GET",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
                     }
-                  
-                  } else {
-                    showFailedMessage({title: 'Account has Insufficient balance'})
-                    setLoading(false);
-                    return;
+                  );
+                  const data = await response.json();
+                  if (!response.ok) {
+                    throw new Error(`ERROR: ${data.message}`);
                   }
-                }} 
-                variant="primary"
-                className="rounded-lg my-4 mx-4"
-              >
-                Send .25 AVAIL for gas to added Avail Account
-              </LoadingButton>
+
+                  console.log("Response:", data);
+                  showSuccessMessage({
+                    title: "Transaction Submitted Succesfully",
+                    txHash: await data.message,
+                  });
+                  setLoading(false);
+                  //refetch balances here
+                  return data;
+                } catch (e: any) {
+                  showFailedMessage({ title: e.message });
+                  setLoading(false);
+                }
+              }
+            }}
+            variant="primary"
+            className="rounded-lg my-4 mx-4"
+          >
+            Send .25 AVAIL for gas to added Avail Account
+          </LoadingButton>
           <TransactionSection />
         </TabsContent>
       </Tabs>
