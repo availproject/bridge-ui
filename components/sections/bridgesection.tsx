@@ -272,10 +272,6 @@ export default function BridgeSection() {
           value="transactions"
           className="text-white h-full"
         >
-          <div className="flex flex-row items-center justify-center pb-6">
-            {" "}
-            Connect Accounts <Eth /> <Avail />
-          </div>
           <div className="flex flex-row"></div>
           <form onSubmit={handleSubmit}>
             <p className="font-ppmori text-md mb-2 px-4">
@@ -311,27 +307,34 @@ export default function BridgeSection() {
                 loading={loading}
                 onClick={async () => {
                   setLoading(true);
-                  if (!availAddress || !selected) {
-                    showFailedMessage({
-                      title: "Add and Connect an Avail Account",
-                    });
-                    setLoading(false);
-                    return;
-                  }
                   if (!(await validAddress(availAddress, Chain.AVAIL))) {
                     showFailedMessage({ title: "Enter a Valid Avail Address" });
                     setLoading(false);
                     return;
                   } 
-                  if (selected && !hasInsufficientBalance ) {
+                  if(pendingTransactionsNumber <= 0) {
+                    showFailedMessage({title: "There are no pending transactions. This account is not eligible to claim any funds"})
+                    setLoading(false);
+                    return;
+                  }
+                  if ( pendingTransactionsNumber > 0) {
                     try{
-                      const transfer = await transferAvailForGas(
-                        availAddress,
-                        selected
-                      );
-                      showSuccessMessage({txHash: transfer.txHash, title: "Transfer Submitted successfully"})
+                      const response = await fetch(`/api/claim?address=${encodeURIComponent(availAddress)}&network=${encodeURIComponent('turing')}`, {
+                        method: 'GET',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                      });
+                  
+                      if (!response.ok) {
+                        throw new Error(`Request failed with status ${response.status}`);
+                      }
+                  
+                      const data = await response.json();
+                      console.log('Response:', data);
+                      showSuccessMessage({ title: (await data.message) });
                       setLoading(false);
-                      return;
+                      return data;
                     } catch(e: any) {
                       showFailedMessage({title: e.message})
                       setLoading(false);

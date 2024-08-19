@@ -399,7 +399,7 @@ function TxnAddresses({
   }) {
 
     return (
-      <div className="flex h-[85%] ">
+      <div className="flex h-[85%] mb-3">
         <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
           {pendingTransactions &&
             pendingTransactions.map((txn, index) => (
@@ -572,7 +572,7 @@ function TxnAddresses({
     completedTransactions: Transaction[];
   }) {
     return (
-      <div className="flex h-[85%]">
+      <div className="flex h-[85%] mb-3">
         <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
           {completedTransactions &&
             completedTransactions.map((txn, index) => (

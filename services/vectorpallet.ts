@@ -136,6 +136,7 @@ sender: WalletAccount,
   blockhash?: string;
   txHash?: string;
 }> {
+
   const injector = await getWalletBySource(sender.source);
   const api = await initialize(substrateConfig.endpoint);
   const metadata = getInjectorMetadata(api);
