@@ -40,7 +40,6 @@ import { parseMinutes } from "@/utils/parseMinutes";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { set } from "zod";
 
 export default function TransactionSection() {
   const { pendingTransactions, completedTransactions } = useTransactions();
