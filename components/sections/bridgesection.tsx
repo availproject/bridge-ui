@@ -22,7 +22,6 @@ import { pollWithDelay } from "@/utils/poller";
 import { appConfig } from "@/config/default";
 import { Input } from "../ui/input";
 import { isValidAddress } from "avail-js-sdk";
-import { FaSpinner } from "react-icons/fa";
 
 const formSchema = z
   .object({
@@ -281,7 +280,7 @@ export default function BridgeSection() {
                   const response = await fetch(
                     `/api/claim?address=${encodeURIComponent(
                       availAddress
-                    )}&network=${encodeURIComponent("turing")}`,
+                    )}&network=${encodeURIComponent(process.env.NEXT_PUBLIC_NETWORK || "turing")}`,
                     {
                       method: "GET",
                       headers: {
