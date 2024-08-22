@@ -1,0 +1,8 @@
+schema-version: v1
+rulesets:
+  - tsx-react
+  - typescript-browser-security
+  - typescript-common-security
+  - typescript-express
+  - typescript-inclusive
+  - typescript-node-security

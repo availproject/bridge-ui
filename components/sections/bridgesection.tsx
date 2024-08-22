@@ -594,7 +594,7 @@ export default function BridgeSection() {
                                 </p>
 
                                 <input
-                                  className="!bg-inherit max-md:w-24 placeholder:text-white text-white text-opacity-90 placeholder:text-opacity-90 placeholder:text-2xl text-2xl "
+                                  className="!bg-inherit placeholder:text-white text-white text-opacity-90 placeholder:text-opacity-90 placeholder:text-2xl text-2xl "
                                   style={{
                                     border: "none",
                                     background: "none",
@@ -607,10 +607,10 @@ export default function BridgeSection() {
                                   placeholder={
                                     fromChain === Chain.ETH
                                       ? selected?.address
-                                        ? selected.address.slice(0, 10) + "..."
+                                        ? selected.address.slice(0, 17) + "..."
                                         : "0x"
                                       : account?.address
-                                      ? account.address.slice(0, 10) + "..."
+                                      ? account.address.slice(0, 17) + "..."
                                       : "0x"
                                   }
                                   {...field}
@@ -620,17 +620,18 @@ export default function BridgeSection() {
                                   }}
                                 />
                               </div>
-                              <AlertDialog open={open}>
+                            </div>
+                          </>
+                        </FormControl>
+                        <div className="flex flex-row items-center justify-between">
+                        <AlertDialog open={open}>
                                 <AlertDialogTrigger
                                   onClick={() => {
                                     setOpen(!open);
                                   }}
-                                  className="rounded-xl bg-[#464A5B] flex flex-row  transform transition-transform duration-200 hover:scale-105 items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer"
+                                  className=" "
                                 >
-                                  <span>+</span>
-                                  <span className="text-sm text-white text-opacity-70">
-                                    Add Address
-                                  </span>
+                                  <div className="flex flex-row items-center underline text-white justify-start pl-1 font-ppmori text-opacity-80"><InfoIcon className="w-5 h-5 mr-1"/>Send to a different address?</div>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent className="bg-[#252831] border-2 border-[#3a3b3cb1] !rounded-[1rem]">
                                   <AlertDialogHeader>
@@ -683,11 +684,6 @@ export default function BridgeSection() {
                                   </AlertDialogFooter>
                                 </AlertDialogContent>
                               </AlertDialog>
-                            </div>
-                          </>
-                        </FormControl>
-                        <div className="flex flex-row items-center justify-between">
-                          <div className="flex flex-row items-end justify-start pl-1 font-ppmori text-opacity-70"></div>
                         </div>
                         <FormMessage />
                       </FormItem>

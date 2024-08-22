@@ -40,7 +40,6 @@ import { parseMinutes } from "@/utils/parseMinutes";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { set } from "zod";
 
 export default function TransactionSection() {
   const { pendingTransactions, completedTransactions } = useTransactions();
@@ -664,6 +663,8 @@ export default function TransactionSection() {
     );
   }
 
+  const isEndPage = pendingTab ? currentPage === paginatedTransactionArray.length - 1 : currentPage === paginatedCompletedTransactionArray.length - 1
+
   return (
     <div className=" relative flex flex-col mx-auto w-[95%] h-[100%] ">
       <Tabs defaultValue="pending" className="flex flex-col h-full">
@@ -742,9 +743,9 @@ export default function TransactionSection() {
             <ArrowLeft />
           </button>
           <button
-            disabled={pendingTab ? currentPage === paginatedTransactionArray.length - 1 : currentPage === paginatedCompletedTransactionArray.length - 1}
+            disabled={isEndPage}
             onClick={() => setCurrentPage((prev) => prev + 1)}
-            className={`rounded-lg bg-[#484C5D] ${pendingTab ? currentPage === paginatedTransactionArray.length - 1 : currentPage === paginatedCompletedTransactionArray.length - 1
+            className={`rounded-lg bg-[#484C5D] ${isEndPage
               ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
               : " text-white"
               } p-2`}
