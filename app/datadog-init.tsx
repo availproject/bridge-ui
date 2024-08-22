@@ -20,10 +20,3 @@ datadogRum.init({
 export default function DatadogInit() {
   return null;
 }
-
-
-// sessionSampleRate: 100,
-// sessionReplaySampleRate: 20,
-// trackUserInteractions: true,
-// trackResources: true,
-// trackLongTasks: true,
