@@ -2,6 +2,7 @@ import axios from "axios";
 import { appConfig } from "@/config/default";
 import { Transaction } from "@/types/transaction";
 import { Chain } from "@/types/common";
+import { Logger } from "@/utils/logger";
 
 const indexerInstance = axios.create({
     baseURL: appConfig.bridgeIndexerBaseUrl,
@@ -18,7 +19,7 @@ type TransactionQueryParams = {
 
 function validateParams({ availAddress, ethAddress }: TransactionQueryParams) {
     if (!availAddress && !ethAddress) {
-        console.log("Either availAddress or ethAddress must be provided.")
+        Logger.info("Either availAddress or ethAddress must be provided.")
         return [];
      
     }
@@ -44,9 +45,8 @@ async function fetchTransactions(userAddress: string, sourceChain?: string, dest
             },
         });
         return response.data.data.result;
-    } catch (e) {
-        console.error(e);
-        console.log("Error fetching transactions from indexer")
+    } catch (e: any) {
+        Logger.error(`Error fetching transactions from indexer: ${e}`);
         return [];
     }
 }
@@ -74,7 +74,7 @@ export const getTransactionsFromIndexer = async (
             }
         });
     };
-    console.log("Fetching transactions from indexer");
+    Logger.debug("Fetching transactions from indexer");
     if (ethAddress) {
         const ethTransactions = await fetchTransactions(ethAddress, Chain.ETH, destinationChain);
         addUniqueTransactions(ethTransactions);

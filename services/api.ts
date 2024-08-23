@@ -2,6 +2,7 @@ import { appConfig } from "@/config/default";
 import { substrateConfig } from "@/config/walletConfig";
 import { LatestBlockInfo } from "@/stores/lastestBlockInfo";
 import { AccountStorageProof, merkleProof } from "@/types/transaction";
+import { Logger } from "@/utils/logger";
 import { initialize } from "avail-js-sdk";
 import axios from "axios";
 import jsonbigint from "json-bigint";
@@ -90,8 +91,8 @@ export async function getAccountStorageProofs(
   messageid: number
 ) {
   const response = await fetch(`${appConfig.bridgeApiBaseUrl}/avl/proof/${blockhash}/${messageid}`)
-    .catch((e) => {
-      console.log(e);
+    .catch((e: any) => {
+      Logger.error(e);
       return Response.error();
     });
 

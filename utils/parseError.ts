@@ -1,8 +1,10 @@
+import { Logger } from "./logger";
+
 const genericErrorMessage = 'Something went wrong!'
 
 
-export function parseError(error: unknown): string {
-    console.error(error)
+export function parseError(error: any): string {
+    Logger.error(error)
     const errorMessageString: string = error instanceof Error ? error.message :
         typeof error === 'string' ? error : "";
     if (!errorMessageString) {

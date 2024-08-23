@@ -1,6 +1,7 @@
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
 import { Chain } from "@/types/common";
+import { Logger } from "@/utils/logger";
 import { useMemo } from "react";
 import { useAccount } from "wagmi";
 
@@ -37,8 +38,8 @@ async function getTokenPrice({ coin, fiat, id }: { coin: string, fiat: string, i
     );
     const data = await response.json();
     setDollarAmount(data.price[coin][fiat]);
-  } catch (error) {
-    console.error('Error fetching token price:', error);
+  } catch (error: any) {
+    Logger.error(`Error fetching token price: ${error}`);
     throw error;
   }
   

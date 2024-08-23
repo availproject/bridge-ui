@@ -10,6 +10,7 @@ import { FaCheckCircle } from "react-icons/fa";
 import { ArrowUpRight } from "lucide-react";
 import { isAddress } from "viem";
 import { RxCrossCircled } from "react-icons/rx";
+import { Logger } from "./logger";
 const networks = appConfig.networks;
 
 export async function _getBalance(
@@ -36,7 +37,7 @@ export async function _getBalance(
 
     if (balance === undefined) return undefined;
 
-    console.log(balance);
+    Logger.info(`This is address balance: ${balance}`);
     return balance as string;
   } else {
     return 0 as unknown as string;

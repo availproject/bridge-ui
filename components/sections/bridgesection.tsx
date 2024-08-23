@@ -68,6 +68,7 @@ import {
 import { Button } from "../ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card";
 import { CiCircleQuestion } from "react-icons/ci";
+import { Logger } from "@/utils/logger";
 
 const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -258,8 +259,8 @@ export default function BridgeSection() {
         setTransactionInProgress(false);
         resetState();
       }
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      Logger.error(error);
       setTransactionInProgress(false);
       showFailedMessage({ title: parseError(error) });
     }

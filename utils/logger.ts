@@ -5,10 +5,12 @@ datadogLogs.init({
   site: process.env.NEXT_PUBLIC_DD_HOST || "datadoghq.com",
   forwardErrorsToLogs: true,
   sessionSampleRate: 100,
+  service: process.env.NEXT_PUBLIC_DD_BRIDGE_UI || "bridge-ui",
+  env: process.env.NODE_ENV || "local"
 })
 
 export class Logger {
-    static log(message: string) {
+    static info(message: string) {
         datadogLogs.logger.info(message);
     }
 
