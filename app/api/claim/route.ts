@@ -18,9 +18,7 @@ const ratelimit = new Ratelimit({
   limiter: Ratelimit.slidingWindow(5, '10s'),
 });
 
-export const config = {
-  runtime: 'edge',
-}
+export const runtime = "edge"
 
 export async function GET(request: NextRequest) {
   try {
