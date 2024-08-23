@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
     }
     return NextResponse.json({ price }, { status: 200 });
   } catch (error: any) {
-    Logger.error(`Error in GET handler: ${error}`);
+    console.error(`Error in GET handler: ${error}`);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
