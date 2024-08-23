@@ -67,31 +67,31 @@ dependencies:
     version: 0.4.0(@rainbow-me/rainbowkit@2.0.1)(next-auth@4.24.6)(react@18.0.0)(siwe@2.0.0)
   '@subwallet-connect/core':
     specifier: ^1.0.3
-    version: 1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@types/react@18.0.0)(react@18.0.0)
+    version: 1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@types/react@18.0.0)(@vercel/kv@2.0.0)(react@18.0.0)
   '@subwallet-connect/injected-wallets':
     specifier: ^1.0.3
-    version: 1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
+    version: 1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
   '@subwallet-connect/ledger-polkadot':
     specifier: ^1.0.4
-    version: 1.0.4(@babel/plugin-syntax-flow@7.24.7)(@babel/plugin-transform-react-jsx@7.25.2)(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(eslint@8.0.0)(react@18.0.0)(typescript@5.0.2)(webpack@5.93.0)
+    version: 1.0.4(@babel/plugin-syntax-flow@7.24.7)(@babel/plugin-transform-react-jsx@7.25.2)(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)(eslint@8.0.0)(react@18.0.0)(typescript@5.0.2)(webpack@5.93.0)
   '@subwallet-connect/polkadot-js':
     specifier: ^1.0.4
-    version: 1.0.4(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
+    version: 1.0.4(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
   '@subwallet-connect/react':
     specifier: ^1.0.3
-    version: 1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@types/react@18.0.0)(react@18.0.0)
+    version: 1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@types/react@18.0.0)(@vercel/kv@2.0.0)(react@18.0.0)
   '@subwallet-connect/subwallet':
     specifier: ^1.0.3
-    version: 1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
+    version: 1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
   '@subwallet-connect/subwallet-polkadot':
     specifier: ^1.0.3
-    version: 1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
+    version: 1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
   '@subwallet-connect/talisman':
     specifier: ^1.0.4
-    version: 1.0.4(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
+    version: 1.0.4(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
   '@subwallet-connect/walletconnect-polkadot':
     specifier: ^1.0.4
-    version: 1.0.4(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
+    version: 1.0.4(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
   '@talisman-connect/components':
     specifier: ^1.1.1
     version: 1.1.1(@talisman-connect/ui@1.1.1)(@talisman-connect/wallets@1.1.3)(react-dom@18.0.0)(react@18.0.0)
@@ -101,6 +101,12 @@ dependencies:
   '@tanstack/react-query':
     specifier: ^5.24.8
     version: 5.24.8(react@18.0.0)
+  '@upstash/ratelimit':
+    specifier: ^2.0.1
+    version: 2.0.1
+  '@vercel/kv':
+    specifier: ^2.0.0
+    version: 2.0.0
   '@wagmi/core':
     specifier: ^2.6.17
     version: 2.6.17(@types/react@18.0.0)(react@18.0.0)(typescript@5.0.2)(viem@2.0.0)(zod@3.22.4)
@@ -169,7 +175,7 @@ dependencies:
     version: 2.0.0(typescript@5.0.2)(zod@3.22.4)
   wagmi:
     specifier: ^2.5.7
-    version: 2.5.7(@tanstack/react-query@5.24.8)(@types/react@18.0.0)(react-dom@18.0.0)(react-native@0.75.1)(react@18.0.0)(rollup@2.79.1)(typescript@5.0.2)(viem@2.0.0)(zod@3.22.4)
+    version: 2.5.7(@tanstack/react-query@5.24.8)(@types/react@18.0.0)(@vercel/kv@2.0.0)(react-dom@18.0.0)(react-native@0.75.1)(react@18.0.0)(rollup@2.79.1)(typescript@5.0.2)(viem@2.0.0)(zod@3.22.4)
   zod:
     specifier: ^3.22.4
     version: 3.22.4
@@ -4354,6 +4360,7 @@ packages:
     dependencies:
       is-glob: 4.0.3
       micromatch: 4.0.7
+      napi-wasm: 1.1.0
     dev: false
     bundledDependencies:
       - napi-wasm
@@ -6819,7 +6826,7 @@ packages:
       react-remove-scroll: 2.5.7(@types/react@18.0.0)(react@18.0.0)
       ua-parser-js: 1.0.38
       viem: 2.0.0(typescript@5.0.2)(zod@3.22.4)
-      wagmi: 2.5.7(@tanstack/react-query@5.24.8)(@types/react@18.0.0)(react-dom@18.0.0)(react-native@0.75.1)(react@18.0.0)(rollup@2.79.1)(typescript@5.0.2)(viem@2.0.0)(zod@3.22.4)
+      wagmi: 2.5.7(@tanstack/react-query@5.24.8)(@types/react@18.0.0)(@vercel/kv@2.0.0)(react-dom@18.0.0)(react-native@0.75.1)(react@18.0.0)(rollup@2.79.1)(typescript@5.0.2)(viem@2.0.0)(zod@3.22.4)
     transitivePeerDependencies:
       - '@types/react'
     dev: false
@@ -7729,11 +7736,11 @@ packages:
   /@substrate/ss58-registry@1.49.0:
     resolution: {integrity: sha512-leW6Ix4LD7XgvxT7+aobPWSw+WvPcN2Rxof1rmd0mNC5t2n99k1N7UNEvz7YEFSOUeHWmKIY7F5q8KeIqYoHfA==}
 
-  /@subwallet-connect/common@1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2):
+  /@subwallet-connect/common@1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-7qizYudlgsi6Vinzo0soorjdBITXbniwB0ZLRT3wyfPiogM6WJeezsxmnL0qCJNXFHly5FDPmr12J8UMWC7mnQ==}
     dependencies:
       '@polkadot/extension-inject': 0.46.9(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
-      '@walletconnect/universal-provider': 2.15.0
+      '@walletconnect/universal-provider': 2.15.0(@vercel/kv@2.0.0)
       bignumber.js: 9.1.2
       ethers: 5.5.4
       joi: 17.9.1
@@ -7760,10 +7767,10 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@subwallet-connect/core@1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@types/react@18.0.0)(react@18.0.0):
+  /@subwallet-connect/core@1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@types/react@18.0.0)(@vercel/kv@2.0.0)(react@18.0.0):
     resolution: {integrity: sha512-QG6Xz8DJFC/7qghKSMDkT9JrCXFvx97yhx95tL4cu+uJoye1nqgp3BkUlZwBGZmcItnWrnM+6oMeGcq3xEKfyg==}
     dependencies:
-      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
+      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
       '@walletconnect/modal': 2.6.2(@types/react@18.0.0)(react@18.0.0)
       axios: 1.6.7
       bignumber.js: 9.1.2
@@ -7806,11 +7813,11 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@subwallet-connect/hw-common@1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2):
+  /@subwallet-connect/hw-common@1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-Gva5X1JsBQsXHJPQbf3vO1J0t5Qazg8mpAx0zH+VgeoDAdtsloNGhfCeFVxfIXDxSG9WbMgOgSJt5yqbpAgbgw==}
     dependencies:
       '@ethereumjs/common': 2.6.5
-      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
+      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
       ethers: 5.5.4
       joi: 17.9.1
       rxjs: 7.8.1
@@ -7837,11 +7844,11 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@subwallet-connect/injected-wallets@1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2):
+  /@subwallet-connect/injected-wallets@1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-Y1N4O6liMonpVJHosOdPS1RM0+sjj8FuHKQo0gdMrE68LInkL7rSN7Rkw1CoY8Zxi8d+nq6IqnEL7n8POoFTyA==}
     dependencies:
       '@polkadot/extension-inject': 0.46.9(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
-      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
+      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
       joi: 17.9.1
       lodash.uniqby: 4.7.0
     transitivePeerDependencies:
@@ -7867,15 +7874,15 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@subwallet-connect/ledger-polkadot@1.0.4(@babel/plugin-syntax-flow@7.24.7)(@babel/plugin-transform-react-jsx@7.25.2)(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(eslint@8.0.0)(react@18.0.0)(typescript@5.0.2)(webpack@5.93.0):
+  /@subwallet-connect/ledger-polkadot@1.0.4(@babel/plugin-syntax-flow@7.24.7)(@babel/plugin-transform-react-jsx@7.25.2)(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)(eslint@8.0.0)(react@18.0.0)(typescript@5.0.2)(webpack@5.93.0):
     resolution: {integrity: sha512-x/BabTjYy8FZ6Ku8XdTkG/mLSR2OVHlORRAtkSrno+m2jKy38Vr3n2ef19WenrdcPhEv+8bKdlrntyNHQVXK3Q==}
     dependencies:
       '@ethersproject/providers': 5.5.0
       '@polkadot/hw-ledger': 12.6.2
       '@shapeshiftoss/hdwallet-core': 1.52.6
       '@shapeshiftoss/hdwallet-ledger': 1.52.2
-      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
-      '@subwallet-connect/hw-common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
+      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
+      '@subwallet-connect/hw-common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
       buffer: 6.0.3
       https-browserify: 1.0.0
       node-polyfill-webpack-plugin: 2.0.1(webpack@5.93.0)
@@ -7940,11 +7947,11 @@ packages:
       - webpack-plugin-serve
     dev: false
 
-  /@subwallet-connect/polkadot-js@1.0.4(@polkadot/api@10.12.1)(@polkadot/util@12.6.2):
+  /@subwallet-connect/polkadot-js@1.0.4(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-p3oDcy7i/bsKE8LpOBqmTHZsbFbu8v9rWuSr+w+CXJ84dOljlTHJuIGmavvY5IyPhOcvX48GE4vZMVdKQjw+AQ==}
     dependencies:
       '@polkadot/extension-inject': 0.46.9(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
-      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
+      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -7968,13 +7975,13 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@subwallet-connect/react@1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@types/react@18.0.0)(react@18.0.0):
+  /@subwallet-connect/react@1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@types/react@18.0.0)(@vercel/kv@2.0.0)(react@18.0.0):
     resolution: {integrity: sha512-JmWQ+cgzdTMm/TfWOSeR4BKnz43y/d9//HwG95tv7eyioqbzygL4CFRzi4slfYR32hTEaIiEKe86uu46f9emhg==}
     peerDependencies:
       react: '>=16.8'
     dependencies:
-      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
-      '@subwallet-connect/core': 1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@types/react@18.0.0)(react@18.0.0)
+      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
+      '@subwallet-connect/core': 1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@types/react@18.0.0)(@vercel/kv@2.0.0)(react@18.0.0)
       react: 18.0.0
       use-sync-external-store: 1.2.2(react@18.0.0)
     transitivePeerDependencies:
@@ -8002,11 +8009,11 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@subwallet-connect/subwallet-polkadot@1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2):
+  /@subwallet-connect/subwallet-polkadot@1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-l9OdS4hav5La6yarIIC6iTK9Clx7ETcDDADhQNP7LeUYe/wTYuSoa+HNvfGTtzLLzhS1xJH3pMv0avidAR37Zg==}
     dependencies:
       '@polkadot/extension-inject': 0.46.9(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
-      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
+      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -8030,11 +8037,11 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@subwallet-connect/subwallet@1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2):
+  /@subwallet-connect/subwallet@1.0.3(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-LAtAdyYhxvJNDinsBCSMc2tHQRuMMVlbjdko5UsKJStcQMWjqpqmvfajkD51DeQ30rnBSvLZE+MX7VrXJtMwUQ==}
     dependencies:
       '@polkadot/extension-inject': 0.46.9(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
-      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
+      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -8058,11 +8065,11 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@subwallet-connect/talisman@1.0.4(@polkadot/api@10.12.1)(@polkadot/util@12.6.2):
+  /@subwallet-connect/talisman@1.0.4(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-NqN8bPoHOahaiyf5NT0qGG9lfZqukQsxMzDoPBqRGqAJQKjvYr45w3lo6lfeZHKP/RtqGiqc/2ZQx11COY3gdA==}
     dependencies:
       '@polkadot/extension-inject': 0.46.9(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
-      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
+      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -8086,11 +8093,11 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@subwallet-connect/walletconnect-polkadot@1.0.4(@polkadot/api@10.12.1)(@polkadot/util@12.6.2):
+  /@subwallet-connect/walletconnect-polkadot@1.0.4(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-haiZiqtwKwDOaaaaB5H1VXCKy7bSAJrNoQ69MJV8o3b8f82r7Hgt2hvr2IQJWHsxaAyEkAV1qnAaGvNqX5+72Q==}
     dependencies:
-      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)
-      '@walletconnect/universal-provider': 2.15.0
+      '@subwallet-connect/common': 1.0.8(@polkadot/api@10.12.1)(@polkadot/util@12.6.2)(@vercel/kv@2.0.0)
+      '@walletconnect/universal-provider': 2.15.0(@vercel/kv@2.0.0)
       joi: 17.9.1
       rxjs: 7.8.1
     transitivePeerDependencies:
@@ -8924,6 +8931,25 @@ packages:
       eslint-visitor-keys: 3.4.3
     dev: true
 
+  /@upstash/core-analytics@0.0.10:
+    resolution: {integrity: sha512-7qJHGxpQgQr9/vmeS1PktEwvNAF7TI4iJDi8Pu2CFZ9YUGHZH4fOP5TfYlZ4aVxfopnELiE4BS4FBjyK7V1/xQ==}
+    engines: {node: '>=16.0.0'}
+    dependencies:
+      '@upstash/redis': 1.34.0
+    dev: false
+
+  /@upstash/ratelimit@2.0.1:
+    resolution: {integrity: sha512-J+0hlkvWUjlVrjcBQhWx7gbaUGsvFF59i+GAx7YQk8L0E0MQ93xzCPu02uaXhGDJGkxiar7nRRPqj3hs+CdAJg==}
+    dependencies:
+      '@upstash/core-analytics': 0.0.10
+    dev: false
+
+  /@upstash/redis@1.34.0:
+    resolution: {integrity: sha512-TrXNoJLkysIl8SBc4u9bNnyoFYoILpCcFJcLyWCccb/QSUmaVKdvY0m5diZqc3btExsapcMbaw/s/wh9Sf1pJw==}
+    dependencies:
+      crypto-js: 4.2.0
+    dev: false
+
   /@vanilla-extract/css@1.14.0:
     resolution: {integrity: sha512-rYfm7JciWZ8PFzBM/HDiE2GLnKI3xJ6/vdmVJ5BSgcCZ5CxRlM9Cjqclni9lGzF3eMOijnUhCd/KV8TOzyzbMA==}
     dependencies:
@@ -8958,7 +8984,14 @@ packages:
       '@vanilla-extract/css': 1.14.0
     dev: false
 
-  /@wagmi/connectors@4.1.14(@types/react@18.0.0)(@wagmi/core@2.6.5)(react-dom@18.0.0)(react-native@0.75.1)(react@18.0.0)(rollup@2.79.1)(typescript@5.0.2)(viem@2.0.0)(zod@3.22.4):
+  /@vercel/kv@2.0.0:
+    resolution: {integrity: sha512-zdVrhbzZBYo5d1Hfn4bKtqCeKf0FuzW8rSHauzQVMUgv1+1JOwof2mWcBuI+YMJy8s0G0oqAUfQ7HgUDzb8EbA==}
+    engines: {node: '>=14.6'}
+    dependencies:
+      '@upstash/redis': 1.34.0
+    dev: false
+
+  /@wagmi/connectors@4.1.14(@types/react@18.0.0)(@vercel/kv@2.0.0)(@wagmi/core@2.6.5)(react-dom@18.0.0)(react-native@0.75.1)(react@18.0.0)(rollup@2.79.1)(typescript@5.0.2)(viem@2.0.0)(zod@3.22.4):
     resolution: {integrity: sha512-e8I89FsNBtzhIilU3nqmgMR9xvSgCfmkWLz9iCKBTqyitbK5EJU7WTEtjjYFm1v2J//JeAwaA2XEKtG9BLR9jQ==}
     peerDependencies:
       '@wagmi/core': 2.6.5
@@ -8973,7 +9006,7 @@ packages:
       '@safe-global/safe-apps-provider': 0.18.1(typescript@5.0.2)(zod@3.22.4)
       '@safe-global/safe-apps-sdk': 8.1.0(typescript@5.0.2)(zod@3.22.4)
       '@wagmi/core': 2.6.5(@types/react@18.0.0)(react@18.0.0)(typescript@5.0.2)(viem@2.0.0)(zod@3.22.4)
-      '@walletconnect/ethereum-provider': 2.11.1(@types/react@18.0.0)(react@18.0.0)
+      '@walletconnect/ethereum-provider': 2.11.1(@types/react@18.0.0)(@vercel/kv@2.0.0)(react@18.0.0)
       '@walletconnect/modal': 2.6.2(@types/react@18.0.0)(react@18.0.0)
       typescript: 5.0.2
       viem: 2.0.0(typescript@5.0.2)(zod@3.22.4)
@@ -9056,7 +9089,7 @@ packages:
       - zod
     dev: false
 
-  /@walletconnect/core@2.11.1:
+  /@walletconnect/core@2.11.1(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-T57Vd7YdbHPsy3tthBuwrhaZNafN0+PqjISFRNeJy/bsKdXxpJg2hGSARuOTpCO7V6VcaatqlaSMuG3DrnG5rA==}
     dependencies:
       '@walletconnect/heartbeat': 1.2.1
@@ -9064,14 +9097,14 @@ packages:
       '@walletconnect/jsonrpc-types': 1.0.3
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/jsonrpc-ws-connection': 1.0.14
-      '@walletconnect/keyvaluestorage': 1.1.1
+      '@walletconnect/keyvaluestorage': 1.1.1(@vercel/kv@2.0.0)
       '@walletconnect/logger': 2.1.2
       '@walletconnect/relay-api': 1.0.11
       '@walletconnect/relay-auth': 1.0.4
       '@walletconnect/safe-json': 1.0.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.11.1
-      '@walletconnect/utils': 2.11.1
+      '@walletconnect/types': 2.11.1(@vercel/kv@2.0.0)
+      '@walletconnect/utils': 2.11.1(@vercel/kv@2.0.0)
       events: 3.3.0
       isomorphic-unfetch: 3.1.0
       lodash.isequal: 4.5.0
@@ -9096,7 +9129,7 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@walletconnect/core@2.15.0:
+  /@walletconnect/core@2.15.0(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-QekYQlpxyn2bcQXMkMxo0+v7nUOQKyu3j5ZKzTg/HGU1eSgTRLIvYIEkC8VVflIgOw7meOAb5pFChX51wShksQ==}
     engines: {node: '>=18'}
     dependencies:
@@ -9105,14 +9138,14 @@ packages:
       '@walletconnect/jsonrpc-types': 1.0.4
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/jsonrpc-ws-connection': 1.0.14
-      '@walletconnect/keyvaluestorage': 1.1.1
+      '@walletconnect/keyvaluestorage': 1.1.1(@vercel/kv@2.0.0)
       '@walletconnect/logger': 2.1.2
       '@walletconnect/relay-api': 1.0.11
       '@walletconnect/relay-auth': 1.0.4
       '@walletconnect/safe-json': 1.0.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.15.0
-      '@walletconnect/utils': 2.15.0
+      '@walletconnect/types': 2.15.0(@vercel/kv@2.0.0)
+      '@walletconnect/utils': 2.15.0(@vercel/kv@2.0.0)
       events: 3.3.0
       lodash.isequal: 4.5.0
       uint8arrays: 3.1.0
@@ -9141,7 +9174,7 @@ packages:
       tslib: 1.14.1
     dev: false
 
-  /@walletconnect/ethereum-provider@2.11.1(@types/react@18.0.0)(react@18.0.0):
+  /@walletconnect/ethereum-provider@2.11.1(@types/react@18.0.0)(@vercel/kv@2.0.0)(react@18.0.0):
     resolution: {integrity: sha512-UfQH0ho24aa2M1xYmanbJv2ggQPebKmQytp2j20QEvURJ2R0v7YKWZ+0PfwOs6o6cuGw6gGxy/0WQXQRZSAsfg==}
     dependencies:
       '@walletconnect/jsonrpc-http-connection': 1.0.8
@@ -9149,10 +9182,10 @@ packages:
       '@walletconnect/jsonrpc-types': 1.0.4
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/modal': 2.6.2(@types/react@18.0.0)(react@18.0.0)
-      '@walletconnect/sign-client': 2.11.1
-      '@walletconnect/types': 2.11.1
-      '@walletconnect/universal-provider': 2.11.1
-      '@walletconnect/utils': 2.11.1
+      '@walletconnect/sign-client': 2.11.1(@vercel/kv@2.0.0)
+      '@walletconnect/types': 2.11.1(@vercel/kv@2.0.0)
+      '@walletconnect/universal-provider': 2.11.1(@vercel/kv@2.0.0)
+      '@walletconnect/utils': 2.11.1(@vercel/kv@2.0.0)
       events: 3.3.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -9260,7 +9293,7 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@walletconnect/keyvaluestorage@1.1.1:
+  /@walletconnect/keyvaluestorage@1.1.1(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-V7ZQq2+mSxAq7MrRqDxanTzu2RcElfK1PfNYiaVnJgJ7Q7G7hTVwF8voIBx92qsRyGHZihrwNPHuZd1aKkd0rA==}
     peerDependencies:
       '@react-native-async-storage/async-storage': 1.x
@@ -9270,7 +9303,7 @@ packages:
     dependencies:
       '@walletconnect/safe-json': 1.0.2
       idb-keyval: 6.2.1
-      unstorage: 1.10.2(idb-keyval@6.2.1)
+      unstorage: 1.10.2(@vercel/kv@2.0.0)(idb-keyval@6.2.1)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -9348,18 +9381,18 @@ packages:
       tslib: 1.14.1
     dev: false
 
-  /@walletconnect/sign-client@2.11.1:
+  /@walletconnect/sign-client@2.11.1(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-s3oKSx6/F5X2WmkV1jfJImBFACf9Km5HpTb+n5q+mobJVpUQw/clvoVyIrNNppLhm1V1S/ylHXh0qCrDppDpCA==}
     deprecated: Reliability and performance greatly improved - please see https://github.com/WalletConnect/walletconnect-monorepo/releases
     dependencies:
-      '@walletconnect/core': 2.11.1
+      '@walletconnect/core': 2.11.1(@vercel/kv@2.0.0)
       '@walletconnect/events': 1.0.1
       '@walletconnect/heartbeat': 1.2.1
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/logger': 2.1.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.11.1
-      '@walletconnect/utils': 2.11.1
+      '@walletconnect/types': 2.11.1(@vercel/kv@2.0.0)
+      '@walletconnect/utils': 2.11.1(@vercel/kv@2.0.0)
       events: 3.3.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -9381,17 +9414,17 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@walletconnect/sign-client@2.15.0:
+  /@walletconnect/sign-client@2.15.0(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-efwrPfIwKWKeku44TGBCnQqPZGCILI1wBKK9bTF0F0/qrLR/zRe6RWpM3/L4+jOMr/BktxPZ5lRozBh+c2U7Pg==}
     dependencies:
-      '@walletconnect/core': 2.15.0
+      '@walletconnect/core': 2.15.0(@vercel/kv@2.0.0)
       '@walletconnect/events': 1.0.1
       '@walletconnect/heartbeat': 1.2.2
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/logger': 2.1.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.15.0
-      '@walletconnect/utils': 2.15.0
+      '@walletconnect/types': 2.15.0(@vercel/kv@2.0.0)
+      '@walletconnect/utils': 2.15.0(@vercel/kv@2.0.0)
       events: 3.3.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -9418,13 +9451,13 @@ packages:
       tslib: 1.14.1
     dev: false
 
-  /@walletconnect/types@2.11.1:
+  /@walletconnect/types@2.11.1(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-UbdbX+d6MOK0AXKxt5imV3KvAcLVpZUHylaRDIP5ffwVylM/p4DHnKppil1Qq5N+IGDr3RsUwLGFkKjqsQYRKw==}
     dependencies:
       '@walletconnect/events': 1.0.1
       '@walletconnect/heartbeat': 1.2.1
       '@walletconnect/jsonrpc-types': 1.0.3
-      '@walletconnect/keyvaluestorage': 1.1.1
+      '@walletconnect/keyvaluestorage': 1.1.1(@vercel/kv@2.0.0)
       '@walletconnect/logger': 2.1.2
       events: 3.3.0
     transitivePeerDependencies:
@@ -9444,13 +9477,13 @@ packages:
       - uWebSockets.js
     dev: false
 
-  /@walletconnect/types@2.15.0:
+  /@walletconnect/types@2.15.0(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-hLffDKKe70jIrK+YcLkAnzi6vqNki1SDBWjV+M/72mKcU2KzXxk0G2STFsWsQDx8DoqxMiuGehd0DlD1jwQmBg==}
     dependencies:
       '@walletconnect/events': 1.0.1
       '@walletconnect/heartbeat': 1.2.2
       '@walletconnect/jsonrpc-types': 1.0.4
-      '@walletconnect/keyvaluestorage': 1.1.1
+      '@walletconnect/keyvaluestorage': 1.1.1(@vercel/kv@2.0.0)
       '@walletconnect/logger': 2.1.2
       events: 3.3.0
     transitivePeerDependencies:
@@ -9470,7 +9503,7 @@ packages:
       - uWebSockets.js
     dev: false
 
-  /@walletconnect/universal-provider@2.11.1:
+  /@walletconnect/universal-provider@2.11.1(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-BJvPYByIfbBYF4x8mqDV79ebQX0tD54pp8itsqrHWn0qKZeJyIH8sQ69yY0GnbJrzoFS3ZLULdC0yDxWDeuRGw==}
     dependencies:
       '@walletconnect/jsonrpc-http-connection': 1.0.8
@@ -9478,9 +9511,9 @@ packages:
       '@walletconnect/jsonrpc-types': 1.0.4
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/logger': 2.1.2
-      '@walletconnect/sign-client': 2.11.1
-      '@walletconnect/types': 2.11.1
-      '@walletconnect/utils': 2.11.1
+      '@walletconnect/sign-client': 2.11.1(@vercel/kv@2.0.0)
+      '@walletconnect/types': 2.11.1(@vercel/kv@2.0.0)
+      '@walletconnect/utils': 2.11.1(@vercel/kv@2.0.0)
       events: 3.3.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -9502,7 +9535,7 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@walletconnect/universal-provider@2.15.0:
+  /@walletconnect/universal-provider@2.15.0(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-+jIuYyLfud1XRYPWt/3wYiD7DYUOSZk26qbtvZFMj1m947NRnZGzp+0gt1ORi7NInEtX3R0fUhMOYKnPwadp6g==}
     dependencies:
       '@walletconnect/jsonrpc-http-connection': 1.0.8
@@ -9510,9 +9543,9 @@ packages:
       '@walletconnect/jsonrpc-types': 1.0.4
       '@walletconnect/jsonrpc-utils': 1.0.8
       '@walletconnect/logger': 2.1.2
-      '@walletconnect/sign-client': 2.15.0
-      '@walletconnect/types': 2.15.0
-      '@walletconnect/utils': 2.15.0
+      '@walletconnect/sign-client': 2.15.0(@vercel/kv@2.0.0)
+      '@walletconnect/types': 2.15.0(@vercel/kv@2.0.0)
+      '@walletconnect/utils': 2.15.0(@vercel/kv@2.0.0)
       events: 3.3.0
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -9534,7 +9567,7 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@walletconnect/utils@2.11.1:
+  /@walletconnect/utils@2.11.1(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-wRFDHN86dZ05mCET1H3912odIeQa8j7cZKxl1FlWRpV2YsILj9HCYSX6Uq2brwO02Kv2vryke44G1r8XI/LViA==}
     dependencies:
       '@stablelib/chacha20poly1305': 1.0.1
@@ -9545,7 +9578,7 @@ packages:
       '@walletconnect/relay-api': 1.0.11
       '@walletconnect/safe-json': 1.0.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.11.1
+      '@walletconnect/types': 2.11.1(@vercel/kv@2.0.0)
       '@walletconnect/window-getters': 1.0.1
       '@walletconnect/window-metadata': 1.0.1
       detect-browser: 5.3.0
@@ -9568,7 +9601,7 @@ packages:
       - uWebSockets.js
     dev: false
 
-  /@walletconnect/utils@2.15.0:
+  /@walletconnect/utils@2.15.0(@vercel/kv@2.0.0):
     resolution: {integrity: sha512-xaazgCMyr5fUPm2QuZ76G+W8beDfKMILqJ3INL6wyuaLil2YQNdsCSvWMNhSP+EZeKD3SUqqBmQaM/maP0YHTg==}
     dependencies:
       '@stablelib/chacha20poly1305': 1.0.1
@@ -9579,7 +9612,7 @@ packages:
       '@walletconnect/relay-api': 1.0.11
       '@walletconnect/safe-json': 1.0.2
       '@walletconnect/time': 1.0.2
-      '@walletconnect/types': 2.15.0
+      '@walletconnect/types': 2.15.0(@vercel/kv@2.0.0)
       '@walletconnect/window-getters': 1.0.1
       '@walletconnect/window-metadata': 1.0.1
       detect-browser: 5.3.0
@@ -11483,6 +11516,10 @@ packages:
 
   /crypto-es@1.2.7:
     resolution: {integrity: sha512-UUqiVJ2gUuZFmbFsKmud3uuLcNP2+Opt+5ysmljycFCyhA0+T16XJmo1ev/t5kMChMqWh7IEvURNCqsg+SjZGQ==}
+    dev: false
+
+  /crypto-js@4.2.0:
+    resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
     dev: false
 
   /crypto-random-string@2.0.0:
@@ -16647,6 +16684,10 @@ packages:
     dev: false
     optional: true
 
+  /napi-wasm@1.1.0:
+    resolution: {integrity: sha512-lHwIAJbmLSjF9VDRm9GoVOy9AGp3aIvkjv+Kvz9h16QR3uSVYH78PNQUnT2U4X53mhlnV2M7wrhibQ3GHicDmg==}
+    dev: false
+
   /natural-compare-lite@1.4.0:
     resolution: {integrity: sha512-Tj+HTDSJJKaZnfiuw+iaF9skdPpTo2GtEly5JHnWV/hfv2Qj/9RKsGISQtLh2ox3l5EAGw487hnBee0sIJ6v2g==}
     dev: false
@@ -21219,7 +21260,7 @@ packages:
     resolution: {integrity: sha512-vRCqFv6UhXpWxZPyGDh/F3ZpNv8/qo7w6iufLpQg9aKnQ71qM4B5KiI7Mia9COcjEhrO9LueHpMYjYzsWH3OIg==}
     dev: false
 
-  /unstorage@1.10.2(idb-keyval@6.2.1):
+  /unstorage@1.10.2(@vercel/kv@2.0.0)(idb-keyval@6.2.1):
     resolution: {integrity: sha512-cULBcwDqrS8UhlIysUJs2Dk0Mmt8h7B0E6mtR+relW9nZvsf/u4SkAYyNliPiPW7XtFNb5u3IUMkxGxFTTRTgQ==}
     peerDependencies:
       '@azure/app-configuration': ^1.5.0
@@ -21263,6 +21304,7 @@ packages:
       ioredis:
         optional: true
     dependencies:
+      '@vercel/kv': 2.0.0
       anymatch: 3.1.3
       chokidar: 3.6.0
       destr: 2.0.3
@@ -21559,7 +21601,7 @@ packages:
       xml-name-validator: 3.0.0
     dev: false
 
-  /wagmi@2.5.7(@tanstack/react-query@5.24.8)(@types/react@18.0.0)(react-dom@18.0.0)(react-native@0.75.1)(react@18.0.0)(rollup@2.79.1)(typescript@5.0.2)(viem@2.0.0)(zod@3.22.4):
+  /wagmi@2.5.7(@tanstack/react-query@5.24.8)(@types/react@18.0.0)(@vercel/kv@2.0.0)(react-dom@18.0.0)(react-native@0.75.1)(react@18.0.0)(rollup@2.79.1)(typescript@5.0.2)(viem@2.0.0)(zod@3.22.4):
     resolution: {integrity: sha512-xSuteMXFKvra4xDddqZbZv/gQlcg3X+To5AoZW7WoAm0iVlF8/vEGpQzCWy6KZs2z1szxPrr0YnH3Zr1Qj4E/A==}
     peerDependencies:
       '@tanstack/react-query': '>=5.0.0'
@@ -21571,7 +21613,7 @@ packages:
         optional: true
     dependencies:
       '@tanstack/react-query': 5.24.8(react@18.0.0)
-      '@wagmi/connectors': 4.1.14(@types/react@18.0.0)(@wagmi/core@2.6.5)(react-dom@18.0.0)(react-native@0.75.1)(react@18.0.0)(rollup@2.79.1)(typescript@5.0.2)(viem@2.0.0)(zod@3.22.4)
+      '@wagmi/connectors': 4.1.14(@types/react@18.0.0)(@vercel/kv@2.0.0)(@wagmi/core@2.6.5)(react-dom@18.0.0)(react-native@0.75.1)(react@18.0.0)(rollup@2.79.1)(typescript@5.0.2)(viem@2.0.0)(zod@3.22.4)
       '@wagmi/core': 2.6.5(@types/react@18.0.0)(react@18.0.0)(typescript@5.0.2)(viem@2.0.0)(zod@3.22.4)
       react: 18.0.0
       typescript: 5.0.2

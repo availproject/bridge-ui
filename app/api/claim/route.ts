@@ -6,14 +6,25 @@ import { Chain } from "@/types/common";
 import { parseAvailAmount } from "@/utils/parseAmount";
 import { substrateConfig } from "@/config/walletConfig";
 import { SignerOptions } from "@polkadot/api/types";
+import { Ratelimit } from '@upstash/ratelimit';
+import { kv } from '@vercel/kv';
 
 const FAUCET_AMOUNT = BigInt(process.env.FAUCET_AMOUNT || "250000000000000000"); // 0.25 AVAIL
 const MIN_FAUCET_BALANCE = BigInt(process.env.MIN_FAUCET_BALANCE || "10000000000000000000"); // 10 AVAIL
 const MAX_USER_BALANCE: number = parseFloat(process.env.MAX_USER_BALANCE || "0.5"); // 0.5 AVAIL
 
+const ratelimit = new Ratelimit({
+  redis: kv,
+  limiter: Ratelimit.slidingWindow(5, '10s'),
+});
+
+export const config = {
+  runtime: 'edge',
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const { address, network } = validateRequest(request);
+    const { address, network } = await validateRequest(request);
     const availBalance = await _getBalance(Chain.AVAIL, address);
 
     if (availBalance && Number(parseAvailAmount(availBalance)) >= MAX_USER_BALANCE) {
@@ -49,16 +60,23 @@ export async function GET(request: NextRequest) {
  * @param request 
  * @returns { address, network }
  */
-function validateRequest(request: NextRequest) {
+async function validateRequest(request: NextRequest) {
   const headersList = headers();
   const ip = headersList.get("x-real-ip");
   const address = request.nextUrl.searchParams.get("address");
   const userAgent = headersList.get("user-agent");
   const network = request.nextUrl.searchParams.get("network");
 
-  if (!process.env.FAUCET_ADDRESS || !process.env.FAUCET_SEED) {
+  const { remaining } = await ratelimit.limit(ip ?? '127.0.0.1');
+
+  if (!process.env.FAUCET_ADDRESS || !process.env.FAUCET_SEED || !process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
     throw new Error("Missing environment variables");
   }
+
+  if (remaining === 0) {
+    throw new Error("Too many requests");
+  }
+
 
   if (!userAgent || userAgent.includes("node-fetch")) {
     throw new Error("Invalid user agent");
