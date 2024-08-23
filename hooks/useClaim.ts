@@ -153,6 +153,7 @@ export default function useClaim() {
       Logger.debug("added txn to local storage");
       return receive;
     } catch (e : any) {
+      Logger.error(`Error while claiming on Avail to Eth: ${e}`);
       throw new Error(e.message as string);
     }
   };
