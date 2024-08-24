@@ -252,7 +252,7 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button variant={"primary"} size={"sm"} className="!ml-2">
-                Connect Wallet
+                Connect Avail Wallet
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] bg-[#252831] border-2 border-[#3a3b3cb1] rounded-xl   ">

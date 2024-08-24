@@ -197,6 +197,26 @@ export default function TransactionSection() {
           variant="primary"
           loading={inProcess[index]}
           className="!px-4 !py-0 rounded-xl whitespace-nowrap"
+          onClick={async () => {
+            await onSubmit(
+              txn.sourceChain,
+              //@ts-ignore to be fixed later
+              txn.sourceBlockHash,
+              index,
+              txn.sourceTransactionHash,
+              txn.sourceTimestamp,
+              txn.amount,
+              txn.sourceTransactionIndex,
+              {
+                messageid: txn.messageId,
+                amount: txn.amount,
+                from: txn.depositorAddress,
+                to: txn.receiverAddress,
+                originDomain: 1,
+                destinationDomain: 2,
+              }
+            )
+          }}
         >
           {txn.status === "READY_TO_CLAIM" ? "Claim Ready" : txn.status}
         </LoadingButton>

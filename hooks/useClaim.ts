@@ -1,7 +1,6 @@
 import { writeContract } from "@wagmi/core";
 import { encodeAbiParameters } from "viem";
 import { merkleProof } from "@/types/transaction";
-import { bridgeContractAbi } from "@/constants/abi";
 import ethereumBrigdeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
 import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
 

@@ -22,6 +22,8 @@ import { pollWithDelay } from "@/utils/poller";
 import { appConfig } from "@/config/default";
 import { Input } from "../ui/input";
 import { isValidAddress } from "avail-js-sdk";
+import Eth from "../wallets/eth";
+import Avail from "../wallets/avail";
 
 const formSchema = z
   .object({
@@ -190,6 +192,10 @@ export default function BridgeSection() {
           value="transactions"
           className="text-white h-full"
         >
+           <div className="flex flex-row items-center justify-center pb-6">
+            {" "}
+            <span className="mr-3">Connect Accounts </span><Eth /> <Avail />
+          </div>
           <div className="flex flex-row"></div>
           <form onSubmit={handleSubmit}>
             <p className="font-ppmori text-md mb-2 px-4">
