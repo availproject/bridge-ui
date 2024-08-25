@@ -7,7 +7,6 @@ import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
 
 import { config } from "@/app/providers";
 import {
-  fetchLatestBlockhash,
   getAccountStorageProofs,
   getMerkleProof,
 } from "@/services/api";
@@ -23,7 +22,7 @@ import { appConfig } from "@/config/default";
 import useEthWallet from "./useEthWallet";
 
 export default function useClaim() {
-  const { ethHead, latestBlockhash } = useLatestBlockInfo();
+  const { ethHead } = useLatestBlockInfo();
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
   const { selected } = useAvailAccount();
   const { address } = useAccount();
@@ -182,7 +181,7 @@ export default function useClaim() {
     if(ethHead.slot === 0) throw new Error("Failed to fetch latest slot");
 
     const proofs = await getAccountStorageProofs(
-      latestBlockhash.blockHash,
+      ethHead.blockHash,
       executeParams.messageid,
     );
 
