@@ -5,7 +5,7 @@ datadogLogs.init({
   site: process.env.NEXT_PUBLIC_DD_HOST || "datadoghq.com",
   forwardErrorsToLogs: true,
   sessionSampleRate: 100,
-  service: process.env.NEXT_PUBLIC_DD_BRIDGE_UI || "bridge-ui",
+  service: process.env.NEXT_PUBLIC_DD_SERVICE || "avail-bridge-ui",
   env: process.env.NODE_ENV || "local"
 })
 
