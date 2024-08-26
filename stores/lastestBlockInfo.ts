@@ -4,13 +4,11 @@ import { create } from "zustand";
 export interface LatestBlockInfo {
   ethHead: {
     slot: number;
+    blockNumber: number;
+    blockHash: string;
     timestamp: number;
     timestampDiff: number;
   };
-  latestBlockhash: {
-    blockHash: string
-  };
-  setLatestBlockhash: (latestBlockhash: LatestBlockInfo["latestBlockhash"]) => void;
   setEthHead: (ethHead: LatestBlockInfo["ethHead"]) => void;
   avlHead: {
     data: {
@@ -26,10 +24,10 @@ export const useLatestBlockInfo = create<LatestBlockInfo>((set) => ({
   ethHead: {
     slot: 0,
     timestamp: 0,
+    blockNumber: 0,
+    blockHash: "",
     timestampDiff: 0,
   },
-  latestBlockhash: { blockHash: "" },
-  setLatestBlockhash: (latestBlockhash) => set({ latestBlockhash }),
   setEthHead: (ethHead) => set({ ethHead }),
   avlHead: {
     data: {

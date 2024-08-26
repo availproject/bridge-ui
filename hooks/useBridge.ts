@@ -22,7 +22,6 @@ import { substrateAddressToPublicKey } from "@/utils/addressFormatting";
 import {
   fetchAvlHead,
   fetchEthHead,
-  fetchLatestBlockhash,
 } from "@/services/api";
 import { sendMessage } from "@/services/vectorpallet";
 import { _getBalance, showSuccessMessage } from "@/utils/common";
@@ -34,7 +33,7 @@ export default function useBridge() {
   const { addToLocalTransaction } = useTransactions();
   const { data: hash, isPending, writeContractAsync } = useWriteContract();
   const { selected } = useAvailAccount();
-  const { setAvlHead, setEthHead, setLatestBlockhash } = useLatestBlockInfo();
+  const { setAvlHead, setEthHead } = useLatestBlockInfo();
 
   const networks = appConfig.networks;
 
@@ -58,8 +57,6 @@ export default function useBridge() {
     console.log("fetching heads");
     const ethHead = await fetchEthHead();
     setEthHead(ethHead.data);
-    const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
-    setLatestBlockhash(LatestBlockhash.data);
     const avlHead = await fetchAvlHead();
     setAvlHead(avlHead.data);
   };
