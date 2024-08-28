@@ -1,3 +1,4 @@
+import { Logger } from "@/utils/logger";
 import { NextRequest, NextResponse } from "next/server";
 
 interface TokenPrice {
@@ -40,7 +41,7 @@ async function getTokenPrices({
     const data:TokenPrice = await response.json();
     return data;
   } catch (error) {
-    console.error("Error fetching token price:", error);
+    Logger.error(`Error fetching token price: ${error}`)
     throw error;
   }
 }
@@ -61,7 +62,7 @@ export async function GET(req: NextRequest) {
     }
     return NextResponse.json({ price }, { status: 200 });
   } catch (error: any) {
-    console.error("Error in GET handler:", error);
+    console.error(`Error in GET handler: ${error}`);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

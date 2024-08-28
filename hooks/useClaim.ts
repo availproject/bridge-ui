@@ -21,6 +21,7 @@ import useTransactions from "./useTransactions";
 import { useAccount } from "wagmi";
 import { appConfig } from "@/config/default";
 import useEthWallet from "./useEthWallet";
+import { Logger } from "@/utils/logger";
 
 export default function useClaim() {
   const { ethHead, latestBlockhash } = useLatestBlockInfo();
@@ -129,9 +130,8 @@ export default function useClaim() {
 
       const receive = await receiveAvail(proof);
       if (receive) {
-        console.log(
-          "source txn hash of the txn to be added locally",
-          sourceTransactionHash,
+        Logger.info(
+          `source txn hash of the txn to be added locally ${sourceTransactionHash}`,
         );
         addToLocalTransaction({
           sourceChain: Chain.AVAIL,
@@ -150,9 +150,10 @@ export default function useClaim() {
           sourceTimestamp: sourceTimestamp,
         });
       }
-      console.log("added txn to local storage");
+      Logger.debug("added txn to local storage");
       return receive;
     } catch (e : any) {
+      Logger.error(`Error while claiming on Avail to Eth: ${e}`);
       throw new Error(e.message as string);
     }
   };

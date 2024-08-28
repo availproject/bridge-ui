@@ -1,18 +1,24 @@
+import { datadogLogs } from '@datadog/browser-logs'
+
+datadogLogs.init({
+  clientToken: process.env.NEXT_PUBLIC_DATADOG_RUM_CLIENT_TOKEN || "",
+  site: process.env.NEXT_PUBLIC_DD_HOST || "datadoghq.com",
+  forwardErrorsToLogs: true,
+  sessionSampleRate: 100,
+  service: process.env.NEXT_PUBLIC_DD_SERVICE || "avail-bridge-ui",
+  env: process.env.NODE_ENV || "local"
+})
+
 export class Logger {
-    static log(message: string) {
-        console.log(message);
+    static info(message: string) {
+        datadogLogs.logger.info(message);
     }
 
     static debug(message: string) {
-        if (process.env.NODE_ENV === "production") {
-            return
-        }
-
-        console.debug(message);
+        datadogLogs.logger.debug(message);
     }
 
     static error(message: string) {
-        // error logging/monitoring service
-        console.error(message);
+        datadogLogs.logger.error(message);
     }
 }

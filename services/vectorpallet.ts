@@ -10,6 +10,7 @@ import { substrateConfig } from "@/config/walletConfig";
 import { getWalletBySource, WalletAccount } from "@talismn/connect-wallets";
 import { SignerOptions } from "@polkadot/api/types";
 import { executeParams, sendMessageParams } from "@/types/transaction";
+import { Logger } from "@/utils/logger";
 
 
 /**
@@ -64,9 +65,8 @@ export async function sendMessage(
         { signer: injector?.signer, app_id: 0 } as Partial<SignerOptions>,
         ({ status, events, txHash }) => {
           if (status.isInBlock) {
-            console.log()
-            console.log(
-              `Transaction included at blockHash ${status.asInBlock} ${txHash} `
+            Logger.info(
+              `Transaction included at blockHash ${status.asInBlock} ${txHash}`
             );
 
             events.forEach(({ event }) => {
@@ -87,7 +87,7 @@ export async function sendMessage(
                 toast({
                   title: `Transaction failed. Status: ${status} with error: ${errorInfo}`,
                 });
-                console.log(`ExtrinsicFailed: ${errorInfo}`);
+                Logger.info(`ExtrinsicFailed: ${errorInfo}`);
                 reject(
                   new Error(
                     `Transaction failed. Status: ${status} with error: ${errorInfo}`
@@ -96,9 +96,8 @@ export async function sendMessage(
               }
 
               if (api.events.system.ExtrinsicSuccess.is(event)) {
-                console.log(
-                  "Transaction successful with hash:",
-                  status.asInBlock
+                Logger.info(
+                  `Transaction successful with hash: ${status.asInBlock}`
                 );
                 resolve({blockhash: status.asInBlock.toString(), txHash: txHash.toString()});
               }
@@ -108,8 +107,8 @@ export async function sendMessage(
           }
         }
       )
-      .catch((error) => {
-        console.error("Error in signAndSend:", error);
+      .catch((error: any) => {
+        Logger.error(`Error in signAndSend: ${error}`);
         reject(error);
         return {
           status: "failed",
@@ -168,7 +167,7 @@ export async function executeTransaction(
         } as Partial<SignerOptions>,
         ({ status, events, txHash }) => {
           if (status.isInBlock) {
-            console.log(
+            Logger.info(
               `Transaction included at blockHash ${status.asInBlock}`
             );
 
@@ -191,7 +190,7 @@ export async function executeTransaction(
                 toast({
                   title: `Transaction failed. Status: ${status} with error: ${errorInfo}`,
                 });
-                console.log(`ExtrinsicFailed: ${errorInfo}`);
+                Logger.info(`ExtrinsicFailed: ${errorInfo}`);
                 reject(
                   new Error(
                     `Transaction failed. Status: ${status} with error: ${errorInfo}`
@@ -200,9 +199,8 @@ export async function executeTransaction(
               }
 
               if (api.events.system.ExtrinsicSuccess.is(event)) {
-                console.log(
-                  "Transaction successful with hash:",
-                  status.asInBlock
+                Logger.info(
+                  `Transaction successful with hash: ${status.asInBlock}`
                 );
                 resolve({blockhash: status.asInBlock.toString(), txHash: txHash.toString()});
               }
@@ -213,7 +211,7 @@ export async function executeTransaction(
         }
       )
       .catch((error: any) => {
-        console.error("Error in Execute:", error);
+        Logger.error(`Error in Execute: ${error}`);
         reject(error);
         return {
           status: "failed",

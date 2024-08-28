@@ -55,7 +55,7 @@ export default function useBridge() {
   };
 
   const fetchHeads = async () => {
-    console.log("fetching heads");
+    Logger.debug("fetching heads");
     const ethHead = await fetchEthHead();
     setEthHead(ethHead.data);
     const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
@@ -119,7 +119,7 @@ export default function useBridge() {
       chainId: networks.ethereum.id,
     });
 
-    txHash && console.log(txHash);
+    txHash && Logger.info(`This is tx hash: ${txHash}`);
   }, []);
 
   const burnAvailOnEth = useCallback(

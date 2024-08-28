@@ -1,3 +1,5 @@
+import { Logger } from "./logger";
+
 type PollerCondition<T> = (result: T | undefined) => boolean;
 
 /**
@@ -19,9 +21,9 @@ export async function pollWithDelay<T>(
     while (condition(result)) {
         try {
             result = await asyncFn(...args);
-        } catch (error) {
+        } catch (error: any) {
             // Handle errors here (optional)
-            console.error("Error during polling:", error);
+            Logger.error(`Error during polling: ${error}`);
         }
         await new Promise(resolve => setTimeout(resolve, delayInMs));
     }
