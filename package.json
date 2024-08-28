@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@datadog/browser-logs": "^5.23.3",
     "@datadog/browser-rum": "^5.23.3",
     "@hookform/resolvers": "^3.3.4",
     "@polkadot/api": "^10.12.1",

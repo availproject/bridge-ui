@@ -40,6 +40,7 @@ import { parseMinutes } from "@/utils/parseMinutes";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { Logger } from "@/utils/logger";
 
 export default function TransactionSection() {
   const { pendingTransactions, completedTransactions } = useTransactions();
@@ -141,7 +142,7 @@ export default function TransactionSection() {
         sourceTransactionIndex &&
         sourceTransactionHash
       ) {
-        console.log("Initiate ReceiveAvail()");
+        Logger.debug("Initiate ReceiveAvail()");
         const successBlockhash = await initClaimAvailToEth({
           blockhash: blockhash,
           sourceTransactionIndex: sourceTransactionIndex,
@@ -157,7 +158,7 @@ export default function TransactionSection() {
           );
         }
       } else if (chainFrom === Chain.ETH && blockhash && executeParams) {
-        console.log("Initiate Vector.Execute");
+        Logger.debug("Initiate Vector.Execute");
         const successBlockhash = await initClaimEthtoAvail({
           blockhash: blockhash,
           sourceTransactionHash: sourceTransactionHash,
@@ -171,14 +172,14 @@ export default function TransactionSection() {
           setComplete((prevState) =>
             prevState.map((state, idx) => (idx === index ? true : state))
           );
-          console.log("Claimed AVAIL on AVAIL");
-          console.log(complete, "complete index", index);
+          Logger.debug("Claimed AVAIL on AVAIL");
+          Logger.debug(`${complete} complete index ${index}`);
         }
       } else {
         showFailedMessage({ title: "Invalid Transaction" });
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      Logger.error(e);
       showFailedMessage({ title: parseError(e) });
     } finally {
       setInProcess((prevState) =>
