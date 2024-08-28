@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     const availBalance = await _getBalance(Chain.AVAIL, address);
 
     if (availBalance && Number(parseAvailAmount(availBalance)) >= MAX_USER_BALANCE) {
-      return errorResponse("Avail balance too high.", 422);
+      return errorResponse("Avail balance too high.", 403);
     }
 
     const api = await initialize(substrateConfig.endpoint);
