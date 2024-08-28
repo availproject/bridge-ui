@@ -42,7 +42,6 @@ async function getTokenPrices({
     return data;
   } catch (error) {
     Logger.error(`Error fetching token price: ${error}`)
-    throw error;
   }
 }
 
