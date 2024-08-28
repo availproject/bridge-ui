@@ -18,6 +18,23 @@ const ratelimit = new Ratelimit({
   limiter: Ratelimit.slidingWindow(5, '10s'),
 });
 
+/**
+ * @class CustomError
+ *
+ * @extends {Error}
+ * @param {string} message
+ * @param {number} status
+ */
+class CustomError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+      super(message);
+      this.status = status;
+      this.name = this.constructor.name;
+  }
+}
+
 export const runtime = "edge"
 
 export async function GET(request: NextRequest) {
@@ -26,7 +43,7 @@ export async function GET(request: NextRequest) {
     const availBalance = await _getBalance(Chain.AVAIL, address);
 
     if (availBalance && Number(parseAvailAmount(availBalance)) >= MAX_USER_BALANCE) {
-      return errorResponse("Avail balance too high.", 503);
+      return errorResponse("Avail balance too high.", 422);
     }
 
     const api = await initialize(substrateConfig.endpoint);
@@ -45,7 +62,8 @@ export async function GET(request: NextRequest) {
 
     return successResponse(`${result.txHash}`);
   } catch (err: any) {
-    return errorResponse(err.message || JSON.stringify(err), 500);
+    console.log(err);
+    return errorResponse(err.message || JSON.stringify(err),  err.status || 500);
   } finally {
     disconnect();
   }
@@ -68,28 +86,28 @@ async function validateRequest(request: NextRequest) {
   const { remaining } = await ratelimit.limit(ip ?? '127.0.0.1');
 
   if (!process.env.FAUCET_ADDRESS || !process.env.FAUCET_SEED || !process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN) {
-    throw new Error("Missing environment variables");
+    throw new CustomError("Missing environment variables", 500);
   }
 
   if (remaining === 0) {
-    throw new Error("Too many requests");
+    throw new CustomError("Too many requests", 429);
   }
 
 
   if (!userAgent || userAgent.includes("node-fetch")) {
-    throw new Error("Invalid user agent");
+    throw new CustomError("Invalid user agent", 403);
   }
 
   if (!address || !isValidAddress(address)) {
-    throw new Error("Invalid address");
+    throw new CustomError("Invalid address", 400);
   }
 
   if (ip && !isValidIPv4(ip)) {
-    throw new Error("Invalid IP");
+    throw new CustomError("Invalid IP", 403);
   }
 
   if (!network || (network !== "mainnet" && network !== "turing")) {
-    throw new Error("Invalid network");
+    throw new CustomError("Invalid network",  400);
   }
 
   return { address, network };
