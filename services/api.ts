@@ -63,6 +63,22 @@ export async function fetchEthHead(): Promise<{
 
 
 /**
+ * @description Fetches the latest blockhash for a given slot
+ * @param slot 
+ * @returns LatestBlockInfo["latestBlockhash"]
+ */
+export async function fetchLatestBlockhash(
+  slot: LatestBlockInfo["ethHead"]["slot"]
+): Promise<{ data: LatestBlockInfo["latestBlockhash"] }> {
+  const response = await fetch(
+    `${appConfig.bridgeApiBaseUrl}/beacon/slot/${slot}`
+  );
+  const latestBlockhash: LatestBlockInfo["latestBlockhash"] =
+    await response.json();
+  return { data: latestBlockhash };
+}
+
+/**
  * @description Fetches the account storage proofs for a given blockhash and messageid
  * @flow ETH -> AVAIL
  * 
