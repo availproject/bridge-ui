@@ -6,7 +6,7 @@ datadogLogs.init({
   forwardErrorsToLogs: true,
   sessionSampleRate: 100,
   service: process.env.NEXT_PUBLIC_DD_SERVICE || "avail-bridge-ui",
-  env: process.env.NODE_ENV || "local"
+  env: process.env.NEXT_PUBLIC_ENVIRONMENT || "local"
 })
 
 export class Logger {
