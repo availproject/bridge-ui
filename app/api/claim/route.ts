@@ -39,7 +39,7 @@ export const runtime = "edge"
 
 export async function GET(request: NextRequest) {
   try {
-    const { address, network } = await validateRequest(request);
+    const { address } = await validateRequest(request);
     const availBalance = await _getBalance(Chain.AVAIL, address);
 
     if (availBalance && Number(parseAvailAmount(availBalance)) >= MAX_USER_BALANCE) {
@@ -81,7 +81,6 @@ async function validateRequest(request: NextRequest) {
   const ip = headersList.get("x-real-ip");
   const address = request.nextUrl.searchParams.get("address");
   const userAgent = headersList.get("user-agent");
-  const network = request.nextUrl.searchParams.get("network");
 
   const { remaining } = await ratelimit.limit(ip ?? '127.0.0.1');
 
@@ -106,11 +105,7 @@ async function validateRequest(request: NextRequest) {
     throw new CustomError("Invalid IP", 403);
   }
 
-  if (!network || (network !== "mainnet" && network !== "turing")) {
-    throw new CustomError("Invalid network",  400);
-  }
-
-  return { address, network };
+  return { address };
 }
 
 async function getFaucetBalance(api: any): Promise<bigint> {

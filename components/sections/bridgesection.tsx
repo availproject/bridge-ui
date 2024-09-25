@@ -286,7 +286,7 @@ export default function BridgeSection() {
                   const response = await fetch(
                     `/api/claim?address=${encodeURIComponent(
                       availAddress
-                    )}&network=${encodeURIComponent(process.env.NEXT_PUBLIC_NETWORK || "turing")}`,
+                    )}`,
                     {
                       method: "GET",
                       headers: {
