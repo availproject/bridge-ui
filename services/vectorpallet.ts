@@ -2,7 +2,6 @@ import { toast } from "@/components/ui/use-toast";
 import { isNumber } from "@polkadot/util";
 import {
   ApiPromise,
-  initialize,
   types,
   signedExtensions,
 } from "avail-js-sdk";
@@ -11,7 +10,6 @@ import { getWalletBySource, WalletAccount } from "@talismn/connect-wallets";
 import { SignerOptions } from "@polkadot/api/types";
 import { executeParams, sendMessageParams } from "@/types/transaction";
 import { Logger } from "@/utils/logger";
-
 
 /**
  * @description Get injected metadata for extrinsic call
@@ -34,6 +32,7 @@ const getInjectorMetadata = (api: ApiPromise) => {
   };
 };
 
+
 /**
  * @brief Send message to initiate a AVAIL-> ETH transaction
  * 
@@ -43,7 +42,8 @@ const getInjectorMetadata = (api: ApiPromise) => {
  */
 export async function sendMessage(
   props: sendMessageParams,
-  account: WalletAccount
+  account: WalletAccount,
+  api: ApiPromise
 ): Promise<{
   status: string;
   message: string;
@@ -51,7 +51,6 @@ export async function sendMessage(
   txHash?: string;
 }> {
   const injector = await getWalletBySource(account.source);
-  const api = await initialize(substrateConfig.endpoint);
   const metadata = getInjectorMetadata(api);
 
   //@ts-ignore
@@ -125,7 +124,6 @@ export async function sendMessage(
   };
 }
 
-
 /**
  * 
  * @brief Execute transaction to finalize/claim a  ETH -> AVAIL transaction
@@ -136,7 +134,8 @@ export async function sendMessage(
  */
 export async function executeTransaction(
   props: executeParams,
-  account: WalletAccount
+  account: WalletAccount,
+  api: ApiPromise
 ): Promise<{
   status: string;
   message: string;
@@ -144,7 +143,6 @@ export async function executeTransaction(
   txHash?: string;
 }> {
   const injector = await getWalletBySource(account.source);
-  const api = await initialize(substrateConfig.endpoint);
   const metadata = getInjectorMetadata(api);
   
   //@ts-ignore

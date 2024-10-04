@@ -6,45 +6,28 @@ import { useMemo } from "react";
 import { useAccount } from "wagmi";
 
 export default function useTransactionButtonState(
-  ethBalance: string | undefined | null,
-  availBalance: string | undefined | null,
   transactionInProgress: boolean
 ) {
-
   const account = useAccount();
-
-  const {selected} = useAvailAccount();
-  const {fromChain, dollarAmount, setDollarAmount, toChain, fromAmount, toAddress} = useCommonStore();
+  const { selected } = useAvailAccount();
+  const {
+    fromChain,
+    dollarAmount,
+    toChain,
+    fromAmount,
+    toAddress,
+    ethBalance,
+    availBalance,
+  } = useCommonStore();
 
   const isWalletConnected = useMemo(() => {
-    if(fromChain === Chain.ETH) {
-      return account?.address && true
-    } 
-    if(fromChain === Chain.AVAIL) {
-      return selected?.address && true
+    if (fromChain === Chain.ETH) {
+      return account?.address && true;
+    }
+    if (fromChain === Chain.AVAIL) {
+      return selected?.address && true;
     }
   }, [account.address, selected?.address, fromChain]);
-
-/**
- * @description get the price of the token
- * 
- * @param {coin, fiat, id}
- * @sets price of the token in dollars
- */
-async function getTokenPrice({ coin, fiat, id }: { coin: string, fiat: string, id: number }) {
-  try {
-    const response = await fetch(
-      `/api/getTokenPrice?coins=${coin}&fiats=${fiat}`
-    );
-    const data = await response.json();
-    setDollarAmount(data.price[coin][fiat]);
-  } catch (error: any) {
-    Logger.error(`Error fetching token price: ${error}`);
-    throw error;
-  }
-  
-}
-
 
   const isInvalidAmount = useMemo(() => {
     const amount = parseFloat(fromAmount?.toString());
@@ -56,28 +39,28 @@ async function getTokenPrice({ coin, fiat, id }: { coin: string, fiat: string, i
     );
   }, [fromAmount]);
 
-  const isInvalidToAddress = useMemo(()=>{
-    if(toAddress !== undefined && toAddress !== "") {
-      return false
+  const isInvalidToAddress = useMemo(() => {
+    if (toAddress !== undefined && toAddress !== "") {
+      return false;
     } else {
-      return true
+      return true;
     }
-  },[toAddress])
+  }, [toAddress]);
 
   const hasInsufficientBalance = useMemo(() => {
     if (!fromAmount || isNaN(fromAmount)) return false;
-    
-    const amount = parseFloat(fromAmount?.toString()) * 10**18;
+
+    const amount = parseFloat(fromAmount?.toString()) * 10 ** 18;
     if (isNaN(amount)) return false;
-  
+
     const balanceMap = {
       [Chain.ETH]: ethBalance,
-      [Chain.AVAIL]: availBalance
-    }
-  
+      [Chain.AVAIL]: availBalance,
+    };
+
     const currentBalance = balanceMap[fromChain];
     if (currentBalance === undefined || currentBalance === null) return false;
-  
+
     return parseFloat(currentBalance) < amount;
   }, [ethBalance, availBalance, fromAmount, fromChain]);
 
@@ -94,16 +77,35 @@ async function getTokenPrice({ coin, fiat, id }: { coin: string, fiat: string, i
     if (hasInsufficientBalance) {
       return "Insufficient Balance";
     }
-    return `Initiate bridge from ${fromChain.charAt(0).toUpperCase() + fromChain.slice(1).toLowerCase()} to ${toChain.charAt(0).toUpperCase() + toChain.slice(1).toLowerCase()}`;
-  }, [isWalletConnected, transactionInProgress, isInvalidAmount, hasInsufficientBalance, fromChain, toChain]);
+    return `Initiate bridge from ${
+      fromChain.charAt(0).toUpperCase() + fromChain.slice(1).toLowerCase()
+    } to ${toChain.charAt(0).toUpperCase() + toChain.slice(1).toLowerCase()}`;
+  }, [
+    isWalletConnected,
+    transactionInProgress,
+    isInvalidAmount,
+    hasInsufficientBalance,
+    fromChain,
+    toChain,
+  ]);
 
   const isDisabled = useMemo(() => {
-    return transactionInProgress || isInvalidAmount || hasInsufficientBalance || !isWalletConnected;
-  }, [transactionInProgress, isInvalidAmount, hasInsufficientBalance, isWalletConnected]);
+    return (
+      transactionInProgress ||
+      isInvalidAmount ||
+      hasInsufficientBalance ||
+      !isWalletConnected
+    );
+  }, [
+    transactionInProgress,
+    isInvalidAmount,
+    hasInsufficientBalance,
+    isWalletConnected,
+  ]);
 
   const availAmountToDollars: number = useMemo(() => {
     return fromAmount ? fromAmount * dollarAmount : 0;
-  },[fromAmount, dollarAmount]);
+  }, [fromAmount, dollarAmount]);
 
-  return { buttonStatus, isDisabled, availAmountToDollars, getTokenPrice };
+  return { buttonStatus, isDisabled, availAmountToDollars };
 }

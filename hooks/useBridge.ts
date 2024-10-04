@@ -17,61 +17,29 @@ import { appConfig } from "@/config/default";
 import useEthWallet from "@/hooks/useEthWallet";
 import useTransactions from "@/hooks/useTransactions";
 import { useAvailAccount } from "@/stores/availWalletHook";
-import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
 import { substrateAddressToPublicKey } from "@/utils/addressFormatting";
-import {
-  fetchAvlHead,
-  fetchEthHead,
-  fetchLatestBlockhash,
-} from "@/services/api";
 import { sendMessage } from "@/services/vectorpallet";
 import { _getBalance, showSuccessMessage } from "@/utils/common";
 import { Logger } from "@/utils/logger";
 import { ONE_POWER_EIGHTEEN } from "@/constants/bigNumber";
+import { useCommonStore } from "@/stores/common";
 
 export default function useBridge() {
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
   const { addToLocalTransaction } = useTransactions();
   const { data: hash, isPending, writeContractAsync } = useWriteContract();
   const { selected } = useAvailAccount();
-  const { setAvlHead, setEthHead, setLatestBlockhash } = useLatestBlockInfo();
+  const { api } = useCommonStore();
 
   const networks = appConfig.networks;
 
-  /**
-   * @description Validates chain according to transaction type, and changes chain if needed
-   * @param txType Transaction type
-   */
   const validateChain = async (txType: TRANSACTION_TYPES) => {
-    if (txType === TRANSACTION_TYPES.BRIDGE_AVAIL_TO_ETH) {
-      // if (networks.avail.networkId !== await activeNetworkId()) {
-      //   await switchNetwork(networks.avail.networkId);
-      // }
-    } else if (txType === TRANSACTION_TYPES.BRIDGE_ETH_TO_AVAIL) {
+     if (txType === TRANSACTION_TYPES.BRIDGE_ETH_TO_AVAIL) {
       if (networks.ethereum.id !== (await activeNetworkId())) {
         await switchNetwork(networks.ethereum.id);
       }
     }
   };
-
-  const fetchHeads = async () => {
-    Logger.debug("fetching heads");
-    const ethHead = await fetchEthHead();
-    setEthHead(ethHead.data);
-    const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
-    setLatestBlockhash(LatestBlockhash.data);
-    const avlHead = await fetchAvlHead();
-    setAvlHead(avlHead.data);
-  };
-
-  useEffect(() => {
-    //TODO: Improve this .then syntax.
-    fetchHeads().then(() => {
-      setInterval(async () => {
-        await fetchHeads();
-      }, 50000);
-    });
-  }, []);
 
   const getAvailBalanceOnEth = useCallback(async () => {
     // Get AVAIL balance on Ethereum chain
@@ -213,6 +181,10 @@ export default function useBridge() {
     return burnTxHash;
   };
 
+    /**
+   * @description Initiates bridging from AVAIL to Ethereum,
+   * @steps Validates chain, Checks approval, Checks balance, Initiates bridging(sendAvail() on Eth)
+   */
   const initAvailToEthBridging = async ({
     atomicAmount,
     destinationAddress,
@@ -223,7 +195,11 @@ export default function useBridge() {
     if (selected === undefined || selected === null) {
       throw new Error("No account selected");
     }
-    const availBalance = await _getBalance(Chain.AVAIL, selected?.address);
+    if(!api) {
+      throw new Error("Avail Api Not Connected");
+    }
+
+    const availBalance = await _getBalance(Chain.AVAIL,api,  selected?.address);
     // if (!availBalance) {
     // note: product decision here was to allow the user
     // to go ahead with tx when we are unable to fetch the balance
@@ -250,7 +226,8 @@ export default function useBridge() {
         to: `${destinationAddress.padEnd(66, "0")}`,
         domain: 2,
       },
-      selected!
+      selected!,
+      api
     );
     if (send.blockhash !== undefined && send.txHash !== undefined) {
       const tempLocalTransaction: Transaction = {

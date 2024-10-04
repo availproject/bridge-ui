@@ -23,3 +23,5 @@ export interface ethBalance {
   symbol: string;
   value: BigInt;
 }
+
+export type CheckedState = boolean | "indeterminate";

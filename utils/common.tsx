@@ -1,5 +1,5 @@
-import { initialize, isValidAddress } from "avail-js-sdk";
-import { substrateConfig, ethConfig } from "@/config/walletConfig";
+import { ApiPromise, isValidAddress } from "avail-js-sdk";
+import { ethConfig } from "@/config/walletConfig";
 import { readContract } from "@wagmi/core";
 import { Chain } from "@/types/common";
 import { appConfig } from "@/config/default";
@@ -15,15 +15,18 @@ const networks = appConfig.networks;
 
 export async function _getBalance(
   chain: Chain,
+  api: ApiPromise,
   availAddress?: string,
-  ethAddress?: `0x${string}`
+  ethAddress?: `0x${string}`,
 ): Promise<string | undefined> {
   if (chain === Chain.AVAIL && availAddress) {
-    const api = await initialize(substrateConfig.endpoint);
-    const oldBalance: any = await api.query.system.account(availAddress);
-
-   const atomicBalance =  oldBalance.data.free.toHuman().replace(/,/g, "") - oldBalance.data.frozen.toHuman().replace(/,/g, "")
-    return atomicBalance.toString();
+    try {
+      const oldBalance: any = await api.query.system.account(availAddress);
+      const atomicBalance =  oldBalance.data.free.toHuman().replace(/,/g, "") - oldBalance.data.frozen.toHuman().replace(/,/g, "")
+       return atomicBalance.toString();
+    } catch (error) {
+      Logger.error(`ERROR_FETCHING_BALANCE: ${error}`);
+    }
   }
 
   if (chain === Chain.ETH && ethAddress) {

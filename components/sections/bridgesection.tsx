@@ -29,7 +29,7 @@ import { useAccount } from "wagmi";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Chain, TransactionStatus } from "@/types/common";
+import { Chain, CheckedState, TransactionStatus } from "@/types/common";
 import useBridge from "@/hooks/useBridge";
 import { toast } from "@/components/ui/use-toast";
 import { parseError } from "@/utils/parseError";
@@ -55,8 +55,6 @@ import { Checkbox } from "../ui/checkbox";
 import { RxCrossCircled } from "react-icons/rx";
 import TransactionSection from "./transactionsection";
 import { FaCheckCircle } from "react-icons/fa";
-import { pollWithDelay } from "@/utils/poller";
-import { appConfig } from "@/config/default";
 import {
   Dialog,
   DialogClose,
@@ -69,20 +67,11 @@ import { Button } from "../ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card";
 import { CiCircleQuestion } from "react-icons/ci";
 import { Logger } from "@/utils/logger";
-
-const formSchema = z.object({
-  fromAmount: z.preprocess(
-    //@ts-ignore - preprocess is not in the types
-    (a) => parseFloat(z.number().parse(a)),
-    z.number({
-      invalid_type_error: "Amount should be a number",
-    })
-  ),
-  toAddress: z.string(),
-});
-type CheckedState = boolean | "indeterminate";
+import React from "react";
+import useAppInit from "@/hooks/useAppInit";
 
 export default function BridgeSection() {
+
   const account = useAccount();
   const {
     fromChain,
@@ -91,29 +80,29 @@ export default function BridgeSection() {
     setToChain,
     setFromAmount,
     setToAddress,
+    api,
+    pendingTransactionsNumber,
+    readyToClaimTransactionsNumber,
+    ethBalance,
+    setEthBalance,
+    availBalance,
+    setAvailBalance,
   } = useCommonStore();
   const { selected } = useAvailAccount();
   const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
-  const {
-    pendingTransactionsNumber,
-    setPendingTransactionsNumber,
-    readyToClaimTransactionsNumber,
-    setReadyToClaimTransactionsNumber,
-  } = useCommonStore();
-  const { fetchTransactions } = useTransactions();
-  const { pendingTransactions } = useTransactions();
+ 
+  const [transactionInProgress, setTransactionInProgress] =
+  useState<boolean>(false);
+  const { buttonStatus, isDisabled, availAmountToDollars } =
+  useTransactionButtonState(transactionInProgress);
+
   const [isChecked, setIsChecked] = useState<CheckedState>(false);
   const [open, setOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [availToEthHash, setAvailToEthHash] = useState<string | undefined>('')
   const [ethToAvailHash, setEthToAvailHash] = useState<string | undefined>('')
-  const [ethBalance, setEthBalance] = useState<string | undefined | null>(null);
-  const [availBalance, setAvailBalance] = useState<string | undefined | null>(
-    null
-  );
 
-  const [transactionInProgress, setTransactionInProgress] =
-    useState<boolean>(false);
+  useAppInit();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -122,68 +111,21 @@ export default function BridgeSection() {
     },
   });
 
-  const { buttonStatus, isDisabled, availAmountToDollars, getTokenPrice } =
-    useTransactionButtonState(ethBalance, availBalance, transactionInProgress);
-
-  const appInit = async () => {
-    if (!selected && !account.address) return;
-    pollWithDelay(
-      fetchTransactions,
-      [
-        {
-          availAddress: selected?.address,
-          ethAddress: account.address,
-        },
-      ],
-      appConfig.bridgeIndexerPollingInterval,
-      () => true
-    );
-    pollWithDelay(
-      getTokenPrice,
-      [
-        {
-          coin: "avail",
-          fiat: "usd",
-        },
-      ],
-      appConfig.bridgeIndexerPollingInterval,
-      () => true
-    );
+  const resetState = async () => {
+    form.reset();
+    if (account.address && api) {
+      const result = await _getBalance(Chain.ETH, api, undefined, account.address);
+      setEthBalance(result);
+    } else {
+      setEthBalance(undefined);
+    }
+    if (selected?.address && api) {
+      const result = await _getBalance(Chain.AVAIL, api, selected?.address);
+      setAvailBalance(result);
+    } else {
+      setAvailBalance(undefined);
+    }
   };
-  useEffect(() => {
-    appInit();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
-
-  useEffect(() => {
-    setPendingTransactionsNumber(
-      pendingTransactions.filter(
-        (transaction) => transaction.status !== TransactionStatus.CLAIMED
-      ).length
-    );
-    setReadyToClaimTransactionsNumber(
-      pendingTransactions.filter(
-        (transaction) => transaction.status == TransactionStatus.READY_TO_CLAIM
-      ).length
-    );
-  }, [pendingTransactions]);
-
-  useEffect(() => {
-    (async () => {
-      if (account.address) {
-        const result = await _getBalance(Chain.ETH, undefined, account.address);
-        setEthBalance(result);
-      } else {
-        setEthBalance(undefined);
-      }
-      if (selected?.address) {
-        const result = await _getBalance(Chain.AVAIL, selected?.address);
-        setAvailBalance(result);
-      } else {
-        setAvailBalance(undefined);
-      }
-    })();
-  }, [account.address, selected?.address]);
 
   useEffect(() => {
     document
@@ -194,21 +136,6 @@ export default function BridgeSection() {
       );
   }, []);
 
-  const resetState = async () => {
-    form.reset();
-    if (account.address) {
-      const result = await _getBalance(Chain.ETH, undefined, account.address);
-      setEthBalance(result);
-    } else {
-      setEthBalance(undefined);
-    }
-    if (selected?.address) {
-      const result = await _getBalance(Chain.AVAIL, selected?.address);
-      setAvailBalance(result);
-    } else {
-      setAvailBalance(undefined);
-    }
-  };
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       if (fromChain === Chain.ETH) {
@@ -265,7 +192,6 @@ export default function BridgeSection() {
       showFailedMessage({ title: parseError(error) });
     }
   }
-
   function Balance() {
     return (
       <>
@@ -311,7 +237,6 @@ export default function BridgeSection() {
       </>
     );
   }
-
   async function PasteAddressAction() {
     const address = await navigator.clipboard.readText();
     const a = await validAddress(address, toChain);
@@ -350,6 +275,8 @@ export default function BridgeSection() {
         ),
       });
   }
+
+
 
   return (
     <div className="text-white w-full my-4">
@@ -766,3 +693,15 @@ export default function BridgeSection() {
     </div>
   );
 }
+
+
+export const formSchema = z.object({
+  fromAmount: z.preprocess(
+    //@ts-ignore - preprocess is not in the types
+    (a) => parseFloat(z.number().parse(a)),
+    z.number({
+      invalid_type_error: "Amount should be a number",
+    })
+  ),
+  toAddress: z.string(),
+});
