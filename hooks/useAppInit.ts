@@ -11,7 +11,7 @@ import { appConfig } from '@/config/default';
 import { Chain, TransactionStatus } from '@/types/common';
 import { _getBalance } from '@/utils/common';
 import { Logger } from '@/utils/logger';
-import { fetchAvlHead, fetchEthHead, fetchLatestBlockhash } from '@/services/api';
+import { fetchAvlHead, fetchEthHead } from '@/services/api';
 import { useLatestBlockInfo } from '@/stores/lastestBlockInfo';
 
 const useAppInit = () => {
@@ -28,20 +28,44 @@ const useAppInit = () => {
   } = useCommonStore();
   const { fetchTransactions } = useTransactions();
   const { pendingTransactions } = useTransactions();
-  const { setAvlHead, setEthHead, setLatestBlockhash } = useLatestBlockInfo();
+  const { setAvlHead, setEthHead } = useLatestBlockInfo();
 
   const fetchHeads = async (api: ApiPromise) => {
     try {
       Logger.debug("FETCH_HEADS");
       const ethHead = await fetchEthHead();
       setEthHead(ethHead.data);
-      const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
-      setLatestBlockhash(LatestBlockhash.data);
       const avlHead = await fetchAvlHead(api);
       setAvlHead(avlHead.data);
     } catch (error) {
       Logger.error(`ERROR_FETCH_HEADS: ${error}`);
 
+    }
+  };
+
+  const fetchBalances = async () => {
+    if (account.address && api) {
+      try {
+        const result = await _getBalance(Chain.ETH, api, undefined, account.address);
+        setEthBalance(result);
+      } catch (error) {
+        console.error("Failed to fetch ETH balance:", error);
+        setEthBalance(undefined);
+      }
+    } else {
+      setEthBalance(undefined);
+    }
+
+    if (selected?.address && api) {
+      try {
+        const result = await _getBalance(Chain.AVAIL, api, selected?.address);
+        setAvailBalance(result);
+      } catch (error) {
+        console.error("Failed to fetch AVAIL balance:", error);
+        setAvailBalance(undefined);
+      }
+    } else {
+      setAvailBalance(undefined);
     }
   };
 
@@ -98,35 +122,8 @@ const useAppInit = () => {
     );
   }, [pendingTransactions]);
 
-  const fetchBalances = async () => {
-    if (account.address && api) {
-      try {
-        const result = await _getBalance(Chain.ETH, api, undefined, account.address);
-        setEthBalance(result);
-      } catch (error) {
-        console.error("Failed to fetch ETH balance:", error);
-        setEthBalance(undefined);
-      }
-    } else {
-      setEthBalance(undefined);
-    }
-
-    if (selected?.address && api) {
-      try {
-        const result = await _getBalance(Chain.AVAIL, api, selected?.address);
-        setAvailBalance(result);
-      } catch (error) {
-        console.error("Failed to fetch AVAIL balance:", error);
-        setAvailBalance(undefined);
-      }
-    } else {
-      setAvailBalance(undefined);
-    }
-  };
-
-
   useEffect(() => {
-    
+
     fetchBalances();
   }, [account.address, selected?.address, api]);
 
@@ -149,8 +146,8 @@ async function getTokenPrice({ coin, fiat, id }: { coin: string, fiat: string, i
   }
   
 }
-  
-    return {fetchBalances, getTokenPrice};
+
+return { fetchBalances, fetchHeads, getTokenPrice };
 };
 
 export default useAppInit;

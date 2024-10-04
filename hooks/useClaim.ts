@@ -7,7 +7,6 @@ import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
 
 import { config } from "@/app/providers";
 import {
-  fetchLatestBlockhash,
   getAccountStorageProofs,
   getMerkleProof,
 } from "@/services/api";
@@ -25,7 +24,7 @@ import { Logger } from "@/utils/logger";
 import { useCommonStore } from "@/stores/common";
 
 export default function useClaim() {
-  const { ethHead, latestBlockhash } = useLatestBlockInfo();
+  const { ethHead } = useLatestBlockInfo();
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
   const { selected } = useAvailAccount();
   const { address } = useAccount();
@@ -188,7 +187,7 @@ export default function useClaim() {
     }
 
     const proofs = await getAccountStorageProofs(
-      latestBlockhash.blockHash,
+      ethHead.blockHash,
       executeParams.messageid,
     );
 

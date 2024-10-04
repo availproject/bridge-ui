@@ -18,7 +18,7 @@ const JSONBigInt = jsonbigint({ useNativeBigInt: true });
  * @returns merkleProof
  */
 export const getMerkleProof = async (blockhash: string, index: number) => {
-  const response = await axios.get(`${appConfig.bridgeApiBaseUrl}/eth/proof/${blockhash}`, {
+  const response = await axios.get(`${appConfig.bridgeApiBaseUrl}/v1/eth/proof/${blockhash}`, {
     params: { index },
     transformResponse: [data => data]
   });
@@ -35,7 +35,7 @@ export const getMerkleProof = async (blockhash: string, index: number) => {
 export async function fetchAvlHead(api: ApiPromise): Promise<{
   data: LatestBlockInfo["avlHead"];
 }> {
-  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/avl/head`);
+  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/v1/avl/head`);
   //TODO: Change below as response.json() does not contain endTimestamp.
   const avlHead: LatestBlockInfo["avlHead"] = await response.json();
   const blockHash = await api.rpc.chain.getBlockHash(avlHead.data.end);
@@ -55,26 +55,9 @@ export async function fetchAvlHead(api: ApiPromise): Promise<{
 export async function fetchEthHead(): Promise<{
   data: LatestBlockInfo["ethHead"];
 }> {
-  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/eth/head`);
+  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/v1/eth/head`);
   const ethHead: LatestBlockInfo["ethHead"] = await response.json();
   return { data: ethHead };
-}
-
-
-/**
- * @description Fetches the latest blockhash for a given slot
- * @param slot 
- * @returns LatestBlockInfo["latestBlockhash"]
- */
-export async function fetchLatestBlockhash(
-  slot: LatestBlockInfo["ethHead"]["slot"]
-): Promise<{ data: LatestBlockInfo["latestBlockhash"] }> {
-  const response = await fetch(
-    `${appConfig.bridgeApiBaseUrl}/beacon/slot/${slot}`
-  );
-  const latestBlockhash: LatestBlockInfo["latestBlockhash"] =
-    await response.json();
-  return { data: latestBlockhash };
 }
 
 /**
@@ -89,7 +72,7 @@ export async function getAccountStorageProofs(
   blockhash: string,
   messageid: number
 ) {
-  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/avl/proof/${blockhash}/${messageid}`)
+  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/v1/avl/proof/${blockhash}/${messageid}`)
     .catch((e: any) => {
       Logger.error(e);
       return Response.error();
