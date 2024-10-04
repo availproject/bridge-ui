@@ -95,6 +95,7 @@ export default function BridgeSection() {
   useState<boolean>(false);
   const { buttonStatus, isDisabled, availAmountToDollars } =
   useTransactionButtonState(transactionInProgress);
+  const { fetchBalances } = useAppInit();
 
   const [isChecked, setIsChecked] = useState<CheckedState>(false);
   const [open, setOpen] = useState(false);
@@ -113,18 +114,7 @@ export default function BridgeSection() {
 
   const resetState = async () => {
     form.reset();
-    if (account.address && api) {
-      const result = await _getBalance(Chain.ETH, api, undefined, account.address);
-      setEthBalance(result);
-    } else {
-      setEthBalance(undefined);
-    }
-    if (selected?.address && api) {
-      const result = await _getBalance(Chain.AVAIL, api, selected?.address);
-      setAvailBalance(result);
-    } else {
-      setAvailBalance(undefined);
-    }
+    await fetchBalances();
   };
 
   useEffect(() => {
