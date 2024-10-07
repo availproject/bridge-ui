@@ -21,8 +21,6 @@ import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
 import {
   _getBalance,
-  showFailedMessage,
-  showSuccessMessage,
   validAddress,
 } from "@/utils/common";
 import { useAccount } from "wagmi";
@@ -37,7 +35,7 @@ import BigNumber from "bignumber.js";
 import { badgeVariants } from "../ui/badge";
 import { ArrowUpRight, CheckCircle2, Copy, InfoIcon, Loader2 } from "lucide-react";
 import useTransactions from "@/hooks/useTransactions";
-import { parseAmount } from "@/utils/parseAmount";
+import { parseAmount } from "@/utils/parsers";
 import { LoadingButton } from "../ui/loadingbutton";
 import useTransactionButtonState from "@/hooks/useTransactionButtonState";
 import {
@@ -68,6 +66,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card"
 import { Logger } from "@/utils/logger";
 import React from "react";
 import useAppInit from "@/hooks/useAppInit";
+import { showFailedMessage } from "@/utils/toasts";
 
 export const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -89,22 +88,19 @@ export default function BridgeSection() {
     setToChain,
     setFromAmount,
     setToAddress,
-    api,
     pendingTransactionsNumber,
     readyToClaimTransactionsNumber,
     ethBalance,
-    setEthBalance,
     availBalance,
-    setAvailBalance,
   } = useCommonStore();
   const { selected } = useAvailAccount();
+  const { fetchBalances } = useAppInit();
   const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
  
   const [transactionInProgress, setTransactionInProgress] =
   useState<boolean>(false);
   const { buttonStatus, isDisabled, availAmountToDollars } =
   useTransactionButtonState(transactionInProgress);
-  const { fetchBalances } = useAppInit();
 
   const [isChecked, setIsChecked] = useState<CheckedState>(false);
   const [open, setOpen] = useState(false);
@@ -186,7 +182,7 @@ export default function BridgeSection() {
         resetState();
       }
     } catch (error: any) {
-      Logger.error(error);
+      Logger.error(`BRIDGE_INITIATE_ERROR: ${error}`);
       setTransactionInProgress(false);
       showFailedMessage({ title: parseError(error) });
     }
