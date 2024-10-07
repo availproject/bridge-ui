@@ -1,22 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { substrateConfig } from "@/config/walletConfig";
-import { useAvailAccount } from "@/stores/availWalletHook";
-import { useCommonStore } from "@/stores/common";
-import { pollWithDelay } from "@/utils/poller";
-import { ApiPromise, disconnect, initialize } from "avail-js-sdk";
-import { useEffect } from "react";
-import useTransactions from "./useTransactions";
-import { useAccount } from "wagmi";
-import { appConfig } from "@/config/default";
-import { Chain, TransactionStatus } from "@/types/common";
-import { _getBalance, initApi, sleep } from "@/utils/common";
-import { Logger } from "@/utils/logger";
-import {
-  fetchAvlHead,
-  fetchEthHead,
-  fetchLatestBlockhash,
-} from "@/services/api";
-import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
+import { substrateConfig } from '@/config/walletConfig';
+import { useAvailAccount } from '@/stores/availWalletHook';
+import { useCommonStore } from '@/stores/common';
+import { pollWithDelay } from '@/utils/poller';
+import { ApiPromise } from 'avail-js-sdk';
+import { useEffect } from 'react';
+import useTransactions from './useTransactions';
+import { useAccount } from 'wagmi';
+import { appConfig } from '@/config/default';
+import { Chain, TransactionStatus } from '@/types/common';
+import { _getBalance, initApi } from '@/utils/common';
+import { Logger } from '@/utils/logger';
+import { fetchAvlHead, fetchEthHead } from '@/services/api';
+import { useLatestBlockInfo } from '@/stores/lastestBlockInfo';
 
 const useAppInit = () => {
   const { selected } = useAvailAccount();
@@ -24,36 +20,28 @@ const useAppInit = () => {
   const {
     api,
     setApi,
-    pendingTransactionsNumber,
     setPendingTransactionsNumber,
-    readyToClaimTransactionsNumber,
     setReadyToClaimTransactionsNumber,
-    fromChain,
-    dollarAmount,
     setDollarAmount,
-    toChain,
-    fromAmount,
-    toAddress,
-    ethBalance,
     setEthBalance,
-    availBalance,
     setAvailBalance,
   } = useCommonStore();
   const { fetchTransactions } = useTransactions();
   const { pendingTransactions } = useTransactions();
-  const { setAvlHead, setEthHead, setLatestBlockhash } = useLatestBlockInfo();
+  const { setAvlHead, setEthHead } = useLatestBlockInfo();
 
   const fetchHeads = async (api: ApiPromise) => {
     try {
       Logger.info("FETCH_HEADS");
       const ethHead = await fetchEthHead();
+      if(!ethHead.data) throw new Error("Failed to fetch ETH head");
       setEthHead(ethHead.data);
-      const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
-      setLatestBlockhash(LatestBlockhash.data);
       const avlHead = await fetchAvlHead(api);
+      if(!avlHead.data) throw new Error("Failed to fetch AVAIL head");
       setAvlHead(avlHead.data);
     } catch (error) {
       Logger.error(`ERROR_FETCH_HEADS: ${error}`);
+
     }
   };
 
@@ -109,12 +97,7 @@ const useAppInit = () => {
   const fetchBalances = async () => {
     if (account.address && api) {
       try {
-        const result = await _getBalance(
-          Chain.ETH,
-          api,
-          undefined,
-          account.address
-        );
+        const result = await _getBalance(Chain.ETH, api, undefined, account.address);
         setEthBalance(result);
       } catch (error) {
         console.error("Failed to fetch ETH balance:", error);
@@ -141,6 +124,7 @@ const useAppInit = () => {
     fetchBalances();
   }, [account.address, selected?.address, api]);
 
+
   /**
    * @description get the price of the token
    *
@@ -161,6 +145,10 @@ const useAppInit = () => {
   }
 
   return { fetchBalances, getTokenPrice };
-};
+}
+
+
+
+
 
 export default useAppInit;
