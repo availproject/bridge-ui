@@ -6,6 +6,7 @@ import { Transaction } from "@/types/transaction";
 import { useEffect, useMemo } from "react";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useAccount } from "wagmi";
+import { Logger } from "@/utils/logger";
 
 /**
  * @description All the functionalities related to substrate wallet such as connecting, switching network, etc
@@ -47,6 +48,7 @@ export default function useTransactions() {
     destinationChain?: Chain;
   }) => {
     // Fetch all transactions
+    Logger.info("FETCHING_TRANSACTIONS");
     const indexedTransactions = await getTransactionsFromIndexer(
      { availAddress: availAddress, ethAddress: ethAddress, sourceChain: sourceChain, destinationChain: destinationChain}
     );
