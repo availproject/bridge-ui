@@ -34,12 +34,13 @@ const useAppInit = () => {
     try {
       Logger.debug("FETCH_HEADS");
       const ethHead = await fetchEthHead();
+      if(!ethHead.data) throw new Error("Failed to fetch ETH head");
       setEthHead(ethHead.data);
       const avlHead = await fetchAvlHead(api);
+      if(!avlHead.data) throw new Error("Failed to fetch ETH head");
       setAvlHead(avlHead.data);
     } catch (error) {
       Logger.error(`ERROR_FETCH_HEADS: ${error}`);
-
     }
   };
 
