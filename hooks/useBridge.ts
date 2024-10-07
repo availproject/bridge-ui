@@ -199,7 +199,7 @@ export default function useBridge() {
 
     let retriedApiConn: ApiPromise | null = null;
 
-    if(!api) {
+    if(!api || api.isConnected) {
       Logger.debug("Retrying API Conn");
       retriedApiConn = await initApi();
       setApi(retriedApiConn);
