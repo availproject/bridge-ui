@@ -22,6 +22,9 @@ import { useAccount } from "wagmi";
 import { appConfig } from "@/config/default";
 import useEthWallet from "./useEthWallet";
 import { Logger } from "@/utils/logger";
+import { useCommonStore } from "@/stores/common";
+import { initApi } from "@/utils/common";
+import { ApiPromise } from "avail-js-sdk";
 
 export default function useClaim() {
   const { ethHead, latestBlockhash } = useLatestBlockInfo();
@@ -29,6 +32,7 @@ export default function useClaim() {
   const { selected } = useAvailAccount();
   const { address } = useAccount();
   const { addToLocalTransaction } = useTransactions();
+  const { api, setApi } = useCommonStore();
 
   const networks = appConfig.networks;
 
@@ -182,6 +186,16 @@ export default function useClaim() {
     if (!selected) throw new Error("Connect a Avail account");
     if(ethHead.slot === 0) throw new Error("Failed to fetch latest slot");
 
+    let retriedApiConn: ApiPromise | null = null;
+
+    if(!api || !api.isConnected) {
+      Logger.debug("Retrying API Conn");
+      retriedApiConn = await initApi();
+      setApi(retriedApiConn);
+      if (!retriedApiConn) {
+        throw new Error("Uh Oh! RPC under a lot of stress, error intialising api");}
+    }
+
     const proofs = await getAccountStorageProofs(
       latestBlockhash.blockHash,
       executeParams.messageid,
@@ -214,6 +228,7 @@ export default function useClaim() {
         storageProof: proofs.storageProof,
       },
       selected!,
+      api ? api : retriedApiConn!
     );
     addToLocalTransaction({
       sourceChain: Chain.ETH,

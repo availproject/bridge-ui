@@ -41,6 +41,7 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogT
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { Logger } from "@/utils/logger";
+import React from "react";
 
 export default function TransactionSection() {
   const { pendingTransactions, completedTransactions } = useTransactions();

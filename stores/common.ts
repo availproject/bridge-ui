@@ -1,6 +1,6 @@
 
 import { Chain } from "@/types/common";
-import { ApiPromise } from "avail-js-sdk";
+import { ApiPromise, initialize } from "avail-js-sdk";
 import { create } from "zustand";
 
 interface CommonStore {
@@ -14,7 +14,7 @@ interface CommonStore {
     setFromChainBalance: (fromChainBalance: number | undefined) => void
     toChainBalance: number | undefined
     setToChainBalance: (toChainBalance: number | undefined) => void
-    api: ApiPromise
+    api: ApiPromise | undefined
     setApi: (api: ApiPromise) => void
     pendingTransactionsNumber: number
     setPendingTransactionsNumber: (pendingTransactions: number) => void
@@ -24,6 +24,10 @@ interface CommonStore {
     setFromAmount: (fromAmount: number) => void
     toAddress: string | undefined
     setToAddress: (toAddress: string) => void
+    ethBalance: string | undefined | null
+    setEthBalance: (ethBalance: string | undefined | null) => void
+    availBalance: string | undefined | null
+    setAvailBalance: (availBalance: string | undefined | null) => void
 }
 
 export const useCommonStore = create<CommonStore>((set) => ({
@@ -37,7 +41,7 @@ export const useCommonStore = create<CommonStore>((set) => ({
     setFromChainBalance: (fromChainBalance) => set({ fromChainBalance }),
     toChainBalance: undefined,
     setToChainBalance: (toChainBalance) => set({ toChainBalance }),
-    api: {} as ApiPromise,
+    api: undefined,
     setApi: (api) => set({ api }),
     pendingTransactionsNumber: 0,
     setPendingTransactionsNumber: (pendingTransactionsNumber) => set({ pendingTransactionsNumber }),
@@ -47,6 +51,10 @@ export const useCommonStore = create<CommonStore>((set) => ({
     setFromAmount: (fromAmount) => set({ fromAmount }),
     toAddress: undefined,
     setToAddress: (toAddress) => set({ toAddress }),
+    ethBalance: null,
+    setEthBalance: (ethBalance) => set({ ethBalance }),
+    availBalance: null,
+    setAvailBalance: (availBalance) => set({ availBalance }),
 }));
 
  

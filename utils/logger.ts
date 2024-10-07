@@ -12,13 +12,16 @@ datadogLogs.init({
 export class Logger {
     static info(message: string) {
         datadogLogs.logger.info(message);
+        console.log(message);
     }
 
     static debug(message: string) {
         datadogLogs.logger.debug(message);
+        console.debug(message);
     }
 
     static error(message: string) {
         datadogLogs.logger.error(message);
+        console.error(message);
     }
 }
