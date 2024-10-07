@@ -3,7 +3,7 @@ import { substrateConfig } from "@/config/walletConfig";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
 import { pollWithDelay } from "@/utils/poller";
-import { ApiPromise, disconnect, initialize } from "avail-js-sdk";
+import { ApiPromise, disconnect, initialize, isConnected } from "avail-js-sdk";
 import { useEffect } from "react";
 import useTransactions from "./useTransactions";
 import { useAccount } from "wagmi";
@@ -69,29 +69,36 @@ const useAppInit = () => {
 
   useEffect(() => {
     if (!api) return;
-
-    const startPolling = () => {
-      fetchHeads(api);
-
-      if (selected?.address || account.address) {
-        pollWithDelay(
-          fetchTransactions,
-          [{ availAddress: selected?.address, ethAddress: account.address }],
-          appConfig.bridgeIndexerPollingInterval,
-          () => true
-        );
-
-        pollWithDelay(
-          getTokenPrice,
-          [{ coin: "avail", fiat: "usd" }],
-          appConfig.bridgeIndexerPollingInterval,
-          () => true
-        );
-      }
-    };
-
-    startPolling();
-  }, [api, selected, account.address]);
+  
+    pollWithDelay(
+      fetchHeads,
+      [api],
+      appConfig.bridgeHeadsPollingInterval,
+      () => true
+    );
+    fetchHeads(api);
+  }, [isConnected()]);
+  
+  useEffect(() => {
+    if ((!selected?.address && !account.address)) return;
+  
+    pollWithDelay(
+      fetchTransactions,
+      [{ availAddress: selected?.address, ethAddress: account.address }],
+      appConfig.bridgeIndexerPollingInterval,
+      () => true
+    );
+  }, [selected?.address, account.address]);
+  
+  useEffect(() => {
+  
+    pollWithDelay(
+      getTokenPrice,
+      [{ coin: "avail", fiat: "usd" }],
+      appConfig.bridgePricePollingInterval,
+      () => true
+    );
+  }, []);
 
   useEffect(() => {
     setPendingTransactionsNumber(
