@@ -20,19 +20,10 @@ const useAppInit = () => {
   const {
     api,
     setApi,
-    pendingTransactionsNumber,
     setPendingTransactionsNumber,
-    readyToClaimTransactionsNumber,
     setReadyToClaimTransactionsNumber,
-    fromChain,
-    dollarAmount,
     setDollarAmount,
-    toChain,
-    fromAmount,
-    toAddress,
-    ethBalance,
     setEthBalance,
-    availBalance,
     setAvailBalance,
   } = useCommonStore();
   const { fetchTransactions } = useTransactions();
@@ -46,7 +37,7 @@ const useAppInit = () => {
       if(!ethHead.data) throw new Error("Failed to fetch ETH head");
       setEthHead(ethHead.data);
       const avlHead = await fetchAvlHead(api);
-      if(!avlHead.data) throw new Error("Failed to fetch ETH head");
+      if(!avlHead.data) throw new Error("Failed to fetch AVAIL head");
       setAvlHead(avlHead.data);
     } catch (error) {
       Logger.error(`ERROR_FETCH_HEADS: ${error}`);
