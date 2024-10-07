@@ -19,17 +19,18 @@ import useTransactions from "@/hooks/useTransactions";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { substrateAddressToPublicKey } from "@/utils/addressFormatting";
 import { sendMessage } from "@/services/vectorpallet";
-import { _getBalance, showSuccessMessage } from "@/utils/common";
+import { _getBalance, initApi, showSuccessMessage, sleep } from "@/utils/common";
 import { Logger } from "@/utils/logger";
 import { ONE_POWER_EIGHTEEN } from "@/constants/bigNumber";
 import { useCommonStore } from "@/stores/common";
+import { ApiPromise } from "avail-js-sdk";
 
 export default function useBridge() {
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
   const { addToLocalTransaction } = useTransactions();
   const { data: hash, isPending, writeContractAsync } = useWriteContract();
   const { selected } = useAvailAccount();
-  const { api } = useCommonStore();
+  const { api, setApi } = useCommonStore();
 
   const networks = appConfig.networks;
 
@@ -195,15 +196,18 @@ export default function useBridge() {
     if (selected === undefined || selected === null) {
       throw new Error("No account selected");
     }
+
+    let retriedApiConn: ApiPromise | null = null;
+
     if(!api) {
-      throw new Error("Avail Api Not Connected");
+      Logger.debug("Retrying API Conn");
+      retriedApiConn = await initApi();
+      setApi(retriedApiConn);
+      if (!retriedApiConn) {
+        throw new Error("Uh Oh! RPC under a lot of stress, error intialising api");}
     }
 
-    const availBalance = await _getBalance(Chain.AVAIL,api,  selected?.address);
-    // if (!availBalance) {
-    // note: product decision here was to allow the user
-    // to go ahead with tx when we are unable to fetch the balance
-    // }
+    const availBalance = await _getBalance(Chain.AVAIL, api ? api : retriedApiConn!,  selected?.address);
 
     if (
       availBalance &&
@@ -227,7 +231,7 @@ export default function useBridge() {
         domain: 2,
       },
       selected!,
-      api
+      api ? api : retriedApiConn!
     );
     if (send.blockhash !== undefined && send.txHash !== undefined) {
       const tempLocalTransaction: Transaction = {

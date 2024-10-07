@@ -65,10 +65,19 @@ import {
 } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card";
-import { CiCircleQuestion } from "react-icons/ci";
 import { Logger } from "@/utils/logger";
 import React from "react";
 import useAppInit from "@/hooks/useAppInit";
+
+export const formSchema = z.object({
+  fromAmount: z.preprocess(
+    (val) => parseFloat(val as string),
+    z.number({
+      invalid_type_error: "Amount should be a number",
+    })
+  ),
+  toAddress: z.string(),
+});
 
 export default function BridgeSection() {
 
@@ -182,6 +191,7 @@ export default function BridgeSection() {
       showFailedMessage({ title: parseError(error) });
     }
   }
+
   function Balance() {
     return (
       <>
@@ -227,6 +237,7 @@ export default function BridgeSection() {
       </>
     );
   }
+
   async function PasteAddressAction() {
     const address = await navigator.clipboard.readText();
     const a = await validAddress(address, toChain);
@@ -683,15 +694,3 @@ export default function BridgeSection() {
     </div>
   );
 }
-
-
-export const formSchema = z.object({
-  fromAmount: z.preprocess(
-    //@ts-ignore - preprocess is not in the types
-    (a) => parseFloat(z.number().parse(a)),
-    z.number({
-      invalid_type_error: "Amount should be a number",
-    })
-  ),
-  toAddress: z.string(),
-});

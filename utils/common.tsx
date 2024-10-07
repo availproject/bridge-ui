@@ -1,5 +1,5 @@
-import { ApiPromise, isValidAddress } from "avail-js-sdk";
-import { ethConfig } from "@/config/walletConfig";
+import { ApiPromise, disconnect, initialize, isValidAddress } from "avail-js-sdk";
+import { ethConfig, substrateConfig } from "@/config/walletConfig";
 import { readContract } from "@wagmi/core";
 import { Chain } from "@/types/common";
 import { appConfig } from "@/config/default";
@@ -48,12 +48,6 @@ export async function _getBalance(
 }
 
 
-/**
- * @description check if the address is valid
- * @param address 
- * @param chain 
- * @returns boolean
- */
 export async function validAddress(address: string, chain: Chain) {
   if (chain === Chain.AVAIL) {
     if (isValidAddress(address)) {
@@ -68,9 +62,7 @@ export async function validAddress(address: string, chain: Chain) {
   return false;
 }
 
-/**
- * @description success toast message
- */
+
 export const showSuccessMessage = ({
   blockhash,
   txHash,
@@ -113,9 +105,7 @@ export const showSuccessMessage = ({
   });
 };
 
-/**
- * @description failed toast message
- */
+
 export const showFailedMessage = ({title, description} : {title: string, description?: string}) => {
   toast({
     title: (
@@ -133,3 +123,23 @@ export const showFailedMessage = ({title, description} : {title: string, descrip
     ),
   });
 };
+
+
+export const sleep = (sec: number) => new Promise(resolve => setTimeout(resolve, sec * 1000));
+
+
+export const initApi = async (retries = 3): Promise<ApiPromise> => {
+  try {
+    const initializedApi = await initialize(substrateConfig.endpoint);
+    return initializedApi;
+  } catch (error) {
+    disconnect();
+    if (retries > 0) {
+      await sleep(2)
+      Logger.debug(`Retrying to initialize API. Retries left: ${retries}`)
+      return initApi(retries - 1)
+    } else {
+      throw new Error(`RPC_INITIALIZE_ERROR: ${error}`)
+    }
+  }
+}; 
