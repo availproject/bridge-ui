@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect } from "react";
 import BigNumber from "bignumber.js";
-import { useWriteContract } from "wagmi";
+import { useAccount, useWriteContract } from "wagmi";
 import { readContract } from "@wagmi/core";
 
 import ethereumAvailTokenTuring from "@/constants/abis/ethereumAvailTokenTuring.json";
@@ -25,13 +25,13 @@ import { ONE_POWER_EIGHTEEN } from "@/constants/bigNumber";
 import { useCommonStore } from "@/stores/common";
 import { ApiPromise } from "avail-js-sdk";
 import { showSuccessMessage } from "@/utils/toasts";
-import { LoggerTrackingType } from "@datadog/browser-logs/cjs/domain/logsSessionManager";
 
 export default function useBridge() {
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
   const { addToLocalTransaction } = useTransactions();
   const { writeContractAsync } = useWriteContract();
   const { selected } = useAvailAccount();
+  const {address} = useAccount();
   const { api, setApi } = useCommonStore();
 
   const networks = appConfig.networks;
@@ -179,11 +179,11 @@ export default function useBridge() {
         sourceTimestamp: new Date().toISOString(),
       });
   
-      Logger.info(`ETH_TO_AVAIL_INIT_SUCESS ${burnTxHash}`);
+      Logger.info(`ETH_TO_AVAIL_INIT_SUCCESS ${burnTxHash} receiver_address: ${destinationAddress} sender_address: ${address} amount: ${atomicAmount}`);
 
       return burnTxHash;
     } catch (error: any) {
-      throw new Error(`ETH_TO_AVAIL_INIT_FAILED: ${error}`);
+      throw new Error(`ETH_TO_AVAIL_INIT_FAILED: ${error} receiver_address: ${destinationAddress} sender_address: ${address} amount: ${atomicAmount}`);
     }
   };
 
@@ -240,7 +240,7 @@ export default function useBridge() {
         api ? api : retriedApiConn!
       );
       if (send.blockhash !== undefined && send.txHash !== undefined) {
-        Logger.info(`AVAIL_TO_ETH_INIT_SUCCESS ${send.txHash}`);
+
         const tempLocalTransaction: Transaction = {
           status: TransactionStatus.INITIATED,
           destinationChain: Chain.ETH,
@@ -257,12 +257,13 @@ export default function useBridge() {
           sourceTimestamp: new Date().toISOString(),
         };
   
-      addToLocalTransaction(tempLocalTransaction);
+      await addToLocalTransaction(tempLocalTransaction);
+      Logger.info(`AVAIL_TO_ETH_INIT_SUCCESS ${send.txHash} receiver_address: ${destinationAddress} sender_address: ${selected?.address} amount: ${atomicAmount}`);
       }
   
       return send;
     } catch (error: any) {
-      throw new Error(`AVAIL_TO_ETH_INIT_FAILED: ${error}`);
+      throw new Error(`AVAIL_TO_ETH_INIT_FAILED: ${error} receiver_address: ${destinationAddress} sender_address: ${selected?.address} amount: ${atomicAmount}`);  
     }
    
   };
