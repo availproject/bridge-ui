@@ -75,7 +75,7 @@ export async function sendMessage(
                 //@ts-ignore
                 if (dispatchError.isModule) {
                   const decoded = api.registry.findMetaError(
-                               //@ts-ignore
+                //@ts-ignore
                     dispatchError.asModule
                   );
                   errorInfo = `${decoded.section}.${decoded.name}`;
@@ -86,7 +86,6 @@ export async function sendMessage(
                 toast({
                   title: `Transaction failed. Status: ${status} with error: ${errorInfo}`,
                 });
-                Logger.info(`ExtrinsicFailed: ${errorInfo}`);
                 reject(
                   new Error(
                     `Transaction failed. Status: ${status} with error: ${errorInfo}`
@@ -107,8 +106,7 @@ export async function sendMessage(
         }
       )
       .catch((error: any) => {
-        Logger.error(`Error in signAndSend: ${error}`);
-        reject(error);
+        reject(`ERROR_SEND_MESSAGE ${error}`);
         return {
           status: "failed",
           message: error,
@@ -161,7 +159,6 @@ export async function executeTransaction(
         {
           signer: injector?.signer,
           app_id: 0,
-          nonce: -1,
         } as Partial<SignerOptions>,
         ({ status, events, txHash }) => {
           if (status.isInBlock) {

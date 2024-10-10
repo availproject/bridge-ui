@@ -48,6 +48,11 @@ async function getTokenPrices({
 
 export async function GET(req: NextRequest) {
   try {
+
+    if(!process.env.COINGECKO_API_KEY || process.env.COINGECKO_API_KEY === "") {
+      throw new Error("Missing ENV variable: COINGECKO_API_KEY");
+    }
+    
     const { searchParams } = new URL(req.url);
     const coins = searchParams.get("coins");
     const fiats = searchParams.get("fiats");

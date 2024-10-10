@@ -46,7 +46,7 @@ async function fetchTransactions(userAddress: string, sourceChain?: string, dest
         });
         return response.data.data.result;
     } catch (e: any) {
-        Logger.error(`Error fetching transactions from indexer: ${e}`);
+        Logger.error(`ERROR_FETCHING_TRANSACTIONS: ${e}`);
         return [];
     }
 }
@@ -74,7 +74,6 @@ export const getTransactionsFromIndexer = async (
             }
         });
     };
-    Logger.debug("Fetching transactions from indexer");
     if (ethAddress) {
         const ethTransactions = await fetchTransactions(ethAddress, Chain.ETH, destinationChain);
         addUniqueTransactions(ethTransactions);
