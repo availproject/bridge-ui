@@ -1,15 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
-import BridgeSection from "@/components/sections/bridgesection";
 import { InfoIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 
-// //TOFIX: this import is dynamic due to some vercel deployement issue.
-// const BridgeSection = dynamic(
-//   () => import("@/components/sections/bridgesection"),
-//   {
-//     ssr: false,
-//   }
-// );
+//TOFIX: this import is dynamic due to some vercel deployement issue.
+const BridgeSection = dynamic(
+  () => import("@/components/sections/bridgesection"),
+  {
+    ssr: false,
+  }
+);
 
 
 export default function Home() {
