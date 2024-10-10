@@ -137,7 +137,8 @@ export default function TransactionSection() {
         chainFrom === Chain.AVAIL &&
         blockhash &&
         sourceTransactionIndex &&
-        sourceTransactionHash
+        sourceTransactionHash &&
+        executeParams
       ) {
         Logger.debug("Initiate ReceiveAvail()");
         const successBlockhash = await initClaimAvailToEth({
@@ -146,6 +147,8 @@ export default function TransactionSection() {
           sourceTransactionHash: sourceTransactionHash,
           sourceTimestamp: sourceTimestamp,
           atomicAmount: atomicAmount,
+          senderAddress: executeParams.from,
+          receiverAddress: executeParams.to,
         });
         if (successBlockhash) {
           setAvailToEthHash(successBlockhash);

@@ -8,7 +8,7 @@ import useTransactions from "./useTransactions";
 import { useAccount } from "wagmi";
 import { appConfig } from "@/config/default";
 import { Chain, TransactionStatus } from "@/types/common";
-import { _getBalance, initApi, sleep } from "@/utils/common";
+import { _getBalance, initApi } from "@/utils/common";
 import { Logger } from "@/utils/logger";
 import {
   fetchAvlHead,

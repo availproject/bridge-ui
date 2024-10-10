@@ -25,6 +25,7 @@ import { ONE_POWER_EIGHTEEN } from "@/constants/bigNumber";
 import { useCommonStore } from "@/stores/common";
 import { ApiPromise } from "avail-js-sdk";
 import { showSuccessMessage } from "@/utils/toasts";
+import { formatUnits } from "viem";
 
 export default function useBridge() {
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
@@ -183,7 +184,11 @@ export default function useBridge() {
 
       return burnTxHash;
     } catch (error: any) {
-      throw new Error(`ETH_TO_AVAIL_INIT_FAILED: ${error} receiver_address: ${destinationAddress} sender_address: ${address} amount: ${atomicAmount}`);
+      Logger.error(`ETH_TO_AVAIL_INIT_FAILED: ${error}`, ["receiver_address", destinationAddress],
+        ["sender_address",address],
+        ["amount", formatUnits(BigInt(atomicAmount), 18)], ["flow", "ETH -> AVAIL"]);  
+      throw new Error(`ETH_TO_AVAIL_INIT_FAILED: ${error} `);
+
     }
   };
 
@@ -263,7 +268,10 @@ export default function useBridge() {
   
       return send;
     } catch (error: any) {
-      throw new Error(`AVAIL_TO_ETH_INIT_FAILED: ${error} receiver_address: ${destinationAddress} sender_address: ${selected?.address} amount: ${atomicAmount}`);  
+      Logger.error(`AVAIL_TO_ETH_INIT_FAILED: ${error}`, ["receiver_address", destinationAddress],
+        ["sender_address", selected?.address],
+        ["amount", formatUnits(BigInt(atomicAmount), 18)],["flow", "AVAIL -> ETH"]);  
+      throw error;
     }
    
   };
