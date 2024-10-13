@@ -1,7 +1,6 @@
 import { toast } from "@/components/ui/use-toast";
 import { FaCheckCircle } from "react-icons/fa";
 import { ArrowUpRight } from "lucide-react";
-import { isAddress } from "viem";
 import { RxCrossCircled } from "react-icons/rx";
 import { Chain } from "@/types/common";
 
@@ -27,7 +26,7 @@ export const showSuccessMessage = ({
               {title ? title : "Transaction Initiated Successfully"}
             </p>
             <p className="!text-xs !text-white !text-opacity-40 font-thicccboisemibold">
-              {desc ? desc : "Your Transaction of was Initiated Successfully."}
+              {desc ? desc : "Your Transaction was Initiated Successfully."}
               {blockhash && <a
                 target="_blank"
                 className="flex flex-row underline"

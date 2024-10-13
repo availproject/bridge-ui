@@ -235,7 +235,7 @@ export default function useBridge() {
             FungibleToken: {
               assetId:
                 "0x0000000000000000000000000000000000000000000000000000000000000000",
-              amount: atomicAmount as unknown as BigInt,
+              amount: BigInt(atomicAmount),
             },
           },
           to: `${destinationAddress.padEnd(66, "0")}`,

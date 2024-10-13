@@ -15,7 +15,7 @@ export class Logger {
         console.log(message);
     }
 
-    static debug(message: string ) {
+    static debug(message: string) {
         datadogLogs.logger.debug(message);
         console.debug(message);
     }

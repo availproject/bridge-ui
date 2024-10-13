@@ -13,7 +13,6 @@ const BridgeSection = dynamic(
 
 export default function Home() {
 
-  
   return (
     <main className="">
       <div className="relative !mt-12 w-screen items-center justify-center flex flex-col">

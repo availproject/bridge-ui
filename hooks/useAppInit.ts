@@ -37,6 +37,7 @@ const useAppInit = () => {
     try {
       let retriedApiConn: ApiPromise | null = null;
       Logger.info("FETCHING_HEADS");
+
       if(!api || !api.isConnected) {
         Logger.debug("Retrying API Conn");
         retriedApiConn = await initApi();
