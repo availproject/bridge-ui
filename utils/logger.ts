@@ -20,8 +20,10 @@ export class Logger {
         console.debug(message);
     }
 
-    static error(message: string) {
-        datadogLogs.logger.error(message);
-        console.error(message);
+    static error(message: string, ...fields: [string, any][]) {
+        const extraFields = Object.fromEntries(fields);
+        
+        datadogLogs.logger.error(message, extraFields);
+        console.error(message, extraFields);
     }
 }

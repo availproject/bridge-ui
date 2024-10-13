@@ -1,15 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { substrateConfig } from "@/config/walletConfig";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
 import { pollWithDelay } from "@/utils/poller";
-import { ApiPromise, disconnect, initialize } from "avail-js-sdk";
+import { ApiPromise, isConnected } from "avail-js-sdk";
 import { useEffect } from "react";
 import useTransactions from "./useTransactions";
 import { useAccount } from "wagmi";
 import { appConfig } from "@/config/default";
 import { Chain, TransactionStatus } from "@/types/common";
-import { _getBalance, initApi, sleep } from "@/utils/common";
+import { _getBalance, initApi } from "@/utils/common";
 import { Logger } from "@/utils/logger";
 import {
   fetchAvlHead,
@@ -24,19 +23,10 @@ const useAppInit = () => {
   const {
     api,
     setApi,
-    pendingTransactionsNumber,
     setPendingTransactionsNumber,
-    readyToClaimTransactionsNumber,
     setReadyToClaimTransactionsNumber,
-    fromChain,
-    dollarAmount,
     setDollarAmount,
-    toChain,
-    fromAmount,
-    toAddress,
-    ethBalance,
     setEthBalance,
-    availBalance,
     setAvailBalance,
   } = useCommonStore();
   const { fetchTransactions } = useTransactions();
@@ -45,15 +35,24 @@ const useAppInit = () => {
 
   const fetchHeads = async (api: ApiPromise) => {
     try {
-      Logger.info("FETCH_HEADS");
+      let retriedApiConn: ApiPromise | null = null;
+      Logger.info("FETCHING_HEADS");
+
+      if(!api || !api.isConnected) {
+        Logger.debug("Retrying API Conn");
+        retriedApiConn = await initApi();
+        setApi(retriedApiConn);
+        if (!retriedApiConn) {
+          throw new Error("Uh Oh! RPC under a lot of stress, error intialising api");}
+      }
       const ethHead = await fetchEthHead();
       setEthHead(ethHead.data);
       const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
       setLatestBlockhash(LatestBlockhash.data);
-      const avlHead = await fetchAvlHead(api);
+      const avlHead = await fetchAvlHead(api ? api : retriedApiConn!);
       setAvlHead(avlHead.data);
     } catch (error) {
-      Logger.error(`ERROR_FETCH_HEADS: ${error}`);
+      Logger.error(`ERROR_FETCHING_HEADS: ${error}`);
     }
   };
 
@@ -69,29 +68,35 @@ const useAppInit = () => {
 
   useEffect(() => {
     if (!api) return;
-
-    const startPolling = () => {
-      fetchHeads(api);
-
-      if (selected?.address || account.address) {
-        pollWithDelay(
-          fetchTransactions,
-          [{ availAddress: selected?.address, ethAddress: account.address }],
-          appConfig.bridgeIndexerPollingInterval,
-          () => true
-        );
-
-        pollWithDelay(
-          getTokenPrice,
-          [{ coin: "avail", fiat: "usd" }],
-          appConfig.bridgeIndexerPollingInterval,
-          () => true
-        );
-      }
-    };
-
-    startPolling();
-  }, [api, selected, account.address]);
+  
+    pollWithDelay(
+      fetchHeads,
+      [api],
+      appConfig.bridgeHeadsPollingInterval,
+      () => true
+    );
+    fetchHeads(api);
+  }, [isConnected()]);
+  
+  useEffect(() => {
+    if ((!selected?.address && !account.address)) return;
+  
+    pollWithDelay(
+      fetchTransactions,
+      [{ availAddress: selected?.address, ethAddress: account.address }],
+      appConfig.bridgeIndexerPollingInterval,
+      () => true
+    );
+  }, [selected?.address, account.address]);
+  
+  useEffect(() => {
+    pollWithDelay(
+      getTokenPrice,
+      [{ coin: "avail", fiat: "usd" }],
+      appConfig.bridgePricePollingInterval,
+      () => true
+    );
+  }, []);
 
   useEffect(() => {
     setPendingTransactionsNumber(
@@ -152,14 +157,18 @@ const useAppInit = () => {
       const response = await fetch(
         `/api/getTokenPrice?coins=${coin}&fiats=${fiat}`
       );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+      }
+  
       const data = await response.json();
       setDollarAmount(data.price[coin][fiat]);
     } catch (error: any) {
-      Logger.error(`ERROR_FETCH_TOKEN_PRICE: ${error}`);
-      throw error;
+      Logger.error(`ERROR_FETCHING_TOKEN_PRICE: ${error}`);
     }
   }
-
   return { fetchBalances, getTokenPrice };
 };
 

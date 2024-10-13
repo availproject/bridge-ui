@@ -1,6 +1,6 @@
 
 import { Chain } from "@/types/common";
-import { ApiPromise, initialize } from "avail-js-sdk";
+import { ApiPromise } from "avail-js-sdk";
 import { create } from "zustand";
 
 interface CommonStore {

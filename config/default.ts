@@ -9,6 +9,7 @@ type AppConfig = {
     bridgeIndexerBaseUrl: string,
     bridgeIndexerPollingInterval: number,
     bridgePricePollingInterval: number,
+    bridgeHeadsPollingInterval: number,
     contracts: {
         ethereum: {
             availToken: string,
@@ -28,6 +29,7 @@ export const appConfig: AppConfig = {
     bridgeApiBaseUrl: process.env.NEXT_PUBLIC_BRIDGE_API_URL || 'http://0.0.0.0:8080',
     bridgeIndexerBaseUrl: process.env.NEXT_PUBLIC_BRIDGE_INDEXER_URL ||'http://167.71.41.169:3000',
     bridgeIndexerPollingInterval: 30, // in seconds
+    bridgeHeadsPollingInterval: 600, // in seconds
     bridgePricePollingInterval: 60,
     contracts: {
         ethereum: {

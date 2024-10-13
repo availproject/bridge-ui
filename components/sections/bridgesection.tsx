@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { z } from "zod";
@@ -21,23 +19,20 @@ import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
 import {
   _getBalance,
-  showFailedMessage,
-  showSuccessMessage,
   validAddress,
 } from "@/utils/common";
 import { useAccount } from "wagmi";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Chain, CheckedState, TransactionStatus } from "@/types/common";
+import { Chain, CheckedState } from "@/types/common";
 import useBridge from "@/hooks/useBridge";
 import { toast } from "@/components/ui/use-toast";
 import { parseError } from "@/utils/parseError";
 import BigNumber from "bignumber.js";
 import { badgeVariants } from "../ui/badge";
 import { ArrowUpRight, CheckCircle2, Copy, InfoIcon, Loader2 } from "lucide-react";
-import useTransactions from "@/hooks/useTransactions";
-import { parseAmount } from "@/utils/parseAmount";
+import { parseAmount } from "@/utils/parsers";
 import { LoadingButton } from "../ui/loadingbutton";
 import useTransactionButtonState from "@/hooks/useTransactionButtonState";
 import {
@@ -68,6 +63,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card"
 import { Logger } from "@/utils/logger";
 import React from "react";
 import useAppInit from "@/hooks/useAppInit";
+import { showFailedMessage } from "@/utils/toasts";
 
 export const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -81,6 +77,8 @@ export const formSchema = z.object({
 
 export default function BridgeSection() {
 
+  useAppInit();
+
   const account = useAccount();
   const {
     fromChain,
@@ -89,30 +87,25 @@ export default function BridgeSection() {
     setToChain,
     setFromAmount,
     setToAddress,
-    api,
     pendingTransactionsNumber,
     readyToClaimTransactionsNumber,
     ethBalance,
-    setEthBalance,
     availBalance,
-    setAvailBalance,
   } = useCommonStore();
   const { selected } = useAvailAccount();
+  const { fetchBalances } = useAppInit();
   const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
  
   const [transactionInProgress, setTransactionInProgress] =
   useState<boolean>(false);
   const { buttonStatus, isDisabled, availAmountToDollars } =
   useTransactionButtonState(transactionInProgress);
-  const { fetchBalances } = useAppInit();
 
   const [isChecked, setIsChecked] = useState<CheckedState>(false);
   const [open, setOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [availToEthHash, setAvailToEthHash] = useState<string | undefined>('')
   const [ethToAvailHash, setEthToAvailHash] = useState<string | undefined>('')
-
-  useAppInit();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -186,7 +179,6 @@ export default function BridgeSection() {
         resetState();
       }
     } catch (error: any) {
-      Logger.error(error);
       setTransactionInProgress(false);
       showFailedMessage({ title: parseError(error) });
     }
@@ -276,8 +268,6 @@ export default function BridgeSection() {
         ),
       });
   }
-
-
 
   return (
     <div className="text-white w-full my-4">

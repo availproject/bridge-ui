@@ -1,5 +1,5 @@
 import { writeContract } from "@wagmi/core";
-import { encodeAbiParameters } from "viem";
+import { encodeAbiParameters, formatUnits } from "viem";
 import { merkleProof, TRANSACTION_TYPES } from "@/types/transaction";
 import { bridgeContractAbi } from "@/constants/abi";
 import ethereumBrigdeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
@@ -98,7 +98,7 @@ export default function useClaim() {
       });
       return result;
     } catch (e: any) {
-      throw new Error(`Error while claiming AVAIL ${e}`);
+      throw new Error(`ERROR_RECIEVE_AVAIL ${e}`);
     }
   }
 
@@ -108,12 +108,16 @@ export default function useClaim() {
     sourceTransactionIndex,
     sourceTimestamp,
     atomicAmount,
+    senderAddress,
+    receiverAddress,
   }: {
     blockhash: `0x${string}`;
     sourceTransactionHash: `0x${string}`;
     sourceTransactionIndex: number;
     sourceTimestamp: string;
     atomicAmount: string;
+    senderAddress: string;
+    receiverAddress: string;
   }) => {
     try {
 
@@ -134,9 +138,8 @@ export default function useClaim() {
 
       const receive = await receiveAvail(proof);
       if (receive) {
-        Logger.info(
-          `source txn hash of the txn to be added locally ${sourceTransactionHash}`,
-        );
+        Logger.info(`AVAIL_TO_ETH_CLAIM_SUCCESS ${receive} claim_to: ${address} amount: ${atomicAmount}`);
+
         addToLocalTransaction({
           sourceChain: Chain.AVAIL,
           destinationChain: Chain.ETH,
@@ -154,11 +157,12 @@ export default function useClaim() {
           sourceTimestamp: sourceTimestamp,
         });
       }
-      Logger.debug("added txn to local storage");
       return receive;
     } catch (e : any) {
-      Logger.error(`Error while claiming on Avail to Eth: ${e}`);
-      throw new Error(e.message as string);
+      Logger.error(`CLAIM FAILED: ${e}`, ["receiver_address", receiverAddress],
+        ["sender_address", senderAddress],
+        ["amount", formatUnits(BigInt(atomicAmount), 18)],["flow", "AVAIL -> ETH"]);  
+      throw e;
     }
   };
 
@@ -246,9 +250,14 @@ export default function useClaim() {
       sourceTransactionIndex: 0,
       sourceTimestamp: sourceTimestamp,
     });
+
+    Logger.info(`ETH_TO_AVAIL_CLAIM_SUCCESS ${execute.txHash} claim_to: ${executeParams.to} amount: ${atomicAmount}`);
     return execute;
   } catch (e : any) {
-    throw new Error(e as string);
+    Logger.error(`CLAIM FAILED: ${e}`, ["receiver_address", executeParams.to],
+      ["sender_address", executeParams.from],
+      ["amount", formatUnits(BigInt(atomicAmount), 18)],["flow", "ETH -> AVAIL"]);  
+    throw e;
   };
 }  
 
