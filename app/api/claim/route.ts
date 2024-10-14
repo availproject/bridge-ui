@@ -13,6 +13,10 @@ const FAUCET_AMOUNT = BigInt(process.env.FAUCET_AMOUNT || "250000000000000000");
 const MIN_FAUCET_BALANCE = BigInt(process.env.MIN_FAUCET_BALANCE || "10000000000000000000"); // 10 AVAIL
 const MAX_USER_BALANCE: number = parseFloat(process.env.MAX_USER_BALANCE || "0.5"); // 0.5 AVAIL
 
+export const revalidate = 0;
+export const dynamic = "force-dynamic"
+export const maxDuration = 30
+
 const ratelimit = new Ratelimit({
   redis: kv,
   limiter: Ratelimit.slidingWindow(5, '10s'),
