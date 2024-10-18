@@ -9,9 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@avail-project/metamask-avail-types": "^0.6.1",
     "@datadog/browser-logs": "^5.23.3",
     "@datadog/browser-rum": "^5.23.3",
     "@hookform/resolvers": "^3.3.4",
+    "@metamask/providers": "^17.2.1",
     "@polkadot/api": "^10.12.1",
     "@polkadot/extension-dapp": "^0.46.7",
     "@polkadot/util": "^12.6.2",
@@ -55,6 +57,7 @@
     "ethers": "^5",
     "json-bigint": "^1.0.0",
     "lucide-react": "^0.344.0",
+    "neverthrow": "^8.0.0",
     "next": "14.0.1",
     "next-auth": "^4.24.6",
     "react": "^18",

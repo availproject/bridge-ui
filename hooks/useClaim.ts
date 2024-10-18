@@ -25,6 +25,8 @@ import { Logger } from "@/utils/logger";
 import { useCommonStore } from "@/stores/common";
 import { initApi } from "@/utils/common";
 import { ApiPromise } from "avail-js-sdk";
+import { useInvokeSnap } from "./Metamask/useInvokeSnap";
+import { checkTransactionStatus } from "./Metamask/utils";
 
 export default function useClaim() {
   const { ethHead, latestBlockhash } = useLatestBlockInfo();
@@ -33,6 +35,8 @@ export default function useClaim() {
   const { address } = useAccount();
   const { addToLocalTransaction } = useTransactions();
   const { api, setApi } = useCommonStore();
+
+  const invokeSnap = useInvokeSnap();
 
   const networks = appConfig.networks;
 
@@ -207,6 +211,10 @@ export default function useClaim() {
 
     if (!proofs) {
       throw new Error("Failed to fetch proofs from api");
+    }
+
+    if(selected.source === 'MetamaskSnap') {
+
     }
 
     const execute = await executeTransaction(
