@@ -16,6 +16,7 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { appConfig } from "@/config/default";
+import { MetaMaskProvider } from "@/hooks/Metamask";
 
 const { wallets } = getDefaultWallets();
 
@@ -40,7 +41,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <WagmiProvider config={config}> 
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={darkTheme()}>
+        <MetaMaskProvider>
           {children}
+        </MetaMaskProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

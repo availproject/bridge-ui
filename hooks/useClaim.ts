@@ -1,6 +1,10 @@
 import { writeContract } from "@wagmi/core";
 import { encodeAbiParameters, formatUnits } from "viem";
-import { merkleProof, TRANSACTION_TYPES } from "@/types/transaction";
+import {
+  executeParams,
+  merkleProof,
+  TRANSACTION_TYPES,
+} from "@/types/transaction";
 import { bridgeContractAbi } from "@/constants/abi";
 import ethereumBrigdeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
 import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
@@ -26,6 +30,10 @@ import { useCommonStore } from "@/stores/common";
 import { initApi } from "@/utils/common";
 import { ApiPromise } from "avail-js-sdk";
 import useAppInit from "./useAppInit";
+import { useInvokeSnap } from "./Metamask/useInvokeSnap";
+import { checkTransactionStatus } from "./Metamask/utils";
+import { Transaction as MetamaskTransaction, TxPayload } from "@avail-project/metamask-avail-types";
+
 
 export default function useClaim() {
   const { ethHead } = useLatestBlockInfo();
@@ -36,30 +44,34 @@ export default function useClaim() {
   const { api, setApi } = useCommonStore();
   const { fetchHeads } = useAppInit();
 
+  const invokeSnap = useInvokeSnap();
+
   const networks = appConfig.networks;
 
   /**
    * @description Validates chain according to transaction type, and changes chain if needed
    * @param txType Transaction type
    */
-  const validateChain = async() => {
-      if (networks.ethereum.id !== (await activeNetworkId())) {
-        await switchNetwork(networks.ethereum.id);
-      }
+  const validateChain = async () => {
+    if (networks.ethereum.id !== (await activeNetworkId())) {
+      await switchNetwork(networks.ethereum.id);
+    }
   };
-
 
   /**
    * @description Receive/Claim after the merkleProof is fetched from the api AVAIL on ETH
-   * @param merkleProof 
-   * @returns 
+   * @param merkleProof
+   * @returns
    */
   async function receiveAvail(merkleProof: merkleProof) {
     try {
       //@ts-ignore config gives a wagmi dep type error
       const result = await writeContract(config, {
         address: process.env.NEXT_PUBLIC_BRIDGE_PROXY_CONTRACT,
-        abi: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet" ? ethereumBrigdeMainnet : ethereumBridgeTuring,
+        abi:
+          process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
+            ? ethereumBrigdeMainnet
+            : ethereumBridgeTuring,
         functionName: "receiveAVAIL",
         args: [
           [
@@ -82,7 +94,7 @@ export default function useClaim() {
               [
                 merkleProof.message.message.fungibleToken.asset_id,
                 BigInt(merkleProof.message.message.fungibleToken.amount),
-              ],
+              ]
             ),
             merkleProof.message.id,
           ],
@@ -104,6 +116,58 @@ export default function useClaim() {
     }
   }
 
+  const snapVectorExecute = async ({
+    api,
+    executeParams,
+  }: {
+    api: ApiPromise;
+    executeParams: executeParams;
+  }) => {
+    const txPayload = await invokeSnap({
+      method: "generateTransactionPayload",
+      params: {
+        module: "vector",
+        method: "execute",
+        args: [
+          executeParams.slot,
+          executeParams.addrMessage,
+          executeParams.accountProof,
+          executeParams.storageProof,
+        ],
+      },
+    });
+
+    const signedTx = await invokeSnap({
+      method: "signPayloadJSON",
+      params: {
+        payload: (txPayload as TxPayload).payload,
+      },
+    });
+
+    const txHash = await invokeSnap({
+      method: "send",
+      params: {
+        signature: (signedTx as {signature: string}).signature,
+        txPayload: txPayload,
+        network: 1,
+      },
+    });
+
+    const txnStatus = await checkTransactionStatus(api, (txHash as MetamaskTransaction).hash);
+
+    return txnStatus.isOk()
+    ? {
+        blockHash: txnStatus.value.blockhash,
+        txHash: (txHash as MetamaskTransaction).hash,
+        status: "Success",
+        message: "Transaction executed successfully",
+      }
+    : {
+        status: "Failed",
+        message: txnStatus.error.message,
+      };
+  };
+
   const initClaimAvailToEth = async ({
     blockhash,
     sourceTransactionHash,
@@ -122,11 +186,10 @@ export default function useClaim() {
     receiverAddress: string;
   }) => {
     try {
-
       if (!address) throw new Error("Connect a Eth account");
       const proof: merkleProof = await getMerkleProof(
         blockhash,
-        sourceTransactionIndex,
+        sourceTransactionIndex
       );
       if (!proof) throw new Error("Failed to fetch proofs from api");
 
@@ -140,7 +203,9 @@ export default function useClaim() {
 
       const receive = await receiveAvail(proof);
       if (receive) {
-        Logger.info(`AVAIL_TO_ETH_CLAIM_SUCCESS ${receive} claim_to: ${address} amount: ${atomicAmount}`);
+        Logger.info(
+          `AVAIL_TO_ETH_CLAIM_SUCCESS ${receive} claim_to: ${address} amount: ${atomicAmount}`
+        );
 
         addToLocalTransaction({
           sourceChain: Chain.AVAIL,
@@ -160,10 +225,14 @@ export default function useClaim() {
         });
       }
       return receive;
-    } catch (e : any) {
-      Logger.error(`CLAIM FAILED: ${e}`, ["receiver_address", receiverAddress],
+    } catch (e: any) {
+      Logger.error(
+        `CLAIM FAILED: ${e}`,
+        ["receiver_address", receiverAddress],
         ["sender_address", senderAddress],
-        ["amount", formatUnits(BigInt(atomicAmount), 18)],["flow", "AVAIL -> ETH"]);  
+        ["amount", formatUnits(BigInt(atomicAmount), 18)],
+        ["flow", "AVAIL -> ETH"]
+      );
       throw e;
     }
   };
@@ -189,10 +258,11 @@ export default function useClaim() {
     };
   }) => {
     try {
-    if (!selected) throw new Error("Connect a Avail account");
-    if(ethHead.slot === 0) throw new Error("Failed to fetch latest slot");
+      if (!selected) throw new Error("Connect a Avail account");
+      if (ethHead.slot === 0) throw new Error("Failed to fetch latest slot");
 
-    let retriedApiConn: ApiPromise | null = null;
+      let retriedApiConn: ApiPromise | null = null;
+
 
     if(!api || !api.isConnected) {
       Logger.debug("Retrying API Conn");
@@ -208,66 +278,130 @@ export default function useClaim() {
     }
 
     const proofs = await getAccountStorageProofs(
-      heads?.latestBlockhash.blockHash,
+      heads?.latestBlockhash?.blockHash,
       executeParams.messageid,
     );
 
-    if (!proofs) {
-      throw new Error("Failed to fetch proofs from api");
-    }
+      if (!proofs) {
+        throw new Error("Failed to fetch proofs from api");
+      }
 
-    const execute = await executeTransaction(
-      {
-        slot: heads.ethHead.slot,
-        addrMessage: {
-          message: {
-            FungibleToken: {
-              assetId:
-                "0x0000000000000000000000000000000000000000000000000000000000000000",
-              amount: executeParams.amount,
+
+      /**
+       * @description Execute transaction to finalize/claim a  ETH -> AVAIL transaction on metamask snap
+       */
+      if (selected.source === "MetamaskSnap") {
+        
+        const execute = await snapVectorExecute({
+          api: api ? api : retriedApiConn!,
+          executeParams: {
+            slot: heads.ethHead.slot,
+            addrMessage: {
+              message: {
+                FungibleToken: {
+                  assetId:
+                    "0x0000000000000000000000000000000000000000000000000000000000000000",
+                  amount: executeParams.amount,
+                },
+              },
+              from: `${executeParams.from.padEnd(66, "0")}`,
+              to: u8aToHex(decodeAddress(executeParams.to)),
+
+              //TODO: check if this is correct, should'nt be the way it is right now.
+              originDomain: executeParams.destinationDomain,
+              destinationDomain: executeParams.originDomain,
+              id: executeParams.messageid,
+
             },
+            accountProof: proofs.accountProof,
+            storageProof: proofs.storageProof,
           },
-          from: `${executeParams.from.padEnd(66, "0")}`,
-          to: u8aToHex(decodeAddress(executeParams.to)),
+        });
 
-          //TODO: check if this is correct, should'nt be the way it is right now.
-          originDomain: executeParams.destinationDomain,
-          destinationDomain: executeParams.originDomain,
-          id: executeParams.messageid,
+       await addToLocalTransaction({
+          sourceChain: Chain.ETH,
+          destinationChain: Chain.AVAIL,
+          sourceTransactionHash: sourceTransactionHash,
+          destinationTransactionHash: execute.txHash,
+          amount: atomicAmount,
+          status: TransactionStatus.CLAIM_PENDING,
+          messageId: 0,
+          dataType: "ERC20",
+          depositorAddress: "",
+          receiverAddress: "",
+          sourceBlockHash: "0x",
+          sourceBlockNumber: 0,
+          sourceTransactionIndex: 0,
+          sourceTimestamp: sourceTimestamp,
+        });
+
+        Logger.info(
+          `ETH_TO_AVAIL_CLAIM_SUCCESS ${execute.txHash} claim_to: ${executeParams.to} amount: ${atomicAmount}`
+        );
+        return execute;
+      }
+
+      /**
+       * @description Execute transaction to finalize/claim a ETH -> AVAIL transaction on all other substrate based chains
+       */
+      const execute = await executeTransaction(
+        {
+          slot: heads.ethHead.slot,
+          addrMessage: {
+            message: {
+              FungibleToken: {
+                assetId:
+                  "0x0000000000000000000000000000000000000000000000000000000000000000",
+                amount: executeParams.amount,
+              },
+            },
+            from: `${executeParams.from.padEnd(66, "0")}`,
+            to: u8aToHex(decodeAddress(executeParams.to)),
+
+            //TODO: check if this is correct, should'nt be the way it is right now.
+            originDomain: executeParams.destinationDomain,
+            destinationDomain: executeParams.originDomain,
+            id: executeParams.messageid,
+          },
+          accountProof: proofs.accountProof,
+          storageProof: proofs.storageProof,
         },
-        accountProof: proofs.accountProof,
-        storageProof: proofs.storageProof,
-      },
-      selected!,
-      api ? api : retriedApiConn!
-    );
-    addToLocalTransaction({
-      sourceChain: Chain.ETH,
-      destinationChain: Chain.AVAIL,
-      sourceTransactionHash: sourceTransactionHash,
-      destinationTransactionHash: execute.txHash,
-      amount: atomicAmount,
-      status: TransactionStatus.CLAIM_PENDING,
-      messageId: 0,
-      dataType: "ERC20",
-      depositorAddress: "",
-      receiverAddress: "",
-      sourceBlockHash: "0x",
-      sourceBlockNumber: 0,
-      sourceTransactionIndex: 0,
-      sourceTimestamp: sourceTimestamp,
-    });
+        selected!,
+        api ? api : retriedApiConn!
+      );
 
-    Logger.info(`ETH_TO_AVAIL_CLAIM_SUCCESS ${execute.txHash} claim_to: ${executeParams.to} amount: ${atomicAmount}`);
-    return execute;
-  } catch (e : any) {
-    Logger.error(`CLAIM FAILED: ${e}`, ["receiver_address", executeParams.to],
-      ["sender_address", executeParams.from],
-      ["amount", formatUnits(BigInt(atomicAmount), 18)],["flow", "ETH -> AVAIL"]);  
-    throw e;
+      addToLocalTransaction({
+        sourceChain: Chain.ETH,
+        destinationChain: Chain.AVAIL,
+        sourceTransactionHash: sourceTransactionHash,
+        destinationTransactionHash: execute.txHash,
+        amount: atomicAmount,
+        status: TransactionStatus.CLAIM_PENDING,
+        messageId: 0,
+        dataType: "ERC20",
+        depositorAddress: "",
+        receiverAddress: "",
+        sourceBlockHash: "0x",
+        sourceBlockNumber: 0,
+        sourceTransactionIndex: 0,
+        sourceTimestamp: sourceTimestamp,
+      });
+
+      Logger.info(
+        `ETH_TO_AVAIL_CLAIM_SUCCESS ${execute.txHash} claim_to: ${executeParams.to} amount: ${atomicAmount}`
+      );
+      return execute;
+    } catch (e: any) {
+      Logger.error(
+        `CLAIM FAILED: ${e}`,
+        ["receiver_address", executeParams.to],
+        ["sender_address", executeParams.from],
+        ["amount", formatUnits(BigInt(atomicAmount), 18)],
+        ["flow", "ETH -> AVAIL"]
+      );
+      throw e;
+    }
   };
-}  
 
-return { initClaimAvailToEth, initClaimEthtoAvail };
-
+  return { initClaimAvailToEth, initClaimEthtoAvail };
 }

@@ -513,6 +513,7 @@ export default function TransactionSection() {
                     <DialogFooter className="sm:justify-start mt-1">
                       <DialogClose asChild>
                         <Link target="_blank" href={
+                          //ERROR: shows wrong url when you do a claim on eth and then one on avail
                           txn.sourceChain === Chain.AVAIL
                             ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${availToEthHash}`
                             : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${ethToAvailHash}`
@@ -520,7 +521,6 @@ export default function TransactionSection() {
                           <Button
                             type="button"
                             variant="primary"
-
                             className="w-full !border-0"
                           >
                             View on Explorer <ArrowUpRight className="h-3 w-6" />

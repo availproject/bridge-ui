@@ -22,23 +22,40 @@ import { ArrowDownCircle, ArrowLeft, InfoIcon } from "lucide-react";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import useTransactions from "@/hooks/useTransactions";
 import { useAccount } from "wagmi";
+import { useInvokeSnap, useMetaMask, useRequestSnap } from "@/hooks/Metamask";
 
 
 export default function Avail() {
   const [open, setOpen] = useState(false);
   const {fetchTransactions} = useTransactions();
+  const requestSnap = useRequestSnap(); 
+  const invokeSnap = useInvokeSnap();
   const {address} = useAccount();
   const [cookie, setCookie, removeCookie] = useCookies([
     "substrateAddress",
     "substrateWallet",
   ]);
   const [supportedWallets, setSupportedWallets] = useState<Wallet[]>([]);
+  const { snapsDetected, installedSnap } = useMetaMask();
 const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAccount();
   const [enabledAccounts, setEnabledAccounts] = useState<WalletAccount[]>([]);
 
   useEffect(() => {(async()=>{
     setSupportedWallets(getWallets());
+
     if (cookie.substrateAddress && cookie.substrateWallet) {
+      console.log('MetamaskSnap detected',cookie.substrateWallet === 'MetamaskSnap',snapsDetected, installedSnap  )
+
+      //ideally should check for all conditions like -- is snap installed or snap detected or is metamask installed etc etc
+      if (cookie.substrateWallet === 'MetamaskSnap') {
+        setSelected({
+          address:cookie.substrateAddress as string,
+          source: 'MetamaskSnap',
+        })
+        console.log('MetamaskSnap detected',selected)
+      
+      } else {
+
       const selectedWallet = getWallets().find((wallet) => {
         return wallet.title == cookie.substrateWallet;
       });
@@ -67,7 +84,7 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
 
           return null;
         });
-      });
+      }); }
     }
   })();
     
@@ -201,6 +218,43 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
             enabledAccounts && enabledAccounts.length > 0 ? "h-0" : "h-64 py-4"
           } overflow-scroll`}
         >
+                  <Button
+                  variant={"default"}
+                  disabled={false}
+                  className="!text-lg font-thin bg-[#3a3b3cb1] text-left font-ppmori rounded-xl !p-8"
+                  onClick={async ()=>{
+                    await requestSnap();
+                    setSelected({
+                      address: (await invokeSnap({ method: 'getAddress' })) as string,
+                      source: 'MetamaskSnap',
+                    })
+                    setCookie("substrateAddress", (await invokeSnap({ method: 'getAddress' })) as string, {
+                      path: "/",
+                      sameSite: true,
+                    });
+                    setCookie("substrateWallet", 'MetamaskSnap', {
+                      path: "/",
+                      sameSite: true,
+                    });
+                    setOpen(false);
+                    fetchTransactions({
+                      availAddress: selected?.address,
+                      ethAddress: address    
+                    })
+                  }}
+                  key={"Metamask"}
+                >
+                  <div>
+                    <div className="flex flex-row">
+                      <img
+                        alt={"Metamask Snap"}
+                        src={'/images/availsnap.png'}
+                        className="mr-4 h-6 w-6"
+                      />
+                     Avail Snap
+                    </div>
+                  </div>
+                </Button>
           {supportedWallets
             .sort((a, b) => {
               if (a.title === "SubWallet") return -1;
@@ -237,6 +291,7 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
                 </Button>
               );
             })}
+
         </div>
       </>
     );
