@@ -47,6 +47,7 @@ export function parseError(error: any): string {
         return "You have rejected the transaction on your connected wallet.";
     } if (errorMessageString.match(/intrinsic gas too low/i)) {
         return "Provided gas is too low to complete this deposit, please allow suggested gas amount";
+
     } if (errorMessageString.match(/transaction underpriced/i)) {
         return "Provided gas is too low to complete this deposit, please allow suggested gas amount";
     } if (errorMessageString.match(/EXIT_ALREADY_PROCESSED/i)) {
@@ -60,6 +61,9 @@ export function parseError(error: any): string {
     } if (errorMessageString.match(/insufficient balance/i)) {
         return "You do not have sufficient balance.";
     }
+     if (errorMessageString.match(/Failed to fetch heads from api/i)) {
+    return "Beep Boop! Failed to fetch latest slot. Please refresh and try again";
+}
     if (typeof error === 'string') {
         return error;
     }

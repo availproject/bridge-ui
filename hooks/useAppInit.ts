@@ -51,6 +51,13 @@ const useAppInit = () => {
       setLatestBlockhash(LatestBlockhash.data);
       const avlHead = await fetchAvlHead(api ? api : retriedApiConn!);
       setAvlHead(avlHead.data);
+
+      return {
+        ethHead: ethHead.data,
+        avlHead: avlHead.data,
+        latestBlockhash: LatestBlockhash.data,
+      }
+
     } catch (error) {
       Logger.error(`ERROR_FETCHING_HEADS: ${error}`);
     }
@@ -169,7 +176,7 @@ const useAppInit = () => {
       Logger.error(`ERROR_FETCHING_TOKEN_PRICE: ${error}`);
     }
   }
-  return { fetchBalances, getTokenPrice };
+  return { fetchBalances, getTokenPrice, fetchHeads };
 };
 
 export default useAppInit;
