@@ -25,14 +25,16 @@ import { Logger } from "@/utils/logger";
 import { useCommonStore } from "@/stores/common";
 import { initApi } from "@/utils/common";
 import { ApiPromise } from "avail-js-sdk";
+import useAppInit from "./useAppInit";
 
 export default function useClaim() {
-  const { ethHead, latestBlockhash } = useLatestBlockInfo();
+  const { ethHead } = useLatestBlockInfo();
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
   const { selected } = useAvailAccount();
   const { address } = useAccount();
   const { addToLocalTransaction } = useTransactions();
   const { api, setApi } = useCommonStore();
+  const { fetchHeads } = useAppInit();
 
   const networks = appConfig.networks;
 
@@ -199,9 +201,14 @@ export default function useClaim() {
       if (!retriedApiConn) {
         throw new Error("Uh Oh! RPC under a lot of stress, error intialising api");}
     }
+    const heads =  await fetchHeads(api ? api : retriedApiConn!)
+
+    if (!heads) {
+      throw new Error("Failed to fetch heads from api");
+    }
 
     const proofs = await getAccountStorageProofs(
-      latestBlockhash.blockHash,
+      heads?.latestBlockhash.blockHash,
       executeParams.messageid,
     );
 
@@ -211,7 +218,7 @@ export default function useClaim() {
 
     const execute = await executeTransaction(
       {
-        slot: ethHead.slot,
+        slot: heads.ethHead.slot,
         addrMessage: {
           message: {
             FungibleToken: {
