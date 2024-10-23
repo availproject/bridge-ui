@@ -29,18 +29,20 @@ import { Logger } from "@/utils/logger";
 import { useCommonStore } from "@/stores/common";
 import { initApi } from "@/utils/common";
 import { ApiPromise } from "avail-js-sdk";
+import useAppInit from "./useAppInit";
 import { useInvokeSnap } from "./Metamask/useInvokeSnap";
 import { checkTransactionStatus } from "./Metamask/utils";
 import { Transaction as MetamaskTransaction, TxPayload } from "@avail-project/metamask-avail-types";
-import { exec } from "child_process";
+
 
 export default function useClaim() {
-  const { ethHead, latestBlockhash } = useLatestBlockInfo();
+  const { ethHead } = useLatestBlockInfo();
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
   const { selected } = useAvailAccount();
   const { address } = useAccount();
   const { addToLocalTransaction } = useTransactions();
   const { api, setApi } = useCommonStore();
+  const { fetchHeads } = useAppInit();
 
   const invokeSnap = useInvokeSnap();
 
@@ -261,25 +263,29 @@ export default function useClaim() {
 
       let retriedApiConn: ApiPromise | null = null;
 
-      if (!api || !api.isConnected) {
-        Logger.debug("Retrying API Conn");
-        retriedApiConn = await initApi();
-        setApi(retriedApiConn);
-        if (!retriedApiConn) {
-          throw new Error(
-            "Uh Oh! RPC under a lot of stress, error intialising api"
-          );
-        }
-      }
 
-      const proofs = await getAccountStorageProofs(
-        latestBlockhash.blockHash,
-        executeParams.messageid
-      );
+    if(!api || !api.isConnected) {
+      Logger.debug("Retrying API Conn");
+      retriedApiConn = await initApi();
+      setApi(retriedApiConn);
+      if (!retriedApiConn) {
+        throw new Error("Uh Oh! RPC under a lot of stress, error intialising api");}
+    }
+    const heads =  await fetchHeads(api ? api : retriedApiConn!)
+
+    if (!heads) {
+      throw new Error("Failed to fetch heads from api");
+    }
+
+    const proofs = await getAccountStorageProofs(
+      heads?.latestBlockhash?.blockHash,
+      executeParams.messageid,
+    );
 
       if (!proofs) {
         throw new Error("Failed to fetch proofs from api");
       }
+
 
       /**
        * @description Execute transaction to finalize/claim a  ETH -> AVAIL transaction on metamask snap
@@ -289,7 +295,7 @@ export default function useClaim() {
         const execute = await snapVectorExecute({
           api: api ? api : retriedApiConn!,
           executeParams: {
-            slot: ethHead.slot,
+            slot: heads.ethHead.slot,
             addrMessage: {
               message: {
                 FungibleToken: {
@@ -305,6 +311,7 @@ export default function useClaim() {
               originDomain: executeParams.destinationDomain,
               destinationDomain: executeParams.originDomain,
               id: executeParams.messageid,
+
             },
             accountProof: proofs.accountProof,
             storageProof: proofs.storageProof,
@@ -339,7 +346,7 @@ export default function useClaim() {
        */
       const execute = await executeTransaction(
         {
-          slot: ethHead.slot,
+          slot: heads.ethHead.slot,
           addrMessage: {
             message: {
               FungibleToken: {
