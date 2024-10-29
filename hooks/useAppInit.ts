@@ -1,9 +1,7 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
-import { pollWithDelay } from "@/utils/poller";
-import { ApiPromise, isConnected } from "avail-js-sdk";
-import { useEffect } from "react";
+import { ApiPromise } from "avail-js-sdk";
+import { useEffect, useCallback, useRef } from "react";
 import useTransactions from "./useTransactions";
 import { useAccount } from "wagmi";
 import { appConfig } from "@/config/default";
@@ -16,6 +14,7 @@ import {
   fetchLatestBlockhash,
 } from "@/services/api";
 import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
+import useSWR from 'swr';
 
 const useAppInit = () => {
   const { selected } = useAvailAccount();
@@ -29,154 +28,147 @@ const useAppInit = () => {
     setEthBalance,
     setAvailBalance,
   } = useCommonStore();
-  const { fetchTransactions } = useTransactions();
   const { pendingTransactions } = useTransactions();
   const { setAvlHead, setEthHead, setLatestBlockhash } = useLatestBlockInfo();
+  
+  const isInitialized = useRef(false);
 
-  const fetchHeads = async (api: ApiPromise) => {
-    try {
-      let retriedApiConn: ApiPromise | null = null;
-      Logger.info("FETCHING_HEADS");
-
-      if(!api || !api.isConnected) {
-        Logger.debug("Retrying API Conn");
-        retriedApiConn = await initApi();
-        setApi(retriedApiConn);
-        if (!retriedApiConn) {
-          throw new Error("Uh Oh! RPC under a lot of stress, error intialising api");}
-      }
-      const ethHead = await fetchEthHead();
-      setEthHead(ethHead.data);
-      const LatestBlockhash = await fetchLatestBlockhash(ethHead.data.slot);
-      setLatestBlockhash(LatestBlockhash.data);
-      const avlHead = await fetchAvlHead(api ? api : retriedApiConn!);
-      setAvlHead(avlHead.data);
-
-      return {
-        ethHead: ethHead.data,
-        avlHead: avlHead.data,
-        latestBlockhash: LatestBlockhash.data,
-      }
-
-    } catch (error) {
-      Logger.error(`ERROR_FETCHING_HEADS: ${error}`);
+  const fetchTokenPrice = async (url: string) => {
+    const response = await fetch(url);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
     }
+    const data = await response.json();
+    return data.price.avail.usd;
   };
 
-  useEffect(() => {
-    (async () => {
-      try {
-        setApi(await initApi());
-      } catch (error) {
-        Logger.error(`ERROR_INITIALISING_API: ${error}`);
-      }
-    })();
-  }, []);
+  const fetchBalances = useCallback(async () => {
+    let balances: {
+      eth: string | undefined;
+      avail: string | undefined;
+    } = { eth: undefined, avail: undefined };
 
-  useEffect(() => {
-    if (!api) return;
-  
-    pollWithDelay(
-      fetchHeads,
-      [api],
-      appConfig.bridgeHeadsPollingInterval,
-      () => true
-    );
-    fetchHeads(api);
-  }, [isConnected()]);
-  
-  useEffect(() => {
-    if ((!selected?.address && !account.address)) return;
-  
-    pollWithDelay(
-      fetchTransactions,
-      [{ availAddress: selected?.address, ethAddress: account.address }],
-      appConfig.bridgeIndexerPollingInterval,
-      () => true
-    );
-  }, [selected?.address, account.address]);
-  
-  useEffect(() => {
-    pollWithDelay(
-      getTokenPrice,
-      [{ coin: "avail", fiat: "usd" }],
-      appConfig.bridgePricePollingInterval,
-      () => true
-    );
-  }, []);
-
-  useEffect(() => {
-    setPendingTransactionsNumber(
-      pendingTransactions.filter(
-        (transaction) => transaction.status !== TransactionStatus.CLAIMED
-      ).length
-    );
-    setReadyToClaimTransactionsNumber(
-      pendingTransactions.filter(
-        (transaction) => transaction.status === TransactionStatus.READY_TO_CLAIM
-      ).length
-    );
-  }, [pendingTransactions]);
-
-  const fetchBalances = async () => {
     if (account.address && api) {
       try {
-        const result = await _getBalance(
-          Chain.ETH,
-          api,
-          undefined,
-          account.address
-        );
-        setEthBalance(result);
-      } catch (error) {
-        console.error("Failed to fetch ETH balance:", error);
-        setEthBalance(undefined);
+        balances.eth = await _getBalance(Chain.ETH, api, undefined, account.address);
+      } catch (error: any) {
+        Logger.error("Failed to fetch ETH balance:", error);
       }
-    } else {
-      setEthBalance(undefined);
     }
 
     if (selected?.address && api) {
       try {
-        const result = await _getBalance(Chain.AVAIL, api, selected?.address);
-        setAvailBalance(result);
-      } catch (error) {
-        console.error("Failed to fetch AVAIL balance:", error);
-        setAvailBalance(undefined);
+        balances.avail = await _getBalance(Chain.AVAIL, api, selected?.address);
+      } catch (error: any) {
+        Logger.error("Failed to fetch AVAIL balance:", error);
       }
-    } else {
-      setAvailBalance(undefined);
     }
-  };
+
+    return balances;
+  }, [account.address, api, selected?.address]);
+
+  const fetchHeads = useCallback(async () => {
+    try {
+      let currentApi = api;
+      if(!currentApi || !currentApi.isConnected) {
+        Logger.debug("Retrying API Conn");
+        currentApi = await initApi();
+        setApi(currentApi);
+        if (!currentApi || !currentApi.isConnected) {
+          throw new Error("RPC under stress, error initialising api");
+        }
+      }
+
+      const [ethHeadRes, avlHeadRes] = await Promise.all([
+        fetchEthHead(),
+        fetchAvlHead(currentApi)
+      ]);
+
+      const latestBlockhashRes = await fetchLatestBlockhash(ethHeadRes.data.slot);
+
+      return {
+        ethHead: ethHeadRes.data,
+        avlHead: avlHeadRes.data,
+        latestBlockhash: latestBlockhashRes.data
+      };
+    } catch (error) {
+      Logger.error(`ERROR_FETCHING_HEADS: ${error}`);
+      throw error;
+    }
+  }, [api, setApi]);
+
+
+  const { data: tokenPrice } = useSWR(
+    '/api/getTokenPrice?coins=avail&fiats=usd',
+    fetchTokenPrice,
+    {
+      refreshInterval: appConfig.bridgePricePollingInterval,
+      onSuccess: (data) => setDollarAmount(data),
+      onError: (error) => Logger.error(`ERROR_FETCHING_TOKEN_PRICE: ${error}`)
+    }
+  );
+
+  const { data: balances } = useSWR(
+    api ? 'balances' : null,
+    fetchBalances,
+    {
+      refreshInterval: 10000,
+      onSuccess: (data) => {
+        setEthBalance(data.eth);
+        setAvailBalance(data.avail);
+      }
+    }
+  );
+
+  const { data: heads } = useSWR(
+    api ? 'heads' : null,
+    fetchHeads,
+    {
+      refreshInterval: 5000, 
+      onSuccess: (data) => {
+        setEthHead(data.ethHead);
+        setAvlHead(data.avlHead);
+        setLatestBlockhash(data.latestBlockhash);
+      }
+    }
+  );
+
 
   useEffect(() => {
-    fetchBalances();
-  }, [account.address, selected?.address, api]);
-
-  /**
-   * @description get the price of the token
-   *
-   * @param {coin, fiat}
-   * @sets price of the token in dollars
-   */
-  async function getTokenPrice({ coin, fiat }: { coin: string; fiat: string }) {
-    try {
-      const response = await fetch(
-        `/api/getTokenPrice?coins=${coin}&fiats=${fiat}`
-      );
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+    if (isInitialized.current) return;
+    isInitialized.current = true;
+    
+    (async () => {
+      try {
+        const initializedApi = await initApi();
+        setApi(initializedApi);
+      } catch (error) {
+        Logger.error(`ERROR_INITIALISING_API: ${error}`);
       }
-  
-      const data = await response.json();
-      setDollarAmount(data.price[coin][fiat]);
-    } catch (error: any) {
-      Logger.error(`ERROR_FETCHING_TOKEN_PRICE: ${error}`);
-    }
-  }
-  return { fetchBalances, getTokenPrice, fetchHeads };
+    })();
+  }, [setApi]);
+
+  useEffect(() => {
+    const pendingCount = pendingTransactions.filter(
+      t => t.status !== TransactionStatus.CLAIMED
+    ).length;
+    
+    const readyToClaimCount = pendingTransactions.filter(
+      t => t.status === TransactionStatus.READY_TO_CLAIM
+    ).length;
+
+    setPendingTransactionsNumber(pendingCount);
+    setReadyToClaimTransactionsNumber(readyToClaimCount);
+  }, [pendingTransactions, setPendingTransactionsNumber, setReadyToClaimTransactionsNumber]);
+
+  return {
+    tokenPrice,
+    balances,
+    heads,
+    refetchBalances: fetchBalances,
+    refetchHeads: fetchHeads
+  };
 };
 
 export default useAppInit;

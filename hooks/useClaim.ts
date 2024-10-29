@@ -42,7 +42,7 @@ export default function useClaim() {
   const { address } = useAccount();
   const { addToLocalTransaction } = useTransactions();
   const { api, setApi } = useCommonStore();
-  const { fetchHeads } = useAppInit();
+  const { refetchHeads } = useAppInit();
 
   const invokeSnap = useInvokeSnap();
 
@@ -268,11 +268,12 @@ export default function useClaim() {
       Logger.debug("Retrying API Conn");
       retriedApiConn = await initApi();
       setApi(retriedApiConn);
-      if (!retriedApiConn) {
+      if (!retriedApiConn || !retriedApiConn.isConnected) {
         throw new Error("Uh Oh! RPC under a lot of stress, error intialising api");}
     }
-    const heads =  await fetchHeads(api ? api : retriedApiConn!)
-
+    
+    const heads =  await refetchHeads();
+    console.log(heads);
     if (!heads) {
       throw new Error("Failed to fetch heads from api");
     }

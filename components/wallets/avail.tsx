@@ -37,16 +37,19 @@ export default function Avail() {
   ]);
   const [supportedWallets, setSupportedWallets] = useState<Wallet[]>([]);
   const { snapsDetected, installedSnap } = useMetaMask();
-const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAccount();
+  const { selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAccount();
   const [enabledAccounts, setEnabledAccounts] = useState<WalletAccount[]>([]);
+
+  interface ExtendedWalletAccount extends WalletAccount {
+    type?: string;
+  }
 
   useEffect(() => {(async()=>{
     setSupportedWallets(getWallets());
 
     if (cookie.substrateAddress && cookie.substrateWallet) {
-      console.log('MetamaskSnap detected',cookie.substrateWallet === 'MetamaskSnap',snapsDetected, installedSnap  )
 
-      //ideally should check for all conditions like -- is snap installed or snap detected or is metamask installed etc etc
+      // TODO: should check for conditions if the snap is still connected (user disables snap / deletes it) 
       if (cookie.substrateWallet === 'MetamaskSnap') {
         setSelected({
           address:cookie.substrateAddress as string,
@@ -63,11 +66,11 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
       if (!selectedWallet) {
         return;
       }
-       //@ts-ignore TODO: fix this ts error later
-      selectedWallet.enable("bridge-ui").then(() => {
-        selectedWallet.getAccounts().then((accounts) => {
-          const enabledAccounts = accounts.filter(account =>{
-            //@ts-ignore WalletAccount object dosen't have the types right
+      
+      (selectedWallet.enable("bridge-ui") as any).then(() => {
+        selectedWallet.getAccounts().then((accounts : WalletAccount[]) => {
+          const enabledAccounts = (accounts as ExtendedWalletAccount[]).filter(account =>{
+         
             return account.type! !== "ethereum"
           });
           const selected = enabledAccounts.find(

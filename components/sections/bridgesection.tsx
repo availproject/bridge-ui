@@ -17,10 +17,7 @@ import { RiLoopLeftFill } from "react-icons/ri";
 import { useEffect, useState } from "react";
 import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
-import {
-  _getBalance,
-  validAddress,
-} from "@/utils/common";
+import { _getBalance, validAddress } from "@/utils/common";
 import { useAccount } from "wagmi";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
@@ -31,7 +28,13 @@ import { toast } from "@/components/ui/use-toast";
 import { parseError } from "@/utils/parseError";
 import BigNumber from "bignumber.js";
 import { badgeVariants } from "../ui/badge";
-import { ArrowUpRight, CheckCircle2, Copy, InfoIcon, Loader2 } from "lucide-react";
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  Copy,
+  InfoIcon,
+  Loader2,
+} from "lucide-react";
 import { parseAmount } from "@/utils/parsers";
 import { LoadingButton } from "../ui/loadingbutton";
 import useTransactionButtonState from "@/hooks/useTransactionButtonState";
@@ -59,8 +62,11 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card";
-import { Logger } from "@/utils/logger";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "../ui/hover-card";
 import React from "react";
 import useAppInit from "@/hooks/useAppInit";
 import { showFailedMessage } from "@/utils/toasts";
@@ -76,9 +82,6 @@ export const formSchema = z.object({
 });
 
 export default function BridgeSection() {
-
-  useAppInit();
-
   const account = useAccount();
   const {
     fromChain,
@@ -93,19 +96,19 @@ export default function BridgeSection() {
     availBalance,
   } = useCommonStore();
   const { selected } = useAvailAccount();
-  const { fetchBalances } = useAppInit();
+  const { refetchBalances } = useAppInit();
   const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
- 
+
   const [transactionInProgress, setTransactionInProgress] =
-  useState<boolean>(false);
+    useState<boolean>(false);
   const { buttonStatus, isDisabled, availAmountToDollars } =
-  useTransactionButtonState(transactionInProgress);
+    useTransactionButtonState(transactionInProgress);
 
   const [isChecked, setIsChecked] = useState<CheckedState>(false);
   const [open, setOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
-  const [availToEthHash, setAvailToEthHash] = useState<string | undefined>('')
-  const [ethToAvailHash, setEthToAvailHash] = useState<string | undefined>('')
+  const [availToEthHash, setAvailToEthHash] = useState<string | undefined>("");
+  const [ethToAvailHash, setEthToAvailHash] = useState<string | undefined>("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -116,7 +119,7 @@ export default function BridgeSection() {
 
   const resetState = async () => {
     form.reset();
-    await fetchBalances();
+    await refetchBalances();
   };
 
   useEffect(() => {
@@ -134,13 +137,13 @@ export default function BridgeSection() {
         const fromAmountAtomic = new BigNumber(values.fromAmount)
           .multipliedBy(new BigNumber(10).pow(18))
           .toString(10);
-        
+
         let destinationAddress = selected?.address || values.toAddress;
 
-        if(await validAddress(values.toAddress, Chain.AVAIL)) {
+        if (await validAddress(values.toAddress, Chain.AVAIL)) {
           destinationAddress = values.toAddress;
         }
-       
+
         setTransactionInProgress(true);
         const blockhash = await initEthToAvailBridging({
           atomicAmount: fromAmountAtomic,
@@ -158,11 +161,11 @@ export default function BridgeSection() {
           .multipliedBy(new BigNumber(10).pow(18))
           .toString(10);
 
-          let destinationAddress = account?.address || values.toAddress;
-        
-          if(await validAddress(values.toAddress, Chain.ETH)) {
-            destinationAddress = values.toAddress;
-          }
+        let destinationAddress = account?.address || values.toAddress;
+
+        if (await validAddress(values.toAddress, Chain.ETH)) {
+          destinationAddress = values.toAddress;
+        }
 
         setTransactionInProgress(true);
         const init = await initAvailToEthBridging({
@@ -174,7 +177,7 @@ export default function BridgeSection() {
           setAvailToEthHash(init.txHash);
           setOpenDialog(true);
         }
- 
+
         setTransactionInProgress(false);
         resetState();
       }
@@ -439,7 +442,9 @@ export default function BridgeSection() {
                                     const value =
                                       fromChain === Chain.ETH
                                         ? ethBalance
-                                          ? parseFloat(parseAmount(ethBalance, 18) )
+                                          ? parseFloat(
+                                              parseAmount(ethBalance, 18)
+                                            )
                                           : 0
                                         : availBalance
                                         ? parseFloat(
@@ -452,14 +457,16 @@ export default function BridgeSection() {
                                   }}
                                   className="font-thicccboisemibold flex flex-row space-x-1 text-[#3FB5F8] text-sm cursor-pointer"
                                 >
-                                  <span>MAX</span> <HoverCard>
-              <HoverCardTrigger className="cursor-pointer">
-                <InfoIcon className="w-3 h-3 " />
-              </HoverCardTrigger>
-              <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
-              Transfers the max available minus 1 AVAIL reserved to pay fees
-              </HoverCardContent>
-            </HoverCard>
+                                  <span>MAX</span>{" "}
+                                  <HoverCard>
+                                    <HoverCardTrigger className="cursor-pointer">
+                                      <InfoIcon className="w-3 h-3 " />
+                                    </HoverCardTrigger>
+                                    <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
+                                      Transfers the max available minus 1 AVAIL
+                                      reserved to pay fees
+                                    </HoverCardContent>
+                                  </HoverCard>
                                 </div>
                               </div>
                             </div>
@@ -543,66 +550,68 @@ export default function BridgeSection() {
                           </>
                         </FormControl>
                         <div className="flex flex-row items-center justify-between">
-                        <AlertDialog open={open}>
-                                <AlertDialogTrigger
+                          <AlertDialog open={open}>
+                            <AlertDialogTrigger
+                              onClick={() => {
+                                setOpen(!open);
+                              }}
+                              className=" "
+                            >
+                              <div className="flex flex-row items-center underline text-white justify-start pl-1 font-ppmori text-opacity-80">
+                                <InfoIcon className="w-5 h-5 mr-1" />
+                                Send to a different address?
+                              </div>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-[#252831] border-2 border-[#3a3b3cb1] !rounded-[1rem]">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-white font-ppmoribsemibold !text-lg">
+                                  Transfer to different Address
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="text-[#B6B7BB] font-thicccboisemibold text-md">
+                                  <div className=" border-white border-t border-opacity-25 w-full !h-1 mb-4"></div>
+                                  <div className="flex flex-row items-bottom pt-2"></div>
+                                  <div className="items-start flex  space-x-2 px-2 pb-4">
+                                    <Checkbox
+                                      id="terms1"
+                                      checked={isChecked}
+                                      onCheckedChange={setIsChecked}
+                                      className="text-white border-white border-opacity-70 border rounded-md mt-1"
+                                    ></Checkbox>
+                                    <div className="grid gap-1.5 leading-none">
+                                      <label
+                                        htmlFor="terms1"
+                                        className="text-sm font-light leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white text-opacity-60"
+                                      >
+                                        Please double-check if the address is
+                                        correct. Any tokens sent to an incorrect
+                                        address will be unrecoverable.
+                                      </label>
+                                    </div>
+                                  </div>
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel
                                   onClick={() => {
-                                    setOpen(!open);
+                                    setOpen(false);
                                   }}
-                                  className=" "
+                                  className="!bg-inherit !border-0 text-red-600 hover:text-red-800 "
                                 >
-                                  <div className="flex flex-row items-center underline text-white justify-start pl-1 font-ppmori text-opacity-80"><InfoIcon className="w-5 h-5 mr-1"/>Send to a different address?</div>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent className="bg-[#252831] border-2 border-[#3a3b3cb1] !rounded-[1rem]">
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle className="text-white font-ppmoribsemibold !text-lg">
-                                      Transfer to different Address
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription className="text-[#B6B7BB] font-thicccboisemibold text-md">
-                                      <div className=" border-white border-t border-opacity-25 w-full !h-1 mb-4"></div>
-                                      <div className="flex flex-row items-bottom pt-2"></div>
-                                      <div className="items-start flex  space-x-2 px-2 pb-4">
-                                        <Checkbox
-                                          id="terms1"
-                                          checked={isChecked}
-                                          onCheckedChange={setIsChecked}
-                                          className="text-white border-white border-opacity-70 border rounded-md mt-1"
-                                        ></Checkbox>
-                                        <div className="grid gap-1.5 leading-none">
-                                          <label
-                                            htmlFor="terms1"
-                                            className="text-sm font-light leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white text-opacity-60"
-                                          >
-                                            Please double-check if the address
-                                            is correct. Any tokens sent to an
-                                            incorrect address will be
-                                            unrecoverable.
-                                          </label>
-                                        </div>
-                                      </div>
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel
-                                      onClick={() => {
-                                        setOpen(false);
-                                      }}
-                                      className="!bg-inherit !border-0 text-red-600 hover:text-red-800 "
-                                    >
-                                      Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                      disabled={!isChecked}
-                                      className="rounded-xl bg-[#464A5B] flex flex-row  items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer"
-                                      onClick={PasteAddressAction}
-                                    >
-                                      <span>+</span>
-                                      <span className="text-sm text-white text-opacity-70">
-                                        Copy Address from Clipboard
-                                      </span>
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
+                                  Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  disabled={!isChecked}
+                                  className="rounded-xl bg-[#464A5B] flex flex-row  items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer"
+                                  onClick={PasteAddressAction}
+                                >
+                                  <span>+</span>
+                                  <span className="text-sm text-white text-opacity-70">
+                                    Copy Address from Clipboard
+                                  </span>
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                         <FormMessage />
                       </FormItem>
@@ -642,19 +651,23 @@ export default function BridgeSection() {
                     </div>
                     <DialogFooter className="sm:justify-start mt-1">
                       <DialogClose asChild>
-                        <Link target="_blank" href={
-                fromChain === Chain.ETH
-                  ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${ethToAvailHash}`
-                  : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${availToEthHash}`
-              } className="w-full !border-0">
-                        <Button
-                          type="button"
-                          variant="primary"
-                          
+                        <Link
+                          target="_blank"
+                          href={
+                            fromChain === Chain.ETH
+                              ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${ethToAvailHash}`
+                              : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${availToEthHash}`
+                          }
                           className="w-full !border-0"
                         >
-                          View on Explorer <ArrowUpRight className="h-3 w-6" />
-                        </Button>
+                          <Button
+                            type="button"
+                            variant="primary"
+                            className="w-full !border-0"
+                          >
+                            View on Explorer{" "}
+                            <ArrowUpRight className="h-3 w-6" />
+                          </Button>
                         </Link>
                       </DialogClose>
                     </DialogFooter>

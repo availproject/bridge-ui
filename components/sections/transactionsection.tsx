@@ -4,7 +4,7 @@
 
 import { FaCheckCircle, FaHistory } from "react-icons/fa";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { TableBody, TableCell, TableRow } from "../ui/table";
+import { Table, TableBody, TableCell, TableRow } from "../ui/table";
 import { Badge } from "../ui/badge";
 import { Chain, TransactionStatus } from "@/types/common";
 import useTransactions from "@/hooks/useTransactions";
@@ -26,7 +26,7 @@ import {
   MoveRight,
 } from "lucide-react";
 import useClaim from "@/hooks/useClaim";
-import { useEffect, useState } from "react";
+import { Component, useEffect, useState } from "react";
 import { LoadingButton } from "../ui/loadingbutton";
 import { Transaction } from "@/types/transaction";
 import { CiCircleQuestion } from "react-icons/ci";
@@ -373,7 +373,7 @@ export default function TransactionSection() {
   }) {
 
     return (
-      <div className="flex h-[85%] ">
+      <Table className="flex h-[85%] ">
         <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
           {pendingTransactions &&
             pendingTransactions.map((txn, index) => (
@@ -534,7 +534,7 @@ export default function TransactionSection() {
 
             ))}
         </TableBody>
-      </div>
+      </Table>
     );
   }
 

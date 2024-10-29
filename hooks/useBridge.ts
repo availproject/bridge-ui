@@ -284,7 +284,7 @@ export default function useBridge() {
         Logger.debug("Retrying API Conn");
         retriedApiConn = await initApi();
         setApi(retriedApiConn);
-        if (!retriedApiConn) {
+        if (!retriedApiConn || !retriedApiConn.isConnected) {
           throw new Error(
             "Uh Oh! RPC under a lot of stress, error intialising api"
           );
