@@ -15,7 +15,7 @@ const MAX_USER_BALANCE: number = parseFloat(process.env.MAX_USER_BALANCE || "0.5
 
 export const revalidate = 0;
 export const dynamic = "force-dynamic"
-export const maxDuration = 30
+export const maxDuration = 60
 
 const ratelimit = new Ratelimit({
   redis: kv,
