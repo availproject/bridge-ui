@@ -173,6 +173,7 @@ export default function Avail() {
             {enabledAccounts.map((account, index) => {
               return (
                 <Button
+                  key={index}
                   onClick={() => {
                     setSelected(account);
                     setCookie("substrateAddress", account?.address, {
