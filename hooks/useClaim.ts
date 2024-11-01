@@ -37,7 +37,7 @@ import { Transaction as MetamaskTransaction, TxPayload } from "@avail-project/me
 
 export default function useClaim() {
   const { ethHead } = useLatestBlockInfo();
-  const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
+  const { switchNetwork, activeNetworkId } = useEthWallet();
   const { selected } = useAvailAccount();
   const { address } = useAccount();
   const { addToLocalTransaction } = useTransactions();
@@ -250,7 +250,7 @@ export default function useClaim() {
     atomicAmount: string;
     executeParams: {
       messageid: number;
-      amount: number;
+      amount: string | number;
       from: `${string}`;
       to: `${string}`;
       originDomain: number;
@@ -271,9 +271,9 @@ export default function useClaim() {
       if (!retriedApiConn || !retriedApiConn.isConnected) {
         throw new Error("Uh Oh! RPC under a lot of stress, error intialising api");}
     }
-    
+
     const heads =  await refetchHeads();
-    console.log(heads);
+
     if (!heads) {
       throw new Error("Failed to fetch heads from api");
     }
@@ -286,7 +286,6 @@ export default function useClaim() {
       if (!proofs) {
         throw new Error("Failed to fetch proofs from api");
       }
-
 
       /**
        * @description Execute transaction to finalize/claim a  ETH -> AVAIL transaction on metamask snap
@@ -343,7 +342,7 @@ export default function useClaim() {
       }
 
       /**
-       * @description Execute transaction to finalize/claim a ETH -> AVAIL transaction on all other substrate based chains
+       * @description Execute transaction to finalize/claim a ETH -> AVAIL transaction on all other substrate based wallets
        */
       const execute = await executeTransaction(
         {

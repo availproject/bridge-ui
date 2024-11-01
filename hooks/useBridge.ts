@@ -335,7 +335,7 @@ export default function useBridge() {
             receiverAddress: destinationAddress,
             sourceBlockHash: success.blockhash,
             sourceBlockNumber: 0,
-            sourceTransactionHash: success.txHash,
+            sourceTransactionHash: success.txHash as `0x${string}`,
             sourceTransactionIndex: 0,
             sourceTimestamp: new Date().toISOString(),
           };
@@ -379,7 +379,7 @@ export default function useBridge() {
           receiverAddress: destinationAddress,
           sourceBlockHash: send.blockhash,
           sourceBlockNumber: 0,
-          sourceTransactionHash: send.txHash,
+          sourceTransactionHash: send.txHash as `0x${string}`,
           sourceTransactionIndex: 0,
           sourceTimestamp: new Date().toISOString(),
         };

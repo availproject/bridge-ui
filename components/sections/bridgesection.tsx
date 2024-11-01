@@ -238,6 +238,7 @@ export default function BridgeSection() {
     const a = await validAddress(address, toChain);
     a &&
       (form.setValue("toAddress", address),
+      setToAddress(address),
       setOpen(false),
       toast({
         title: (
@@ -251,6 +252,7 @@ export default function BridgeSection() {
                 The Address has been added successfully and would be used for
                 future txns.
               </p>
+             
             </div>
           </div>
         ),
@@ -351,7 +353,7 @@ export default function BridgeSection() {
         <TabsContent id="bridge" value="bridge" className="flex-1 ">
           <div className="lg:p-4 p-2">
             <Form {...form}>
-              <form
+              <form id="bridge-form"
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="md:space-y-4 w-full"
               >
@@ -479,13 +481,12 @@ export default function BridgeSection() {
                   )}
                 />
                 <div className="relative flex items-center justify-center">
-                  <div className="absolute border-b border-white border-opacity-30 w-[95%] mx-auto hover:border-opacity-60"></div>
                   <HiOutlineSwitchVertical
                     onClick={() => {
                       setFromChain(toChain);
                       setToChain(fromChain);
                     }}
-                    className="h-12 w-12 bg-[#3A3E4A] transform transition-transform duration-1000 hover:p-2.5 p-3 rounded-full mx-auto cursor-pointer relative z-10"
+                    className="h-12 w-12 bg-[#3A3E4A] transform transition-transform duration-1000 hover:p-2.5 p-3 rounded-xl mx-auto cursor-pointer relative z-10"
                   />
                 </div>
                 {/* TO FIELD*/}
@@ -508,7 +509,7 @@ export default function BridgeSection() {
                               <p className="!text-left">{toChain}</p>
                             </div>
                           </span>
-                          {/* this will be opposite here since it's the To feild*/}
+                          {/* this will be opposite here since it's the To field*/}
                           {fromChain === Chain.ETH ? <Avail /> : <Eth />}
                         </FormLabel>
                         <FormControl>
@@ -558,7 +559,7 @@ export default function BridgeSection() {
                               className=" "
                             >
                               <div className="flex flex-row items-center underline text-white justify-start pl-1 font-ppmori text-opacity-80">
-                                <InfoIcon className="w-5 h-5 mr-1" />
+                                <InfoIcon className="w-3 h-3 mr-1" />
                                 Send to a different address?
                               </div>
                             </AlertDialogTrigger>
@@ -580,12 +581,14 @@ export default function BridgeSection() {
                                     <div className="grid gap-1.5 leading-none">
                                       <label
                                         htmlFor="terms1"
-                                        className="text-sm font-light leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white text-opacity-60"
+                                        className="text-sm space-y-4 font-light leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white text-opacity-60"
                                       >
-                                        Please double-check if the address is
+                                        <span>Please double-check if the address is
                                         correct. Any tokens sent to an incorrect
                                         address will be unrecoverable.
+                                        </span>
                                       </label>
+                                      <label className="text-sm pt-2 font-light leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white text-opacity-60">Priority will be given to the pasted address if case of preconnected account</label>
                                     </div>
                                   </div>
                                 </AlertDialogDescription>

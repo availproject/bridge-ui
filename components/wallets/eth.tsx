@@ -16,17 +16,16 @@ export default function Eth() {
   const { address } = useAccount();
   const { fetchTransactions } = useTransactions();
 
-  useEffect(()=> {
+  useEffect(() => {
     fetchTransactions({
       availAddress: selected?.address,
       ethAddress: address,
-    })
-
-  },[address])
+    });
+  }, [address]);
 
   return (
     <>
-      <div className="">
+      <div id="rainbow" className="">
         <ConnectButton.Custom>
           {({
             account,
@@ -44,7 +43,7 @@ export default function Eth() {
               chain &&
               (!authenticationStatus ||
                 authenticationStatus === "authenticated");
-              
+
             return (
               <div
                 {...(!ready && {
@@ -60,8 +59,8 @@ export default function Eth() {
                   if (!connected) {
                     return (
                       <Button
-                        onClick={async()=>{
-                          openConnectModal()
+                        onClick={async () => {
+                          openConnectModal();
                         }}
                         className=""
                         variant={"primary"}
@@ -81,21 +80,20 @@ export default function Eth() {
                   }
 
                   return (
-                      <div className={badgeVariants({ variant: "avail" })}>
-                      <img src="/images/Wallet.png" className="pr-1" alt="a"></img>
-                        {account?.address?.slice(0, 6) +
-                          "..." +
-                          account?.address?.slice(-4)}
-                        <button
-                          onClick={() => {
-                            openAccountModal();
-                          }}
-                          className="ml-2"
-                        >
-                          {" "}
-                          <IoMdClose />
-                        </button>
-                      </div>
+                    <div className={badgeVariants({ variant: "avail" })}>
+                      <img
+                        src="/images/Wallet.png"
+                        className="pr-1"
+                        alt="a"
+                      ></img>
+                      {account?.address?.slice(0, 6) +
+                        "..." +
+                        account?.address?.slice(-4)}
+                      <button onClick={openAccountModal} className="ml-2">
+                        {" "}
+                        <IoMdClose />
+                      </button>
+                    </div>
                   );
                 })()}
               </div>

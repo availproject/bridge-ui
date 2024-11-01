@@ -31,6 +31,23 @@ export const useMetaMask = () => {
   };
 
   /**
+   * Detect if MetaMask is installed.
+   */
+  const detectMetaMask = () => {
+    const { ethereum } = window;
+    return Boolean(ethereum && ethereum.isMetaMask);
+  };
+  
+  try {
+    const isMetaMaskInstalled = detectMetaMask();
+    if (!isMetaMaskInstalled) {
+      console.log('Please install MetaMask!');
+    }
+  } catch (error) {
+    console.error('Error during MetaMask detection:', error);
+  }
+
+  /**
    * Get the Snap informations from MetaMask.
    */
   const getSnap = async () => {
@@ -44,7 +61,7 @@ export const useMetaMask = () => {
   useEffect(() => {
     const detect = async () => {
       if (provider) {
-        await detectFlask();
+        await detectMetaMask();
         await getSnap();
       }
     };
@@ -52,5 +69,5 @@ export const useMetaMask = () => {
     detect().catch(console.error);
   }, [provider]);
 
-  return { isFlask, snapsDetected, installedSnap, getSnap };
+  return { isFlask, snapsDetected, installedSnap, getSnap, detectMetaMask };
 };

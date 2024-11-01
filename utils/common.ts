@@ -6,12 +6,15 @@ import {
 } from "avail-js-sdk";
 import { ethConfig, substrateConfig } from "@/config/walletConfig";
 import { readContract } from "@wagmi/core";
-import { Chain } from "@/types/common";
+import { Chain, TransactionStatus } from "@/types/common";
 import { appConfig } from "@/config/default";
 import ethereumAvailTokenTuring from "@/constants/abis/ethereumAvailTokenTuring.json";
 import ethereumAvailTokenMainnet from "@/constants/abis/ethereumAvailTokenMainnet.json";
 import { isAddress } from "viem";
 import { Logger } from "./logger";
+import { Transaction } from "@/types/transaction";
+import { parseMinutes } from "./parsers";
+import { LatestBlockInfo } from "@/stores/lastestBlockInfo";
 
 const networks = appConfig.networks;
 
@@ -58,7 +61,7 @@ export async function _getBalance(
   }
 }
 
-export async function validAddress(address: string, chain: Chain) {
+export function validAddress(address: string, chain: Chain) {
   if (chain === Chain.AVAIL) {
     return isValidAddress(address);
   }
@@ -67,6 +70,70 @@ export async function validAddress(address: string, chain: Chain) {
   }
   return false;
 }
+
+export function getHref(destinationChain: Chain, txnHash: string) {
+  console.log("destinationChain from dialog", destinationChain);
+  if(destinationChain === Chain.AVAIL) {
+     return `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txnHash}`
+  } else {
+     return  `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txnHash}`
+  }
+}
+
+export const getStatusTime = ({
+  from,
+  status,
+  heads: { eth: ethHead, avl: avlHead },
+}: {
+  from: Chain;
+  sourceTimestamp: Transaction["sourceTimestamp"];
+  sourceBlockNumber: Transaction["sourceBlockNumber"];
+  status: TransactionStatus;
+  heads: { eth: LatestBlockInfo["ethHead"]; avl: LatestBlockInfo["avlHead"] };
+}) => {
+  if (status === "READY_TO_CLAIM") {
+    return "~";
+  }
+  if (status === "INITIATED") {
+    return "Waiting for finalisation";
+  }
+
+  //TODO: Change below to more accurate time
+  if (status === "PENDING" && from === Chain.ETH) {
+    return "Est time remaining: ~15 minutes";
+  }
+
+  //TODO: Change below to more accurate time
+  if (status === "PENDING" && from === Chain.AVAIL) {
+    return "Est time remaining: ~5 minutes";
+  }
+
+  if (from === Chain.ETH) {
+    const lastProofTimestamp = ethHead.timestamp * 1000;
+    const nextProofTimestamp = lastProofTimestamp + TELEPATHY_INTERVAL;
+    const timeNow = Date.now();
+    const timeLeft = nextProofTimestamp - timeNow;
+
+    if (timeLeft < 0) {
+      return `Est time remaining: Soon`
+    }
+
+    return `Est time remaining: ~${parseMinutes(timeLeft / 1000 / 60)}`;
+  }
+
+  if (from === Chain.AVAIL) {
+    const lastProofTimestamp = avlHead.data.endTimestamp;
+    const nextProofTimestamp = lastProofTimestamp + VECTORX_INTERVAL;
+    const timeNow = Date.now();
+    const timeLeft = nextProofTimestamp - timeNow;
+
+    if (timeLeft < 0) {
+      return `Est time remaining: Soon`
+    }
+
+    return `Est time remaining: ~${parseMinutes(timeLeft / 1000 / 60)}`;
+  }
+};
 
 export const nini = (sec: number) =>
   new Promise((resolve) => setTimeout(resolve, sec * 1000));
@@ -86,3 +153,9 @@ export const initApi = async (retries = 3): Promise<ApiPromise> => {
     }
   }
 };
+
+
+  //In milliseconds - 20 minutes.
+  export const TELEPATHY_INTERVAL = 1200000;
+  //In milliseconds - 120 minutes.
+  export const VECTORX_INTERVAL = 7200000;

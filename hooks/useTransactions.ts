@@ -126,9 +126,39 @@ export default function useTransactions() {
     return allTransactions.filter((txn) => txn.status !== "CLAIMED");
   }, [allTransactions]);
 
+  const CHUNK_SIZE = 4;
+
+  const paginatedPendingTransactions: Transaction[][] = useMemo(() => {
+      const chunks = [];
+      const sortedTxns = pendingTransactions.sort((a, b) => {
+        return (
+          new Date(b.sourceTimestamp).getTime() -
+          new Date(a.sourceTimestamp).getTime()
+        );
+      });
+      for (let i = 0; i < pendingTransactions.length; i += CHUNK_SIZE) {
+        chunks.push(sortedTxns.slice(i, i + CHUNK_SIZE));
+      }
+      return chunks;
+  }, [pendingTransactions]);
+
   const completedTransactions: Transaction[] = useMemo(() => {
     return allTransactions.filter((txn ) => txn.status === "CLAIMED");
   }, [allTransactions]);
+
+  const paginatedCompletedTransactions: Transaction[][] = useMemo(() => {
+    const chunks = [];
+    const sortedTxns = completedTransactions.sort((a, b) => {
+      return (
+        new Date(b.sourceTimestamp).getTime() -
+        new Date(a.sourceTimestamp).getTime()
+      );
+    });
+    for (let i = 0; i < completedTransactions.length; i += CHUNK_SIZE) {
+      chunks.push(sortedTxns.slice(i, i + CHUNK_SIZE));
+    }
+    return chunks
+  },[completedTransactions]);
 
   const addToLocalTransaction = (transaction: Transaction) => {
     const localTransactionsKey = `localTransactions:${selected?.address}`;
@@ -157,6 +187,8 @@ export default function useTransactions() {
     allTransactions,
     pendingTransactions,
     completedTransactions,
+    paginatedPendingTransactions,
+    paginatedCompletedTransactions,
     fetchTransactions,
     addToLocalTransaction,
   };
