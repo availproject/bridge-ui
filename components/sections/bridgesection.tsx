@@ -387,23 +387,22 @@ export default function BridgeSection() {
                                 </p>
                               </div>
 
-                              <div className="rounded-xl bg-[#464A5B] flex flex-row  transform transition-transform duration-200 hover:scale-105 items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer">
+                              <div className="p-4 md:mr-2 rounded-xl bg-[#464A5B] flex flex-row  transform transition-transform duration-200 hover:scale-105 items-center space-x-2 font-ppmoribsemibold text-2xl  justify-center cursor-pointer">
                                 <div
                                   className={
                                     "flex flex-row items-center justify-center space-x-2  font-ppmori"
                                   }
-                                >
-                                  <img
-                                    src={`/images/AVAILsmall.png`}
-                                    alt="logo"
-                                  ></img>
-                                  <p className="!text-lg !text-left">
-                                    {/* since we're doing just avail tokens for now, we'll just show avail here */}
-                                    {/* {fromChain === Chain.ETH
-                                      ? "ETH"
-                                      : fromChain.toLocaleUpperCase()} */}
-                                    {Chain.AVAIL}
-                                  </p>
+                                >{fromChain === Chain.ETH ? <img
+                                  src={`/images/AVAILETHsmall.png`}
+                                  alt="logo"
+                                  className="w-8 "
+                                ></img> :   <img
+                                  src={`/images/AVAILsmall.png`}
+                                  alt="logo"
+                                  className="w-6 h-6"
+                                ></img>}
+                                
+                                
                                 </div>
                               </div>
                             </div>
