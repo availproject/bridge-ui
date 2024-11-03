@@ -21,6 +21,7 @@ export default function useTransactions() {
 
   const { selected } = useAvailAccount()
   const { address } = useAccount()
+  const { setTransactionLoader } = useTransactionsStore()
 
   useEffect(() => {
     if (!selected?.address && !address) {
@@ -47,12 +48,16 @@ export default function useTransactions() {
     sourceChain?: Chain;
     destinationChain?: Chain;
   }) => {
-    // Fetch all transactions
+    try{
+    setTransactionLoader(true);
     Logger.info("FETCHING_TRANSACTIONS");
     const indexedTransactions = await getTransactionsFromIndexer(
      { availAddress: availAddress, ethAddress: ethAddress, sourceChain: sourceChain, destinationChain: destinationChain}
     );
     setIndexedTransactions(indexedTransactions);
+    } catch (error) {} finally {
+      setTransactionLoader(false);
+    }
   };
 
   // allTransactions = indexedTransactions + localTransactions
@@ -63,6 +68,8 @@ export default function useTransactions() {
      * else add it to allTransactions
      * but deleting will create circular dependency, hence leave it as it is
      */
+
+    
     const allTransactions: Transaction[] = [];
     localTransactions.forEach((localTxn) => {
       if (localTxn.status === TransactionStatus.CLAIM_PENDING) {

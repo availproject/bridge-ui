@@ -32,7 +32,7 @@ export default function TxnAddresses({
           <HoverCardTrigger className="">To </HoverCardTrigger>
           <HoverCardContent>
             <p className="text-white text-opacity-80 !font-thicccboisemibold flex flex-row ">
-              <span>Reciever Address</span>{" "}
+              <span>Receiver Address</span>{" "}
               <img
                 src="/images/Wallet.png"
                 className="pl-1 !w-5 h-4"

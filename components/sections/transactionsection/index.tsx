@@ -22,7 +22,7 @@ import {
   MoveRight,
 } from "lucide-react";
 import useClaim from "@/hooks/useClaim";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LoadingButton } from "../../ui/loadingbutton";
 import { Transaction } from "@/types/transaction";
 import { CiCircleQuestion } from "react-icons/ci";
@@ -36,6 +36,8 @@ import ParsedDate from "./parseddate";
 import CompletedTransactions from "./completedtransactions";
 import NoTransactions from "./notransactions";
 import { SuccessDialog } from "./success";
+import { useTransactionsStore } from "@/stores/transactionsStore";
+import Loading from "./loading";
 
 
 
@@ -48,6 +50,7 @@ export default function TransactionSection() {
   } = useTransactions();
   const { avlHead, ethHead } = useLatestBlockInfo();
   const { initClaimAvailToEth, initClaimEthtoAvail } = useClaim();
+  const {transactionLoader } = useTransactionsStore();
 
   const [showPagination, setShowPagination] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(0);
@@ -70,18 +73,16 @@ export default function TransactionSection() {
     setCurrentPage(0);
   }, [pendingTab]);
 
+  const shouldShowPagination = useMemo(() => {
+    if (pendingTab) {
+      return paginatedPendingTransactions.length > 1;
+    }
+    return paginatedCompletedTransactions.length > 1;
+  }, [paginatedCompletedTransactions.length, paginatedPendingTransactions.length, pendingTab]);
+  
   useEffect(() => {
-    const showPagination = () => {
-      if (paginatedCompletedTransactions.length > 1 && !pendingTab) {
-        return setShowPagination(true);
-      }
-      if (paginatedPendingTransactions.length > 1 && pendingTab) {
-        return setShowPagination(true);
-      }
-      return setShowPagination(false);
-    };
-    showPagination();
-  }, [paginatedCompletedTransactions, paginatedPendingTransactions, pendingTab]);
+    setShowPagination(shouldShowPagination);
+  }, [shouldShowPagination]);
 
   const isEndPage = pendingTab
     ? currentPage === paginatedPendingTransactions.length - 1
@@ -246,6 +247,7 @@ export default function TransactionSection() {
                       </p>
                       <a
                         target="_blank"
+                        rel="noreferrer"
                         href={
                           txn.sourceChain === Chain.ETH
                             ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txn.sourceTransactionHash}`
@@ -321,7 +323,8 @@ export default function TransactionSection() {
 
   return (
     <div className=" relative flex flex-col mx-auto w-[95%] h-[100%] ">
-      <Tabs defaultValue="pending" className="flex flex-col h-full">
+      {transactionLoader ? (<Loading/>) :(<>
+        <Tabs defaultValue="pending" className="flex flex-col h-full">
         <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2  ">
           <TabsTrigger
             value="pending"
@@ -414,6 +417,9 @@ export default function TransactionSection() {
       ) : (
         <></>
       )}
+      </>) }
+      {/* Tabs */}
+      
     </div>
   );
 }
