@@ -224,8 +224,7 @@ export default function TransactionSection() {
 
                   <span className="flex flex-col-reverse items-start justify-center">
                     <TxnAddresses
-                      depositor={txn.depositorAddress}
-                      receiver={txn.receiverAddress}
+                     txn={txn}
                     />
                     <span className="flex flex-row w-full">
                       <ChainLabel chain={txn.sourceChain} />
@@ -304,8 +303,6 @@ export default function TransactionSection() {
                       <span>
                         {getStatusTime({
                           from: txn.sourceChain,
-                          sourceTimestamp: txn.sourceTimestamp,
-                          sourceBlockNumber: txn.sourceBlockNumber,
                           status: txn.status,
                           heads: { eth: ethHead, avl: avlHead },
                         })}

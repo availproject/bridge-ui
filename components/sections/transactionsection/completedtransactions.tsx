@@ -31,10 +31,9 @@ function CompletedTransactions({
                     />
                   </div>
 
-                  <span className="flex flex-col-reverse items-start justify-center">
+                  <span className="flex flex-col-reverse items-start justify-center !text-sm">
                     <TxnAddresses
-                      depositor={txn.depositorAddress}
-                      receiver={txn.receiverAddress}
+                     txn={txn}
                     />
                     <span className="flex flex-row w-full">
                       <ChainLabel chain={txn.sourceChain} />

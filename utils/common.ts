@@ -72,7 +72,6 @@ export function validAddress(address: string, chain: Chain) {
 }
 
 export function getHref(destinationChain: Chain, txnHash: string) {
-  console.log("destinationChain from dialog", destinationChain);
   if(destinationChain === Chain.AVAIL) {
      return `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txnHash}`
   } else {
@@ -86,8 +85,6 @@ export const getStatusTime = ({
   heads: { eth: ethHead, avl: avlHead },
 }: {
   from: Chain;
-  sourceTimestamp: Transaction["sourceTimestamp"];
-  sourceBlockNumber: Transaction["sourceBlockNumber"];
   status: TransactionStatus;
   heads: { eth: LatestBlockInfo["ethHead"]; avl: LatestBlockInfo["avlHead"] };
 }) => {
@@ -100,12 +97,12 @@ export const getStatusTime = ({
 
   //TODO: Change below to more accurate time
   if (status === "PENDING" && from === Chain.ETH) {
-    return "Est time remaining: ~15 minutes";
+    return "~15 minutes";
   }
 
   //TODO: Change below to more accurate time
   if (status === "PENDING" && from === Chain.AVAIL) {
-    return "Est time remaining: ~5 minutes";
+    return "~5 minutes";
   }
 
   if (from === Chain.ETH) {
@@ -115,10 +112,10 @@ export const getStatusTime = ({
     const timeLeft = nextProofTimestamp - timeNow;
 
     if (timeLeft < 0) {
-      return `Est time remaining: Soon`
+      return `Soon`
     }
 
-    return `Est time remaining: ~${parseMinutes(timeLeft / 1000 / 60)}`;
+    return `~${parseMinutes(timeLeft / 1000 / 60)}`;
   }
 
   if (from === Chain.AVAIL) {
@@ -128,10 +125,10 @@ export const getStatusTime = ({
     const timeLeft = nextProofTimestamp - timeNow;
 
     if (timeLeft < 0) {
-      return `Est time remaining: Soon`
+      return `Soon`
     }
 
-    return `Est time remaining: ~${parseMinutes(timeLeft / 1000 / 60)}`;
+    return `~${parseMinutes(timeLeft / 1000 / 60)}`;
   }
 };
 
