@@ -16,15 +16,13 @@ export default function useEthWallet() {
 
     const activeUserAddress = useMemo(
         () => {
-            // Get active user address logic
             if(!isConnected) {
                 return null
             }
             
             return address
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [chainId],
+        [address, isConnected],
     );
 
     const activeNetworkId =

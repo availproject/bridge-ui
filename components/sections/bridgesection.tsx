@@ -195,7 +195,7 @@ export default function BridgeSection() {
       if (!isConnected) {
         return (
           <span className="text-white font-bold mx-1 flex flex-row">
-            -- <p className="pl-1">AVAIL</p>
+            — <p className="pl-1"></p>
           </span>
         );
       }

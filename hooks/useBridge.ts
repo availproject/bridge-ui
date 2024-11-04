@@ -196,6 +196,7 @@ export default function useBridge() {
     destinationAddress: string;
   }) => {
     try {
+      console.log("activeUserAddress", activeUserAddress);
       if (!activeUserAddress) {
         throw new Error("No account selected");
       }

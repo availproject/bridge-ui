@@ -65,9 +65,8 @@ export default function useClaim() {
    */
   async function receiveAvail(merkleProof: merkleProof) {
     try {
-      //@ts-ignore config gives a wagmi dep type error
       const result = await writeContract(config, {
-        address: process.env.NEXT_PUBLIC_BRIDGE_PROXY_CONTRACT,
+        address: process.env.NEXT_PUBLIC_BRIDGE_PROXY_CONTRACT as `0x${string}`,
         abi:
           process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
             ? ethereumBrigdeMainnet

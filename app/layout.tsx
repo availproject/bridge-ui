@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import '@rainbow-me/rainbowkit/styles.css';
 import { Providers } from "./providers";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
