@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import '@rainbow-me/rainbowkit/styles.css';
 import { Providers } from "./providers";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -10,6 +9,8 @@ import { FooterSection } from "@/components/ui/FooterSection/FooterSection";
 import { Footer } from "@/components/ui/Footer/Footer";
 import DatadogInit from "./datadog-init";
 import { Analytics } from "@vercel/analytics/react"
+import AppInit from "./appInit";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,9 +24,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+
+
   return (
     <html lang="en">
-     
       <body className={inter.className}>
       <Analytics/>
       <img
@@ -36,6 +38,7 @@ export default async function RootLayout({
         <Providers>  
           <NavBar/>
           <DatadogInit />
+          <AppInit />
             {children}
            <Toaster />
           <FooterSection title={"Accelerating the unification of web3"} description={"DA Mainnet is now live!"}/>

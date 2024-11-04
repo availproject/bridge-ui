@@ -196,6 +196,7 @@ export default function useBridge() {
     destinationAddress: string;
   }) => {
     try {
+      console.log("activeUserAddress", activeUserAddress);
       if (!activeUserAddress) {
         throw new Error("No account selected");
       }
@@ -284,7 +285,7 @@ export default function useBridge() {
         Logger.debug("Retrying API Conn");
         retriedApiConn = await initApi();
         setApi(retriedApiConn);
-        if (!retriedApiConn) {
+        if (!retriedApiConn || !retriedApiConn.isConnected) {
           throw new Error(
             "Uh Oh! RPC under a lot of stress, error intialising api"
           );
@@ -335,7 +336,7 @@ export default function useBridge() {
             receiverAddress: destinationAddress,
             sourceBlockHash: success.blockhash,
             sourceBlockNumber: 0,
-            sourceTransactionHash: success.txHash,
+            sourceTransactionHash: success.txHash as `0x${string}`,
             sourceTransactionIndex: 0,
             sourceTimestamp: new Date().toISOString(),
           };
@@ -379,7 +380,7 @@ export default function useBridge() {
           receiverAddress: destinationAddress,
           sourceBlockHash: send.blockhash,
           sourceBlockNumber: 0,
-          sourceTransactionHash: send.txHash,
+          sourceTransactionHash: send.txHash as `0x${string}`,
           sourceTransactionIndex: 0,
           sourceTimestamp: new Date().toISOString(),
         };

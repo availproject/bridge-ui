@@ -21,6 +21,7 @@ export default function useTransactions() {
 
   const { selected } = useAvailAccount()
   const { address } = useAccount()
+  const { setTransactionLoader } = useTransactionsStore()
 
   useEffect(() => {
     if (!selected?.address && !address) {
@@ -47,12 +48,16 @@ export default function useTransactions() {
     sourceChain?: Chain;
     destinationChain?: Chain;
   }) => {
-    // Fetch all transactions
+    try{
+    setTransactionLoader(true);
     Logger.info("FETCHING_TRANSACTIONS");
     const indexedTransactions = await getTransactionsFromIndexer(
      { availAddress: availAddress, ethAddress: ethAddress, sourceChain: sourceChain, destinationChain: destinationChain}
     );
     setIndexedTransactions(indexedTransactions);
+    } catch (error) {} finally {
+      setTransactionLoader(false);
+    }
   };
 
   // allTransactions = indexedTransactions + localTransactions
@@ -63,6 +68,8 @@ export default function useTransactions() {
      * else add it to allTransactions
      * but deleting will create circular dependency, hence leave it as it is
      */
+
+    
     const allTransactions: Transaction[] = [];
     localTransactions.forEach((localTxn) => {
       if (localTxn.status === TransactionStatus.CLAIM_PENDING) {
@@ -126,9 +133,39 @@ export default function useTransactions() {
     return allTransactions.filter((txn) => txn.status !== "CLAIMED");
   }, [allTransactions]);
 
+  const CHUNK_SIZE = 4;
+
+  const paginatedPendingTransactions: Transaction[][] = useMemo(() => {
+      const chunks = [];
+      const sortedTxns = pendingTransactions.sort((a, b) => {
+        return (
+          new Date(b.sourceTimestamp).getTime() -
+          new Date(a.sourceTimestamp).getTime()
+        );
+      });
+      for (let i = 0; i < pendingTransactions.length; i += CHUNK_SIZE) {
+        chunks.push(sortedTxns.slice(i, i + CHUNK_SIZE));
+      }
+      return chunks;
+  }, [pendingTransactions]);
+
   const completedTransactions: Transaction[] = useMemo(() => {
     return allTransactions.filter((txn ) => txn.status === "CLAIMED");
   }, [allTransactions]);
+
+  const paginatedCompletedTransactions: Transaction[][] = useMemo(() => {
+    const chunks = [];
+    const sortedTxns = completedTransactions.sort((a, b) => {
+      return (
+        new Date(b.sourceTimestamp).getTime() -
+        new Date(a.sourceTimestamp).getTime()
+      );
+    });
+    for (let i = 0; i < completedTransactions.length; i += CHUNK_SIZE) {
+      chunks.push(sortedTxns.slice(i, i + CHUNK_SIZE));
+    }
+    return chunks
+  },[completedTransactions]);
 
   const addToLocalTransaction = (transaction: Transaction) => {
     const localTransactionsKey = `localTransactions:${selected?.address}`;
@@ -157,6 +194,8 @@ export default function useTransactions() {
     allTransactions,
     pendingTransactions,
     completedTransactions,
+    paginatedPendingTransactions,
+    paginatedCompletedTransactions,
     fetchTransactions,
     addToLocalTransaction,
   };

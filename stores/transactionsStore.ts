@@ -2,6 +2,8 @@ import { Transaction } from "@/types/transaction";
 import { create } from "zustand";
 
 interface TransactionsStore {
+  transactionLoader: boolean;
+  setTransactionLoader: (transactionLoader: boolean) => void;
   indexedTransactions: Transaction[];
   setIndexedTransactions: (transactions: Transaction[]) => void;
   localTransactions: Transaction[];
@@ -10,6 +12,8 @@ interface TransactionsStore {
 }
 
 export const useTransactionsStore = create<TransactionsStore>((set) => ({
+  transactionLoader: false,
+  setTransactionLoader: (transactionLoader) => set({ transactionLoader }),
   indexedTransactions: [],
   setIndexedTransactions: (indexedTransactions) => set({ indexedTransactions }),
   localTransactions: [],

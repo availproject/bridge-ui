@@ -1,6 +1,7 @@
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
 import { Chain } from "@/types/common";
+import { validAddress } from "@/utils/common";
 import { Logger } from "@/utils/logger";
 import { useMemo } from "react";
 import { useAccount } from "wagmi";
@@ -39,13 +40,17 @@ export default function useTransactionButtonState(
     );
   }, [fromAmount]);
 
-  const isInvalidToAddress = useMemo(() => {
-    if (toAddress !== undefined && toAddress !== "") {
-      return false;
+  const isValidToAddress = useMemo( () => {
+    if (fromChain === Chain.AVAIL) {
+      return Boolean(
+        (account?.address) || (toAddress && validAddress(toAddress, Chain.ETH))
+      );
     } else {
-      return true;
+      return Boolean(
+        (selected?.address) || (toAddress && validAddress(toAddress, Chain.AVAIL))
+      );
     }
-  }, [toAddress]);
+  }, [toAddress, fromChain, selected?.address, account?.address]);
 
   const hasInsufficientBalance = useMemo(() => {
     if (!fromAmount || isNaN(fromAmount)) return false;
@@ -74,6 +79,10 @@ export default function useTransactionButtonState(
     if (isInvalidAmount) {
       return "Enter Amount";
     }
+    if (!isValidToAddress) {
+      return "Invalid Receiver Details";
+    }
+
     if (hasInsufficientBalance) {
       return "Insufficient Balance";
     }
@@ -82,6 +91,7 @@ export default function useTransactionButtonState(
     } to ${toChain.charAt(0).toUpperCase() + toChain.slice(1).toLowerCase()}`;
   }, [
     isWalletConnected,
+    isValidToAddress,
     transactionInProgress,
     isInvalidAmount,
     hasInsufficientBalance,
@@ -94,13 +104,15 @@ export default function useTransactionButtonState(
       transactionInProgress ||
       isInvalidAmount ||
       hasInsufficientBalance ||
-      !isWalletConnected
+      !isWalletConnected ||
+      !isValidToAddress
     );
   }, [
     transactionInProgress,
     isInvalidAmount,
     hasInsufficientBalance,
     isWalletConnected,
+    isValidToAddress,
   ]);
 
   const availAmountToDollars: number = useMemo(() => {
