@@ -19,7 +19,6 @@ export const config = createConfig(
     walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "e77cdade22390c135f6dfb134f075abe",
     appName: "Bridge UI",
     appDescription: "Official Avail Bridge between AVAIL and ETHEREUM",
-    appUrl: "https://bridge.availproject.org/", 
     appIcon: "https://bridge.availproject.org/favicon.ico",
     ssr: true,
   }),
