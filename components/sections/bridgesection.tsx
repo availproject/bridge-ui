@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { z } from "zod";
@@ -89,6 +90,7 @@ export default function BridgeSection() {
     setToChain,
     setFromAmount,
     setToAddress,
+    toAddress,
     pendingTransactionsNumber,
     readyToClaimTransactionsNumber,
     ethBalance,
@@ -400,9 +402,7 @@ export default function BridgeSection() {
                                   src={`/images/AVAILsmall.png`}
                                   alt="logo"
                                   className="w-6 h-6"
-                                ></img>}
-                                
-                                
+                                ></img>}                             
                                 </div>
                               </div>
                             </div>
@@ -510,10 +510,16 @@ export default function BridgeSection() {
                                       ? (account.address.slice(0, 12) + "..." + account.address.slice(-4))
                                       : "Connect Wallet or paste address"
                                   }
-                                  {...field}
+                                  value={
+                                    toAddress
+                                      ? toAddress.slice(0, 12) + "..." + toAddress.slice(-4)
+                                      : ""
+                                  }
+                                 
                                   onChange={(event) => {
-                                    field.onChange(+event.target.value);
-                                    setToAddress(event.target.value);
+                                    const fullAddress = event.target.value;
+                                    setToAddress(fullAddress);
+                                    field.onChange(fullAddress);
                                   }}
                                 />
                               </div>

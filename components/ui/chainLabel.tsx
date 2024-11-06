@@ -29,7 +29,7 @@ function ChainLabel({ chain }: ChainLabelProps) {
                     className=" w-4 h-4"
                  
                 ></img>
-                <p className="hidden md:flex text-opacity-70 text-white text-sm m">Avail</p>
+                <p className="hidden md:flex text-opacity-70 text-white text-sm">Avail</p>
             </div>
         )
     )

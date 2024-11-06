@@ -233,7 +233,6 @@ export default function useBridge() {
         sourceChain: Chain.ETH,
         destinationChain: Chain.AVAIL,
         sourceTransactionHash: burnTxHash,
-        destinationTransactionHash: destinationAddress,
         amount: atomicAmount,
         status: TransactionStatus.INITIATED,
         messageId: 0,

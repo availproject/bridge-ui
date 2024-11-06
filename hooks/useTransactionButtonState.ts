@@ -64,7 +64,7 @@ export default function useTransactionButtonState(
     };
 
     const currentBalance = balanceMap[fromChain];
-    if (currentBalance === undefined || currentBalance === null) return false;
+    if (currentBalance === undefined || currentBalance === null) return true;
 
     return parseFloat(currentBalance) < amount;
   }, [ethBalance, availBalance, fromAmount, fromChain]);
@@ -98,6 +98,8 @@ export default function useTransactionButtonState(
     fromChain,
     toChain,
   ]);
+
+
 
   const isDisabled = useMemo(() => {
     return (

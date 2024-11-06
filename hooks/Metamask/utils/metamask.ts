@@ -73,7 +73,6 @@ export async function getMetaMaskEIP6963Provider() {
     }
 
     window.addEventListener('eip6963:announceProvider', onAnnounceProvider as EventListener);
-
     window.dispatchEvent(new Event('eip6963:requestProvider'));
   });
 }

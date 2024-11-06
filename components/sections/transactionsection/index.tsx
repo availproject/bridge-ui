@@ -215,7 +215,7 @@ export default function TransactionSection() {
             pendingTransactions.map((txn, index) => (
               <TableRow
                 className="flex overflow-x-scroll flex-row justify-between w-[100%] bg-[#363b4f] rounded-xl"
-                key={index}
+                key={txn.sourceTransactionHash}
               >
                 <TableCell className="font-medium flex flex-row rounded-xl">
                   <div className="hidden md:flex">

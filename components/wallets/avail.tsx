@@ -66,6 +66,7 @@ export default function Avail() {
 
           (selectedWallet.enable("bridge-ui") as any).then(() => {
             selectedWallet.getAccounts().then((accounts: WalletAccount[]) => {
+
               const enabledAccounts = (
                 accounts as ExtendedWalletAccount[]
               ).filter((account) => {
@@ -185,7 +186,7 @@ export default function Avail() {
                       sameSite: true,
                     });
                     fetchTransactions({
-                      availAddress: selected?.address,
+                      availAddress: account?.address,
                       ethAddress: address,
                     });
                     setOpen(false);

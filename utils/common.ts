@@ -92,7 +92,7 @@ export const getStatusTime = ({
     return "~";
   }
   if (status === "INITIATED") {
-    return "Waiting for finalisation";
+    return "Waiting for indexer";
   }
 
   //TODO: Change below to more accurate time
