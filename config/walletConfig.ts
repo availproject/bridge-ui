@@ -7,12 +7,22 @@ export const substrateConfig = {
 
 import { http, createConfig } from '@wagmi/core'
 import { appConfig } from './default'
+import { getDefaultConfig } from 'connectkit'
+import { mainnet, sepolia } from '@wagmi/core/chains'
 
 
-export const ethConfig = createConfig({
-  chains: [appConfig.networks.ethereum],
-  transports: {
-    [appConfig.networks.ethereum.id]: http(appConfig.networks.ethereum.id ===  1 ? `https://eth-mainnet.g.alchemy.com/v2/${process.env.ETHEREUM_RPC_API_KEY}` : `https://eth-sepolia.g.alchemy.com/v2/${process.env.ETHEREUM_RPC_API_KEY}`),
-  },
-  ssr: true, 
-})
+export const config = createConfig(
+  getDefaultConfig({
+    chains: [appConfig.networks.ethereum],
+    transports: {
+      [mainnet.id]: http(`https://rough-clean-gas.quiknode.pro/`),
+      [sepolia.id]: http(`https://quaint-shy-tree.ethereum-sepolia.quiknode.pro/`),
+    },
+    walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "e77cdade22390c135f6dfb134f075abe",
+    appName: "Bridge UI",
+    appDescription: "Official Avail Bridge between AVAIL and ETHEREUM",
+    appIcon: "https://bridge.availproject.org/favicon.ico",
+    ssr: true,
+  }),
+)
+
