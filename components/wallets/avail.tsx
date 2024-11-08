@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
-"use client"
+"use client";
 
-/* eslint-disable react/jsx-key */
+import { FaArrowRotateRight } from "react-icons/fa6";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import {
@@ -22,62 +22,87 @@ import { ArrowDownCircle, ArrowLeft, InfoIcon } from "lucide-react";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import useTransactions from "@/hooks/useTransactions";
 import { useAccount } from "wagmi";
-
+import { useInvokeSnap, useMetaMask, useRequestSnap } from "@/hooks/Metamask";
 
 export default function Avail() {
   const [open, setOpen] = useState(false);
-  const {fetchTransactions} = useTransactions();
-  const {address} = useAccount();
+  const { fetchTransactions } = useTransactions();
+  const requestSnap = useRequestSnap();
+  const invokeSnap = useInvokeSnap();
+  const { address } = useAccount();
   const [cookie, setCookie, removeCookie] = useCookies([
     "substrateAddress",
     "substrateWallet",
   ]);
   const [supportedWallets, setSupportedWallets] = useState<Wallet[]>([]);
-const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAccount();
+  const { installedSnap, detectMetaMask } = useMetaMask();
+  const { selected, setSelected, selectedWallet, setSelectedWallet } =
+    useAvailAccount();
   const [enabledAccounts, setEnabledAccounts] = useState<WalletAccount[]>([]);
 
-  useEffect(() => {(async()=>{
-    setSupportedWallets(getWallets());
-    if (cookie.substrateAddress && cookie.substrateWallet) {
-      const selectedWallet = getWallets().find((wallet) => {
-        return wallet.title == cookie.substrateWallet;
-      });
+  interface ExtendedWalletAccount extends WalletAccount {
+    type?: string;
+  }
 
-      if (!selectedWallet) {
-        return;
-      }
-       //@ts-ignore TODO: fix this ts error later
-      selectedWallet.enable("bridge-ui").then(() => {
-        selectedWallet.getAccounts().then((accounts) => {
-          const enabledAccounts = accounts.filter(account =>{
-            //@ts-ignore WalletAccount object dosen't have the types right
-            return account.type! !== "ethereum"
+  useEffect(() => {
+    (async () => {
+      setSupportedWallets(getWallets());
+
+      if (cookie.substrateAddress && cookie.substrateWallet) {
+        if (cookie.substrateWallet === "MetamaskSnap" && installedSnap) {
+          setSelected({
+            address: cookie.substrateAddress as string,
+            source: "MetamaskSnap",
           });
-          const selected = enabledAccounts.find(
-            (account) => account.address == cookie.substrateAddress
-          );
+          console.log("MetamaskSnap detected", selected);
+        } else {
+          const selectedWallet = getWallets().find((wallet) => {
+            return wallet.title == cookie.substrateWallet;
+          });
 
-          if (!selected) {
+          if (!selectedWallet) {
             return;
           }
 
-          setSelectedWallet(selectedWallet);
-          setEnabledAccounts(enabledAccounts);
-          setSelected(selected);
+          (selectedWallet.enable("bridge-ui") as any).then(() => {
+            selectedWallet.getAccounts().then((accounts: WalletAccount[]) => {
 
-          return null;
-        });
-      });
-    }
-  })();
-    
-  }, [cookie.substrateAddress, cookie.substrateWallet, setSelected, setSelectedWallet]);
+              const enabledAccounts = (
+                accounts as ExtendedWalletAccount[]
+              ).filter((account) => {
+                return account.type! !== "ethereum";
+              });
+              const selected = enabledAccounts.find(
+                (account) => account.address == cookie.substrateAddress
+              );
+
+              if (!selected) {
+                return;
+              }
+
+              setSelectedWallet(selectedWallet);
+              setEnabledAccounts(enabledAccounts);
+              setSelected(selected);
+
+              return null;
+            });
+          });
+        }
+      }
+    })();
+  }, [
+    installedSnap,
+    cookie.substrateAddress,
+    cookie.substrateWallet,
+    setSelected,
+    setSelectedWallet,
+  ]);
 
   async function updateEnabledAccounts(wallet: Wallet): Promise<undefined> {
     const accounts = await wallet.getAccounts();
-    const substrateAccounts = accounts.filter(account =>{
+    const substrateAccounts = accounts.filter((account) => {
       //@ts-ignore WalletAccount object dosen't have the types right
-      return account.type! !== "ethereum"
+      return account.type! !== "ethereum";
     });
     setEnabledAccounts(substrateAccounts);
     return;
@@ -96,16 +121,20 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
           }}
         >
           <img src="/images/Wallet.png" className="pr-1" alt="a"></img>
-          {selected.address.slice(0, 6) + "..." + selected.address?.slice(-4)}
+          {selected.source === 'MetamaskSnap' ? (installedSnap ? selected.address.slice(0, 6) + "..." + selected.address?.slice(-4) : 'Retry Connecting') : selected.address.slice(0, 6) + "..." + selected.address?.slice(-4)}
           <button
             className="ml-2"
             onClick={() => {
               removeCookie("substrateAddress");
               removeCookie("substrateWallet");
               setSelected(null);
+              fetchTransactions({
+                availAddress: selected?.address,
+                ethAddress: address,
+              });
             }}
           >
-            <IoMdClose />
+          {selected.source === 'MetamaskSnap' ? (installedSnap ? <IoMdClose /> : <FaArrowRotateRight />) : <IoMdClose />} 
           </button>
         </div>
       </>
@@ -137,13 +166,15 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
             </Button>
           )}
           <p className="text-white my-3 !mt-4 text-opacity-70 font-ppmori font-light text-sm flex flex-row items-center justify-center space-x-2">
-            <span>Select Accounts</span><ArrowDownCircle className="h-4 w-4"/>
+            <span>Select Accounts</span>
+            <ArrowDownCircle className="h-4 w-4" />
           </p>
 
           <div className="flex flex-col gap-2 !max-h-48 overflow-y-scroll overflow-x-hidden ">
             {enabledAccounts.map((account, index) => {
               return (
                 <Button
+                  key={index}
                   onClick={() => {
                     setSelected(account);
                     setCookie("substrateAddress", account?.address, {
@@ -155,9 +186,9 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
                       sameSite: true,
                     });
                     fetchTransactions({
-                      availAddress: selected?.address,
-                      ethAddress: address    
-                    })
+                      availAddress: account?.address,
+                      ethAddress: address,
+                    });
                     setOpen(false);
                   }}
                   className="flex flex-row items-center justify-between bg-[#3a3b3cb1] rounded-xl !h-20  p-4 "
@@ -182,7 +213,6 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
                         )
                       </p>
                     </div>
-      
                   </div>
                 </Button>
               );
@@ -201,6 +231,47 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
             enabledAccounts && enabledAccounts.length > 0 ? "h-0" : "h-64 py-4"
           } overflow-scroll`}
         >
+          <Button
+            variant={"default"}
+            disabled={!detectMetaMask()}
+            className="!text-lg font-thin bg-[#3a3b3cb1] text-left font-ppmori rounded-xl !p-8"
+            onClick={async () => {
+              await requestSnap();
+              setSelected({
+                address: (await invokeSnap({ method: "getAddress" })) as string,
+                source: "MetamaskSnap",
+              });
+              setCookie(
+                "substrateAddress",
+                (await invokeSnap({ method: "getAddress" })) as string,
+                {
+                  path: "/",
+                  sameSite: true,
+                }
+              );
+              setCookie("substrateWallet", "MetamaskSnap", {
+                path: "/",
+                sameSite: true,
+              });
+              setOpen(false);
+              fetchTransactions({
+                availAddress: selected?.address,
+                ethAddress: address,
+              });
+            }}
+            key={"Metamask"}
+          >
+            <div>
+              <div className="flex flex-row">
+                <img
+                  alt={"Metamask Snap"}
+                  src={"/images/availsnap.png"}
+                  className="mr-4 h-6 w-6"
+                />
+                Avail Snap
+              </div>
+            </div>
+          </Button>
           {supportedWallets
             .sort((a, b) => {
               if (a.title === "SubWallet") return -1;
@@ -218,7 +289,6 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
                     (wallet.enable("rewards") as any).then(async () => {
                       await updateEnabledAccounts(wallet);
                     });
-
                   }}
                   key={wallet.title}
                 >
@@ -242,8 +312,9 @@ const {selected, setSelected, selectedWallet, setSelectedWallet } = useAvailAcco
     );
   }
 
-  return (
-    window === undefined ? <></> :
+  return window === undefined ? (
+    <></>
+  ) : (
     <>
       {selected ? (
         <DisconnectWallet />

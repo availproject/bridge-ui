@@ -10,7 +10,7 @@ type ChainLabelProps = {
 function ChainLabel({ chain }: ChainLabelProps) {
     return (
         chain === Chain.ETH ? (
-            <p className="flex flex-row items-center justify-center space-x-1">
+            <div className="flex flex-row items-center justify-center space-x-1">
                 {" "}
                 <img
                     src="/images/ETHEREUMsmall.png"
@@ -19,9 +19,9 @@ function ChainLabel({ chain }: ChainLabelProps) {
                   
                 ></img>
                 <p className="hidden md:flex text-opacity-70 text-white text-sm">Ethereum</p>
-            </p>
+            </div>
         ) : (
-            <p className="flex flex-row items-center justify-center space-x-1">
+            <div className="flex flex-row items-center justify-center space-x-1">
                 {" "}
                 <img
                     src="/images/AVAILsmall.png"
@@ -29,8 +29,8 @@ function ChainLabel({ chain }: ChainLabelProps) {
                     className=" w-4 h-4"
                  
                 ></img>
-                <p className="hidden md:flex text-opacity-70 text-white text-sm m">Avail</p>
-            </p>
+                <p className="hidden md:flex text-opacity-70 text-white text-sm">Avail</p>
+            </div>
         )
     )
 }

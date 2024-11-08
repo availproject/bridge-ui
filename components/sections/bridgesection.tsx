@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { z } from "zod";
@@ -13,14 +14,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { RiLoopLeftFill } from "react-icons/ri";
 import { useEffect, useState } from "react";
 import Avail from "../wallets/avail";
 import Eth from "../wallets/eth";
-import {
-  _getBalance,
-  validAddress,
-} from "@/utils/common";
+import { _getBalance, validAddress } from "@/utils/common";
 import { useAccount } from "wagmi";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
@@ -31,7 +28,13 @@ import { toast } from "@/components/ui/use-toast";
 import { parseError } from "@/utils/parseError";
 import BigNumber from "bignumber.js";
 import { badgeVariants } from "../ui/badge";
-import { ArrowUpRight, CheckCircle2, Copy, InfoIcon, Loader2 } from "lucide-react";
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  Copy,
+  InfoIcon,
+  Loader2,
+} from "lucide-react";
 import { parseAmount } from "@/utils/parsers";
 import { LoadingButton } from "../ui/loadingbutton";
 import useTransactionButtonState from "@/hooks/useTransactionButtonState";
@@ -59,8 +62,11 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card";
-import { Logger } from "@/utils/logger";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "../ui/hover-card";
 import React from "react";
 import useAppInit from "@/hooks/useAppInit";
 import { showFailedMessage } from "@/utils/toasts";
@@ -76,9 +82,6 @@ export const formSchema = z.object({
 });
 
 export default function BridgeSection() {
-
-  useAppInit();
-
   const account = useAccount();
   const {
     fromChain,
@@ -87,25 +90,26 @@ export default function BridgeSection() {
     setToChain,
     setFromAmount,
     setToAddress,
+    toAddress,
     pendingTransactionsNumber,
     readyToClaimTransactionsNumber,
     ethBalance,
     availBalance,
   } = useCommonStore();
   const { selected } = useAvailAccount();
-  const { fetchBalances } = useAppInit();
+  const { refetchBalances } = useAppInit();
   const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
- 
+
   const [transactionInProgress, setTransactionInProgress] =
-  useState<boolean>(false);
+    useState<boolean>(false);
   const { buttonStatus, isDisabled, availAmountToDollars } =
-  useTransactionButtonState(transactionInProgress);
+    useTransactionButtonState(transactionInProgress);
 
   const [isChecked, setIsChecked] = useState<CheckedState>(false);
   const [open, setOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
-  const [availToEthHash, setAvailToEthHash] = useState<string | undefined>('')
-  const [ethToAvailHash, setEthToAvailHash] = useState<string | undefined>('')
+  const [availToEthHash, setAvailToEthHash] = useState<string | undefined>("");
+  const [ethToAvailHash, setEthToAvailHash] = useState<string | undefined>("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -116,7 +120,7 @@ export default function BridgeSection() {
 
   const resetState = async () => {
     form.reset();
-    await fetchBalances();
+    await refetchBalances();
   };
 
   useEffect(() => {
@@ -134,13 +138,13 @@ export default function BridgeSection() {
         const fromAmountAtomic = new BigNumber(values.fromAmount)
           .multipliedBy(new BigNumber(10).pow(18))
           .toString(10);
-        
+
         let destinationAddress = selected?.address || values.toAddress;
 
-        if(await validAddress(values.toAddress, Chain.AVAIL)) {
+        if (await validAddress(values.toAddress, Chain.AVAIL)) {
           destinationAddress = values.toAddress;
         }
-       
+
         setTransactionInProgress(true);
         const blockhash = await initEthToAvailBridging({
           atomicAmount: fromAmountAtomic,
@@ -158,11 +162,11 @@ export default function BridgeSection() {
           .multipliedBy(new BigNumber(10).pow(18))
           .toString(10);
 
-          let destinationAddress = account?.address || values.toAddress;
-        
-          if(await validAddress(values.toAddress, Chain.ETH)) {
-            destinationAddress = values.toAddress;
-          }
+        let destinationAddress = account?.address || values.toAddress;
+
+        if (await validAddress(values.toAddress, Chain.ETH)) {
+          destinationAddress = values.toAddress;
+        }
 
         setTransactionInProgress(true);
         const init = await initAvailToEthBridging({
@@ -174,7 +178,7 @@ export default function BridgeSection() {
           setAvailToEthHash(init.txHash);
           setOpenDialog(true);
         }
- 
+
         setTransactionInProgress(false);
         resetState();
       }
@@ -184,57 +188,52 @@ export default function BridgeSection() {
     }
   }
 
-  function Balance() {
+  const Balance = () => {
+    const isEthChain = fromChain === Chain.ETH;
+    const balance = isEthChain ? ethBalance : availBalance;
+    const isConnected = isEthChain ? account.address : selected;
+    
+    const renderBalanceContent = () => {
+      if (!isConnected) {
+        return (
+          <span className="text-white font-bold mx-1 flex flex-row">
+            — <p className="pl-1"></p>
+          </span>
+        );
+      }
+  
+      if (balance === undefined || balance === null) {
+        return (
+          <div className="flex flex-row items-center ml-2">
+            <div className="h-4 w-12 bg-gray-600 animate-pulse rounded mr-1" />
+            <div className="h-4 w-10 bg-gray-600 animate-pulse rounded" />
+          </div>
+        );
+      }
+  
+      return (
+        <span className="text-white font-bold mx-1 flex flex-row">
+          {parseFloat(parseAmount(balance, 18)).toFixed(2)}
+          <p className="pl-1">AVAIL</p>
+        </span>
+      );
+    };
+  
     return (
-      <>
-        <div className="flex flex-row items-end justify-start pl-1 font-ppmori ">
-          {fromChain === Chain.ETH ? (
-            <span className="font-ppmori flex flex-row items-center justify-center space-x-2 text-white text-opacity-70 pt-1">
-              Balance{" "}
-              <span className="text-white font-bold mx-1 flex flex-row">
-                {account.address ? (
-                  ethBalance !== undefined && ethBalance !== null ? (
-                    parseFloat(parseAmount(ethBalance, 18)).toFixed(2)
-                  ) : (
-                    <RiLoopLeftFill
-                      className={`h-4 w-4 animate-spin font-bold`}
-                    />
-                  )
-                ) : (
-                  "--"
-                )}{" "}
-                <p className="pl-1">AVAIL</p>
-              </span>
-            </span>
-          ) : (
-            <span className="font-ppmori flex flex-row text-white text-opacity-70">
-              Balance{" "}
-              <span className="text-white font-bold mx-1 flex flex-row">
-                {selected ? (
-                  availBalance ? (
-                    parseFloat(parseAmount(availBalance, 18)).toFixed(2)
-                  ) : (
-                    <RiLoopLeftFill
-                      className={`h-4 w-4 animate-spin font-bold`}
-                    />
-                  )
-                ) : (
-                  "--"
-                )}{" "}
-                <p className="pl-1">AVAIL</p>
-              </span>
-            </span>
-          )}
-        </div>
-      </>
+      <div className="flex flex-row items-end justify-start pl-1 font-ppmori">
+        <span className={`font-ppmori flex flex-row items-center text-white text-opacity-70 ${isEthChain ? 'pt-1' : ''}`}>
+          Balance {renderBalanceContent()}
+        </span>
+      </div>
     );
-  }
+  };
 
   async function PasteAddressAction() {
     const address = await navigator.clipboard.readText();
     const a = await validAddress(address, toChain);
     a &&
       (form.setValue("toAddress", address),
+      setToAddress(address),
       setOpen(false),
       toast({
         title: (
@@ -248,6 +247,7 @@ export default function BridgeSection() {
                 The Address has been added successfully and would be used for
                 future txns.
               </p>
+             
             </div>
           </div>
         ),
@@ -270,11 +270,11 @@ export default function BridgeSection() {
   }
 
   return (
-    <div className="text-white w-full my-4">
+    <div className="text-white w-full my-4 flex flex-col space-y-3 items-center justify-center">
       <Tabs
         defaultValue="bridge"
         id="container"
-        className="section_bg p-2 w-[90vw] sm:w-[70vw] lg:w-[55vw] xl:w-[45vw] "
+        className="section_bg p-2 w-screen max-sm:rounded-none max-sm:border-x-0 sm:w-[70vw] lg:w-[50vw] xl:w-[40vw] "
       >
         <TabsList className="flex flex-row items-start justify-start bg-transparent !border-0 p-2 mb-6 mx-2 mt-1">
           <div className="flex flex-row pb-[2vh] items-center justify-between">
@@ -324,31 +324,10 @@ export default function BridgeSection() {
             </h1>
           </div>
         </TabsList>
-        {window.screen.width < 768 && (
-          <div className={badgeVariants({ variant: "avail" })}>
-            {pendingTransactionsNumber > 0 ? (
-              <>
-                <Loader2 className={`h-4 w-4 animate-spin`} />
-
-                <p className="!text-left">
-                  {" "}
-                  {pendingTransactionsNumber} Pending |{" "}
-                  {readyToClaimTransactionsNumber} Ready to Claim
-                </p>
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className={`h-4 w-4`} />
-
-                <p className="!text-left"> No Pending Claims</p>
-              </>
-            )}
-          </div>
-        )}
         <TabsContent id="bridge" value="bridge" className="flex-1 ">
           <div className="lg:p-4 p-2">
             <Form {...form}>
-              <form
+              <form id="bridge-form"
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="md:space-y-4 w-full"
               >
@@ -410,23 +389,20 @@ export default function BridgeSection() {
                                 </p>
                               </div>
 
-                              <div className="rounded-xl bg-[#464A5B] flex flex-row  transform transition-transform duration-200 hover:scale-105 items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer">
+                              <div className="p-4 md:mr-2 rounded-xl bg-[#464A5B] flex flex-row  transform transition-transform duration-200 hover:scale-105 items-center space-x-2 font-ppmoribsemibold text-2xl  justify-center cursor-pointer">
                                 <div
                                   className={
                                     "flex flex-row items-center justify-center space-x-2  font-ppmori"
                                   }
-                                >
-                                  <img
-                                    src={`/images/AVAILsmall.png`}
-                                    alt="logo"
-                                  ></img>
-                                  <p className="!text-lg !text-left">
-                                    {/* since we're doing just avail tokens for now, we'll just show avail here */}
-                                    {/* {fromChain === Chain.ETH
-                                      ? "ETH"
-                                      : fromChain.toLocaleUpperCase()} */}
-                                    {Chain.AVAIL}
-                                  </p>
+                                >{fromChain === Chain.ETH ? <img
+                                  src={`/images/AVAILETHsmall.png`}
+                                  alt="logo"
+                                  className="w-8 "
+                                ></img> :   <img
+                                  src={`/images/AVAILsmall.png`}
+                                  alt="logo"
+                                  className="w-6 h-6"
+                                ></img>}                             
                                 </div>
                               </div>
                             </div>
@@ -439,7 +415,9 @@ export default function BridgeSection() {
                                     const value =
                                       fromChain === Chain.ETH
                                         ? ethBalance
-                                          ? parseFloat(parseAmount(ethBalance, 18) )
+                                          ? parseFloat(
+                                              parseAmount(ethBalance, 18)
+                                            )
                                           : 0
                                         : availBalance
                                         ? parseFloat(
@@ -452,14 +430,16 @@ export default function BridgeSection() {
                                   }}
                                   className="font-thicccboisemibold flex flex-row space-x-1 text-[#3FB5F8] text-sm cursor-pointer"
                                 >
-                                  <span>MAX</span> <HoverCard>
-              <HoverCardTrigger className="cursor-pointer">
-                <InfoIcon className="w-3 h-3 " />
-              </HoverCardTrigger>
-              <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
-              Transfers the max available minus 1 AVAIL reserved to pay fees
-              </HoverCardContent>
-            </HoverCard>
+                                  <span>MAX</span>{" "}
+                                  <HoverCard>
+                                    <HoverCardTrigger className="cursor-pointer">
+                                      <InfoIcon className="w-3 h-3 " />
+                                    </HoverCardTrigger>
+                                    <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
+                                      Transfers the max available minus 1 AVAIL
+                                      reserved to pay fees
+                                    </HoverCardContent>
+                                  </HoverCard>
                                 </div>
                               </div>
                             </div>
@@ -472,13 +452,12 @@ export default function BridgeSection() {
                   )}
                 />
                 <div className="relative flex items-center justify-center">
-                  <div className="absolute border-b border-white border-opacity-30 w-[95%] mx-auto hover:border-opacity-60"></div>
                   <HiOutlineSwitchVertical
                     onClick={() => {
                       setFromChain(toChain);
                       setToChain(fromChain);
                     }}
-                    className="h-12 w-12 bg-[#3A3E4A] transform transition-transform duration-1000 hover:p-2.5 p-3 rounded-full mx-auto cursor-pointer relative z-10"
+                    className="h-12 w-12 md:bg-[#3A3E4A] transform transition-transform duration-1000 hover:p-2.5 p-3 rounded-xl mx-auto cursor-pointer relative z-10"
                   />
                 </div>
                 {/* TO FIELD*/}
@@ -501,7 +480,7 @@ export default function BridgeSection() {
                               <p className="!text-left">{toChain}</p>
                             </div>
                           </span>
-                          {/* this will be opposite here since it's the To feild*/}
+                          {/* this will be opposite here since it's the To field*/}
                           {fromChain === Chain.ETH ? <Avail /> : <Eth />}
                         </FormLabel>
                         <FormControl>
@@ -511,9 +490,8 @@ export default function BridgeSection() {
                                 <p className="text-white font-ppmori text-sm text-opacity-60">
                                   To Address
                                 </p>
-
                                 <input
-                                  className="!bg-inherit placeholder:text-white text-white text-opacity-90 placeholder:text-opacity-90 placeholder:text-2xl text-2xl "
+                                  className={`!bg-inherit ${(fromChain === Chain.ETH && selected?.address) || (fromChain === Chain.AVAIL && account?.address) ? 'placeholder:text-white placeholder:bg-[#2f3441] placeholder:p-4 !rounded-lg text-2xl ' : 'bg-none'} text-white text-opacity-90 placeholder:text-opacity-90 text-xl `}
                                   style={{
                                     border: "none",
                                     background: "none",
@@ -526,16 +504,22 @@ export default function BridgeSection() {
                                   placeholder={
                                     fromChain === Chain.ETH
                                       ? selected?.address
-                                        ? selected.address.slice(0, 17) + "..."
-                                        : "0x"
+                                        ? (selected.address.slice(0, 12) + "..." + selected.address.slice(-4))
+                                        : "Connect Wallet or paste address"
                                       : account?.address
-                                      ? account.address.slice(0, 17) + "..."
-                                      : "0x"
+                                      ? (account.address.slice(0, 12) + "..." + account.address.slice(-4))
+                                      : "Connect Wallet or paste address"
                                   }
-                                  {...field}
+                                  value={
+                                    toAddress
+                                      ? toAddress.slice(0, 12) + "..." + toAddress.slice(-4)
+                                      : ""
+                                  }
+                                 
                                   onChange={(event) => {
-                                    field.onChange(+event.target.value);
-                                    setToAddress(event.target.value);
+                                    const fullAddress = event.target.value;
+                                    setToAddress(fullAddress);
+                                    field.onChange(fullAddress);
                                   }}
                                 />
                               </div>
@@ -543,66 +527,70 @@ export default function BridgeSection() {
                           </>
                         </FormControl>
                         <div className="flex flex-row items-center justify-between">
-                        <AlertDialog open={open}>
-                                <AlertDialogTrigger
+                          <AlertDialog open={open}>
+                            <AlertDialogTrigger
+                              onClick={() => {
+                                setOpen(!open);
+                              }}
+                              className=" "
+                            >
+                              <div className="flex flex-row items-center italic underline-offset-2 underline  text-white justify-start pl-1 font-ppmori text-opacity-80">
+                                <InfoIcon className="w-3 h-3 mr-1" />
+                                Send to a different address?
+                              </div>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-[#252831] border-2 border-[#3a3b3cb1] !rounded-[1rem]">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-white font-ppmoribsemibold !text-lg">
+                                  Transfer to different Address
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="text-[#B6B7BB] font-thicccboisemibold text-md">
+                                  <div className=" border-white border-t border-opacity-25 w-full !h-1 mb-4"></div>
+                                  <div className="flex flex-row items-bottom pt-2"></div>
+                                  <div className="items-start flex  space-x-2 px-2 pb-4">
+                                    <Checkbox
+                                      id="terms1"
+                                      checked={isChecked}
+                                      onCheckedChange={setIsChecked}
+                                      className="text-white border-white border-opacity-70 border rounded-md mt-1"
+                                    ></Checkbox>
+                                    <div className="grid gap-1.5 leading-none">
+                                      <label
+                                        htmlFor="terms1"
+                                        className="text-sm space-y-4 font-light leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white text-opacity-60"
+                                      >
+                                        <span>Please double-check if the address is
+                                        correct. Any tokens sent to an incorrect
+                                        address will be unrecoverable.
+                                        </span>
+                                      </label>
+                                      <label className="text-sm pt-2 font-light leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white text-opacity-60">Priority will be given to the pasted address if case of preconnected account</label>
+                                    </div>
+                                  </div>
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel
                                   onClick={() => {
-                                    setOpen(!open);
+                                    setOpen(false);
                                   }}
-                                  className=" "
+                                  className="!bg-inherit !border-0 text-red-600 hover:text-red-800 "
                                 >
-                                  <div className="flex flex-row items-center underline text-white justify-start pl-1 font-ppmori text-opacity-80"><InfoIcon className="w-5 h-5 mr-1"/>Send to a different address?</div>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent className="bg-[#252831] border-2 border-[#3a3b3cb1] !rounded-[1rem]">
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle className="text-white font-ppmoribsemibold !text-lg">
-                                      Transfer to different Address
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription className="text-[#B6B7BB] font-thicccboisemibold text-md">
-                                      <div className=" border-white border-t border-opacity-25 w-full !h-1 mb-4"></div>
-                                      <div className="flex flex-row items-bottom pt-2"></div>
-                                      <div className="items-start flex  space-x-2 px-2 pb-4">
-                                        <Checkbox
-                                          id="terms1"
-                                          checked={isChecked}
-                                          onCheckedChange={setIsChecked}
-                                          className="text-white border-white border-opacity-70 border rounded-md mt-1"
-                                        ></Checkbox>
-                                        <div className="grid gap-1.5 leading-none">
-                                          <label
-                                            htmlFor="terms1"
-                                            className="text-sm font-light leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white text-opacity-60"
-                                          >
-                                            Please double-check if the address
-                                            is correct. Any tokens sent to an
-                                            incorrect address will be
-                                            unrecoverable.
-                                          </label>
-                                        </div>
-                                      </div>
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel
-                                      onClick={() => {
-                                        setOpen(false);
-                                      }}
-                                      className="!bg-inherit !border-0 text-red-600 hover:text-red-800 "
-                                    >
-                                      Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                      disabled={!isChecked}
-                                      className="rounded-xl bg-[#464A5B] flex flex-row  items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer"
-                                      onClick={PasteAddressAction}
-                                    >
-                                      <span>+</span>
-                                      <span className="text-sm text-white text-opacity-70">
-                                        Copy Address from Clipboard
-                                      </span>
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
+                                  Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  disabled={!isChecked}
+                                  className="rounded-xl bg-[#464A5B] flex flex-row  items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer"
+                                  onClick={PasteAddressAction}
+                                >
+                                  <span>+</span>
+                                  <span className="text-sm text-white text-opacity-70">
+                                    Copy Address from Clipboard
+                                  </span>
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                         <FormMessage />
                       </FormItem>
@@ -642,19 +630,23 @@ export default function BridgeSection() {
                     </div>
                     <DialogFooter className="sm:justify-start mt-1">
                       <DialogClose asChild>
-                        <Link target="_blank" href={
-                fromChain === Chain.ETH
-                  ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${ethToAvailHash}`
-                  : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${availToEthHash}`
-              } className="w-full !border-0">
-                        <Button
-                          type="button"
-                          variant="primary"
-                          
+                        <Link
+                          target="_blank"
+                          href={
+                            fromChain === Chain.ETH
+                              ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${ethToAvailHash}`
+                              : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${availToEthHash}`
+                          }
                           className="w-full !border-0"
                         >
-                          View on Explorer <ArrowUpRight className="h-3 w-6" />
-                        </Button>
+                          <Button
+                            type="button"
+                            variant="primary"
+                            className="w-full !border-0"
+                          >
+                            View on Explorer{" "}
+                            <ArrowUpRight className="h-3 w-6" />
+                          </Button>
                         </Link>
                       </DialogClose>
                     </DialogFooter>
@@ -664,11 +656,12 @@ export default function BridgeSection() {
                   variant={"primary"}
                   loading={transactionInProgress}
                   type="submit"
-                  className="!rounded-xl w-full !text-[15px] !py-8  font-ppmori"
+                  className="!rounded-xl w-full !text-[15px] !py-8 max-md:mb-4 font-ppmori"
                   disabled={isDisabled}
                 >
                   {buttonStatus}
                 </LoadingButton>
+                
               </form>
             </Form>
           </div>
@@ -681,6 +674,28 @@ export default function BridgeSection() {
           <TransactionSection />
         </TabsContent>
       </Tabs>
+
+      {/* {window.screen.width < 768 && (
+          <div className={badgeVariants({ variant: "avail" })}>
+            {pendingTransactionsNumber > 0 ? (
+              <>
+                <Loader2 className={`h-4 w-4 animate-spin`} />
+
+                <p className="!text-left">
+                  {" "}
+                  {pendingTransactionsNumber} Pending |{" "}
+                  {readyToClaimTransactionsNumber} Ready to Claim
+                </p>
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className={`h-4 w-4`} />
+
+                <p className="!text-left"> No Pending Claims</p>
+              </>
+            )}
+          </div>
+        )} */}
     </div>
   );
 }

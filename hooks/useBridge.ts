@@ -26,19 +26,27 @@ import { useCommonStore } from "@/stores/common";
 import { ApiPromise } from "avail-js-sdk";
 import { showSuccessMessage } from "@/utils/toasts";
 import { formatUnits } from "viem";
+import { useInvokeSnap } from "./Metamask";
+import { checkTransactionStatus } from "./Metamask/utils";
+
+import type {
+  Transaction as MetamaskTransaction,
+  TxPayload,
+} from "@avail-project/metamask-avail-types";
 
 export default function useBridge() {
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
   const { addToLocalTransaction } = useTransactions();
   const { writeContractAsync } = useWriteContract();
   const { selected } = useAvailAccount();
-  const {address} = useAccount();
+  const { address } = useAccount();
   const { api, setApi } = useCommonStore();
+  const invokeSnap = useInvokeSnap();
 
   const networks = appConfig.networks;
 
   const validateChain = async (txType: TRANSACTION_TYPES) => {
-     if (txType === TRANSACTION_TYPES.BRIDGE_ETH_TO_AVAIL) {
+    if (txType === TRANSACTION_TYPES.BRIDGE_ETH_TO_AVAIL) {
       if (networks.ethereum.id !== (await activeNetworkId())) {
         await switchNetwork(networks.ethereum.id);
       }
@@ -49,7 +57,10 @@ export default function useBridge() {
     // Get AVAIL balance on Ethereum chain
     const balance = await readContract(ethConfig, {
       address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-      abi: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet" ? ethereumAvailTokenMainnet : ethereumAvailTokenTuring,
+      abi:
+        process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
+          ? ethereumAvailTokenMainnet
+          : ethereumAvailTokenTuring,
       functionName: "balanceOf",
       args: [activeUserAddress],
       chainId: networks.ethereum.id,
@@ -66,7 +77,10 @@ export default function useBridge() {
       // Get current allowance on Ethereum chain
       const allowance = await readContract(ethConfig, {
         address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-        abi: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet" ? ethereumAvailTokenMainnet : ethereumAvailTokenTuring,
+        abi:
+          process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
+            ? ethereumAvailTokenMainnet
+            : ethereumAvailTokenTuring,
         functionName: "allowance",
         args: [activeUserAddress, appConfig.contracts.ethereum.bridge],
         chainId: networks.ethereum.id,
@@ -84,7 +98,10 @@ export default function useBridge() {
     // approve on ethereum chain
     const txHash = await writeContractAsync({
       address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-      abi: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet" ? ethereumAvailTokenMainnet : ethereumAvailTokenTuring,
+      abi:
+        process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
+          ? ethereumAvailTokenMainnet
+          : ethereumAvailTokenTuring,
       functionName: "approve",
       // args: [spender, amount]
       args: [appConfig.contracts.ethereum.bridge, atomicAmount],
@@ -107,7 +124,10 @@ export default function useBridge() {
 
       const txHash = await writeContractAsync({
         address: appConfig.contracts.ethereum.bridge as `0x${string}`,
-        abi: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet" ? ethereumBridgeMainnet : ethereumBridgeTuring,
+        abi:
+          process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
+            ? ethereumBridgeMainnet
+            : ethereumBridgeTuring,
         functionName: "sendAVAIL",
         // args: [recipient, amount]
         args: [byte32DestinationAddress, atomicAmount],
@@ -118,6 +138,51 @@ export default function useBridge() {
     },
     []
   );
+
+  const snapSendMessage = async ({
+    atomicAmount,
+    destinationAddress,
+  }: {
+    atomicAmount: string;
+    destinationAddress: string;
+  }) => {
+    const txPayload = await invokeSnap({
+      method: "generateTransactionPayload",
+      params: {
+        module: "vector",
+        method: "sendMessage",
+        args: [
+          {
+            FungibleToken: {
+              assetId:
+                "0x0000000000000000000000000000000000000000000000000000000000000000",
+              amount: atomicAmount,
+            },
+          },
+          `${destinationAddress.padEnd(66, "0")}`,
+          2,
+        ],
+      },
+    });
+
+    const signedTx = await invokeSnap({
+      method: "signPayloadJSON",
+      params: {
+        payload: (txPayload as TxPayload).payload,
+      },
+    });
+
+    const txHash = await invokeSnap({
+      method: "send",
+      params: {
+        signature: (signedTx as { signature: string }).signature,
+        txPayload: txPayload,
+        network: 1,
+      },
+    });
+
+    return (txHash as MetamaskTransaction).hash;
+  };
 
   /**
    * @description Initiates bridging from Ethereum to AVAIL,
@@ -131,18 +196,19 @@ export default function useBridge() {
     destinationAddress: string;
   }) => {
     try {
+      console.log("activeUserAddress", activeUserAddress);
       if (!activeUserAddress) {
         throw new Error("No account selected");
       }
-  
+
       await validateChain(TRANSACTION_TYPES.BRIDGE_ETH_TO_AVAIL);
-  
+
       if ((await activeNetworkId()) !== networks.ethereum.id) {
         throw new Error(
           `Invalid network, please switch to ${networks.ethereum.name} network(id: ${networks.ethereum.id})`
         );
       }
-  
+
       // check approval
       const currentAllowance = await getCurrentAllowanceOnEth();
       if (new BigNumber(atomicAmount).gt(currentAllowance)) {
@@ -152,22 +218,21 @@ export default function useBridge() {
           desc: "Your approval transaction has been successfully executed",
         });
       }
-  
+
       const availBalance = await getAvailBalanceOnEth();
       if (new BigNumber(atomicAmount).gt(new BigNumber(availBalance))) {
         throw new Error("insufficient balance");
       }
-  
+
       const burnTxHash = await burnAvailOnEth({
         atomicAmount,
         destinationAddress,
       });
-  
+
       addToLocalTransaction({
         sourceChain: Chain.ETH,
         destinationChain: Chain.AVAIL,
         sourceTransactionHash: burnTxHash,
-        destinationTransactionHash: destinationAddress,
         amount: atomicAmount,
         status: TransactionStatus.INITIATED,
         messageId: 0,
@@ -179,20 +244,25 @@ export default function useBridge() {
         sourceTransactionIndex: 0,
         sourceTimestamp: new Date().toISOString(),
       });
-  
-      Logger.info(`ETH_TO_AVAIL_INIT_SUCCESS ${burnTxHash} receiver_address: ${destinationAddress} sender_address: ${address} amount: ${atomicAmount}`);
+
+      Logger.info(
+        `ETH_TO_AVAIL_INIT_SUCCESS ${burnTxHash} receiver_address: ${destinationAddress} sender_address: ${address} amount: ${atomicAmount}`
+      );
 
       return burnTxHash;
     } catch (error: any) {
-      Logger.error(`ETH_TO_AVAIL_INIT_FAILED: ${error}`, ["receiver_address", destinationAddress],
-        ["sender_address",address],
-        ["amount", formatUnits(BigInt(atomicAmount), 18)], ["flow", "ETH -> AVAIL"]);  
+      Logger.error(
+        `ETH_TO_AVAIL_INIT_FAILED: ${error}`,
+        ["receiver_address", destinationAddress],
+        ["sender_address", address],
+        ["amount", formatUnits(BigInt(atomicAmount), 18)],
+        ["flow", "ETH -> AVAIL"]
+      );
       throw new Error(`ETH_TO_AVAIL_INIT_FAILED: ${error} `);
-
     }
   };
 
-    /**
+  /**
    * @description Initiates bridging from AVAIL to Ethereum,
    * @steps Validates chain, Checks approval, Checks balance, Initiates bridging(sendAvail() on Eth)
    */
@@ -203,23 +273,30 @@ export default function useBridge() {
     atomicAmount: string;
     destinationAddress: `${string}`;
   }) => {
-    try{
+    try {
       if (selected === undefined || selected === null) {
         throw new Error("No account selected");
       }
-  
+
       let retriedApiConn: ApiPromise | null = null;
-  
-      if(!api || !api.isConnected) {
+
+      if (!api || !api.isConnected) {
         Logger.debug("Retrying API Conn");
         retriedApiConn = await initApi();
         setApi(retriedApiConn);
-        if (!retriedApiConn) {
-          throw new Error("Uh Oh! RPC under a lot of stress, error intialising api");}
+        if (!retriedApiConn || !retriedApiConn.isConnected) {
+          throw new Error(
+            "Uh Oh! RPC under a lot of stress, error intialising api"
+          );
+        }
       }
-  
-      const availBalance = await _getBalance(Chain.AVAIL, api ? api : retriedApiConn!,  selected?.address);
-  
+
+      const availBalance = await _getBalance(
+        Chain.AVAIL,
+        api ? api : retriedApiConn!,
+        selected?.address
+      );
+
       if (
         availBalance &&
         new BigNumber(atomicAmount).gt(
@@ -228,7 +305,53 @@ export default function useBridge() {
       ) {
         throw new Error("insufficient balance");
       }
-  
+
+      if (selected.source === "MetamaskSnap") {
+        const send = await snapSendMessage({
+          atomicAmount,
+          destinationAddress,
+        });
+        const result = await checkTransactionStatus(
+          api ? api : retriedApiConn!,
+          send
+        );
+
+        if (result.isOk()) {
+          const success = {
+            status: "success",
+            message: "Transaction successful",
+            txHash: send as string,
+            blockhash: result.value.blockhash,
+          };
+
+          const tempLocalTransaction: Transaction = {
+            status: TransactionStatus.INITIATED,
+            destinationChain: Chain.ETH,
+            messageId: 0,
+            sourceChain: Chain.AVAIL,
+            amount: atomicAmount,
+            dataType: "ERC20",
+            depositorAddress: selected?.address,
+            receiverAddress: destinationAddress,
+            sourceBlockHash: success.blockhash,
+            sourceBlockNumber: 0,
+            sourceTransactionHash: success.txHash as `0x${string}`,
+            sourceTransactionIndex: 0,
+            sourceTimestamp: new Date().toISOString(),
+          };
+
+          await addToLocalTransaction(tempLocalTransaction);
+          Logger.info(
+            `AVAIL_TO_ETH_INIT_SUCCESS ${send} receiver_address: ${destinationAddress} sender_address: ${selected?.address} amount: ${atomicAmount}`
+          );
+          return success;
+        } else {
+          throw new Error(
+            `Metamask Snap Transaction failed with error: ${result.error}`
+          );
+        }
+      }
+
       const send = await sendMessage(
         {
           message: {
@@ -245,7 +368,6 @@ export default function useBridge() {
         api ? api : retriedApiConn!
       );
       if (send.blockhash !== undefined && send.txHash !== undefined) {
-
         const tempLocalTransaction: Transaction = {
           status: TransactionStatus.INITIATED,
           destinationChain: Chain.ETH,
@@ -257,23 +379,28 @@ export default function useBridge() {
           receiverAddress: destinationAddress,
           sourceBlockHash: send.blockhash,
           sourceBlockNumber: 0,
-          sourceTransactionHash: send.txHash,
+          sourceTransactionHash: send.txHash as `0x${string}`,
           sourceTransactionIndex: 0,
           sourceTimestamp: new Date().toISOString(),
         };
-  
-      await addToLocalTransaction(tempLocalTransaction);
-      Logger.info(`AVAIL_TO_ETH_INIT_SUCCESS ${send.txHash} receiver_address: ${destinationAddress} sender_address: ${selected?.address} amount: ${atomicAmount}`);
+
+        await addToLocalTransaction(tempLocalTransaction);
+        Logger.info(
+          `AVAIL_TO_ETH_INIT_SUCCESS ${send.txHash} receiver_address: ${destinationAddress} sender_address: ${selected?.address} amount: ${atomicAmount}`
+        );
       }
-  
+
       return send;
     } catch (error: any) {
-      Logger.error(`AVAIL_TO_ETH_INIT_FAILED: ${error}`, ["receiver_address", destinationAddress],
+      Logger.error(
+        `AVAIL_TO_ETH_INIT_FAILED: ${error}`,
+        ["receiver_address", destinationAddress],
         ["sender_address", selected?.address],
-        ["amount", formatUnits(BigInt(atomicAmount), 18)],["flow", "AVAIL -> ETH"]);  
+        ["amount", formatUnits(BigInt(atomicAmount), 18)],
+        ["flow", "AVAIL -> ETH"]
+      );
       throw error;
     }
-   
   };
 
   return { initEthToAvailBridging, initAvailToEthBridging };

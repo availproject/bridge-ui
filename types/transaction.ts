@@ -45,7 +45,8 @@ export interface executeParams {
       ArbitraryMessage?: `0x${string}`;
       FungibleToken?: {
         assetId: `0x${string}`;
-        amount: number;
+        // We tackle the amount as a number while intitating the transaction, but later the indexer gives a string amount while claiming.
+        amount: number | string; 
       };
     };
     from: `${string}`;
@@ -86,7 +87,7 @@ export interface Transaction {
   receiverAddress: string,
   sourceBlockHash: `${string}`,
   sourceBlockNumber: number,
-  sourceTransactionHash: string,
+  sourceTransactionHash: `0x${string}`,
   sourceTransactionIndex: number,
   sourceTimestamp: string
   sourceTokenAddress?: `0x${string}`;

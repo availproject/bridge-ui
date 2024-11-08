@@ -16,7 +16,7 @@ export default function Home() {
   return (
     <main className="">
       <div className="relative !mt-12 w-screen items-center justify-center flex flex-col">
-        <section className="z-10 flex flex-col items-center justify-center space-x-[2vw]">
+        <section className="z-10 flex items-center justify-center">
           <BridgeSection />
         </section>
       </div>
