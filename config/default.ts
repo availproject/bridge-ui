@@ -45,3 +45,18 @@ export const appConfig: AppConfig = {
     }
 };
 
+export const config = createConfig(
+    getDefaultConfig({
+      chains: [appConfig.networks.ethereum],
+      transports: {
+        [mainnet.id]: http(`https://eth-mainnet.g.alchemy.com/v2/${process.env.ETHEREUM_RPC_API_KEY}` || ''),
+        [sepolia.id]: http(`https://eth-sepolia.g.alchemy.com/v2/${process.env.ETHEREUM_RPC_API_KEY}` || ''),
+      },
+      walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "e77cdade22390c135f6dfb134f075abe",
+      appName: "Bridge UI",
+      appDescription: "Official Avail Bridge between AVAIL and ETHEREUM",
+      appIcon: "https://bridge.availproject.org/favicon.ico",
+      ssr: true,
+    }),
+  )
+  

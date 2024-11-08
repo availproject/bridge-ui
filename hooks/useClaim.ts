@@ -9,7 +9,7 @@ import { bridgeContractAbi } from "@/constants/abi";
 import ethereumBrigdeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
 import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
 
-import { config } from "@/app/providers";
+import { config } from "@/config/default";
 import {
   fetchLatestBlockhash,
   getAccountStorageProofs,
