@@ -45,7 +45,6 @@ export const appConfig: AppConfig = {
     }
 };
 
-
 export const config = createConfig(
     getDefaultConfig({
       chains: [appConfig.networks.ethereum],
