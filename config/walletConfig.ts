@@ -15,8 +15,8 @@ export const config = createConfig(
   getDefaultConfig({
     chains: [appConfig.networks.ethereum],
     transports: {
-      [mainnet.id]: http(`https://rough-clean-gas.quiknode.pro/`),
-      [sepolia.id]: http(`https://quaint-shy-tree.ethereum-sepolia.quiknode.pro/`),
+      [mainnet.id]: http(process.env.ETHEREUM_RPC || ""),
+      [sepolia.id]: http(process.env.SEPOLIA_RPC || ""),
     },
     walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "e77cdade22390c135f6dfb134f075abe",
     appName: "Bridge UI",
