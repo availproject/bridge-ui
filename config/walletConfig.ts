@@ -12,7 +12,7 @@ import { appConfig } from './default'
 export const ethConfig = createConfig({
   chains: [appConfig.networks.ethereum],
   transports: {
-    [appConfig.networks.ethereum.id]: http(appConfig.networks.ethereum.id ===  1 ? process.env.ETHEREUM_RPC_URL : process.env.SEPOLIA_RPC_URL),
+    [appConfig.networks.ethereum.id]: http(appConfig.networks.ethereum.id ===  1 ? `https://eth-mainnet.g.alchemy.com/v2/${process.env.ETHEREUM_RPC_API_KEY}` : `https://eth-sepolia.g.alchemy.com/v2/${process.env.ETHEREUM_RPC_API_KEY}`),
   },
   ssr: true, 
 })
