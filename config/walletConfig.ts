@@ -5,10 +5,9 @@ export const substrateConfig = {
   appId: 0,
 }
 
-import { http, createConfig, createStorage } from '@wagmi/core'
+import { http, createConfig } from '@wagmi/core'
 import { appConfig } from './default'
 
-console.log(appConfig.networks.ethereum.id === 1 ? process.env.ETHEREUM_RPC_URL : process.env.SEPOLIA_RPC_URL, appConfig.networks.ethereum.id, "addafd")
 
 export const ethConfig = createConfig({
   chains: [appConfig.networks.ethereum],
