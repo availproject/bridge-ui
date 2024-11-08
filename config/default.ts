@@ -1,5 +1,7 @@
 import { Chain } from 'viem'
 import { mainnet, sepolia } from '@wagmi/core/chains'
+import { createConfig, http } from "wagmi";
+import { getDefaultConfig } from 'connectkit';
 
 type AppConfig = {
     networks: {
@@ -42,3 +44,21 @@ export const appConfig: AppConfig = {
         }
     }
 };
+
+
+export const config = createConfig(
+    getDefaultConfig({
+      chains: [appConfig.networks.ethereum],
+      transports: {
+        [mainnet.id]: http(process.env.ETHEREUM_RPC_URL || ''),
+        [sepolia.id]: http(process.env.SEPOLIA_RPC_URL || ''),
+      },
+      walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "e77cdade22390c135f6dfb134f075abe",
+      appName: "Bridge UI",
+      appDescription: "Official Avail Bridge between AVAIL and ETHEREUM",
+      appIcon: "https://bridge.availproject.org/favicon.ico",
+      ssr: true,
+    }),
+  )
+
+
