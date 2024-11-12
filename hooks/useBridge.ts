@@ -205,9 +205,7 @@ export default function useBridge() {
       await validateChain(TRANSACTION_TYPES.BRIDGE_ETH_TO_AVAIL);
 
       if ((await activeNetworkId()) !== networks.ethereum.id) {
-        throw new Error(
-          `Invalid network, please switch to ${networks.ethereum.name} network(id: ${networks.ethereum.id})`
-        );
+       switchNetwork(networks.ethereum.id);
       }
 
       // check approval
