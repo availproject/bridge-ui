@@ -72,7 +72,7 @@ export const ErrorDialog = ({
 
             <span>
               <p className="text-white/70 text-center w-[80%] mx-auto text-sm mt-4">
-                {claimDialog && <><span>Don't fret, yours funds are safe. </span><br  className="mb-2 pb-2"/></>} in the
+                {claimDialog && <><span>Don&#39;t fret, yours funds are safe. </span><br  className="mb-2 pb-2"/></>} in the
                 meanwhile you can{" "}
                 <a className="text-white underline" target="_blank" href="https://avail-project.notion.site/Avail-Bridge-FAQs-13de67c666dd800ea9b9fd4d8935bd94">
                   visit our FAQs
