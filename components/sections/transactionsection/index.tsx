@@ -26,7 +26,6 @@ import { useEffect, useMemo, useState } from "react";
 import { LoadingButton } from "../../ui/loadingbutton";
 import { Transaction } from "@/types/transaction";
 import { CiCircleQuestion } from "react-icons/ci";
-import { parseError } from "@/utils/parseError";
 import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
 import { Logger } from "@/utils/logger";
 import { showFailedMessage } from "@/utils/toasts";
@@ -35,9 +34,10 @@ import TxnAddresses from "./txnaddresses";
 import ParsedDate from "./parseddate";
 import CompletedTransactions from "./completedtransactions";
 import NoTransactions from "./notransactions";
-import { SuccessDialog } from "./success";
+import { SuccessDialog } from "../../common/successClaim";
 import { useTransactionsStore } from "@/stores/transactionsStore";
 import Loading from "./loading";
+import ErrorDialog from "@/components/common/error";
 
 
 
@@ -53,6 +53,8 @@ export default function TransactionSection() {
   const {transactionLoader } = useTransactionsStore();
 
   const [showPagination, setShowPagination] = useState(false);
+  const [errorDialog, setErrorDialog] = useState(false);
+  const [error, setError] = useState<Error | string | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pendingTab, setPendingTab] = useState<boolean>(true);
 
@@ -164,7 +166,8 @@ export default function TransactionSection() {
       }
     } catch (e: any) {
       Logger.error(e);
-      showFailedMessage({ title: parseError(e) });
+      setError(e);
+      setErrorDialog(true);
     } finally {
       setTxnLoading(txnHash, false);
     }
@@ -373,6 +376,12 @@ export default function TransactionSection() {
         onClose={() => setDialogState(prev => ({ ...prev, isOpen: false }))}
         destinationChain={dialogState.destinationChain}
         destinationTxnHash={dialogState.destinationTxnHash}
+      />
+      <ErrorDialog
+        isOpen={errorDialog}
+        onOpenChange={() => setErrorDialog(false)}
+        error={error}
+        claimDialog={true}
       />
       {/* Pagination */}
       {showPagination ? (

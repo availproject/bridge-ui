@@ -37,6 +37,10 @@ export function parseError(error: any): string {
     if (errorMessageString.match(/Network not supported/i)) {
         return "Network not supported, switching to the correct network. Retry the transaction.";
     }
+    if(errorMessageString.match(/Cannot read properties of null (reading 'signature')/i)) {
+        return "Transaction rejected, please try again.";
+     }
+    
     if (
         errorMessageString.match(/denied transaction/i) || // Metamask browser message
         errorMessageString.match(/User rejected the transaction/i) || // Metamask mobile message
@@ -45,7 +49,10 @@ export function parseError(error: any): string {
         errorMessageString.match(/Rejected by user/i)
     ) {
         return "You have rejected the transaction on your connected wallet.";
-    } if (errorMessageString.match(/intrinsic gas too low/i)) {
+    } if (errorMessageString.match(/bad signature/i)) {
+        return "You need to update chain metadata, checkout the FAQ's for more information.";
+    }
+    if (errorMessageString.match(/intrinsic gas too low/i)) {
         return "Provided gas is too low to complete this deposit, please allow suggested gas amount";
 
     } if (errorMessageString.match(/transaction underpriced/i)) {

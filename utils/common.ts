@@ -4,7 +4,7 @@ import {
   initialize,
   isValidAddress,
 } from "avail-js-sdk";
-import { ethConfig, substrateConfig } from "@/config/walletConfig";
+import { config, substrateConfig } from "@/config/walletConfig";
 import { readContract } from "@wagmi/core";
 import { Chain, TransactionStatus } from "@/types/common";
 import { appConfig } from "@/config/default";
@@ -12,7 +12,6 @@ import ethereumAvailTokenTuring from "@/constants/abis/ethereumAvailTokenTuring.
 import ethereumAvailTokenMainnet from "@/constants/abis/ethereumAvailTokenMainnet.json";
 import { isAddress } from "viem";
 import { Logger } from "./logger";
-import { Transaction } from "@/types/transaction";
 import { parseMinutes } from "./parsers";
 import { LatestBlockInfo } from "@/stores/lastestBlockInfo";
 
@@ -38,7 +37,7 @@ export async function _getBalance(
 
       case Chain.ETH:
         if (ethAddress) {
-          const balance = await readContract(ethConfig, {
+          const balance = await readContract(config, {
             address: appConfig.contracts.ethereum.availToken as `0x${string}`,
             abi:
               process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"

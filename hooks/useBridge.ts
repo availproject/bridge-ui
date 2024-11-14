@@ -9,7 +9,7 @@ import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
 import ethereumAvailTokenMainnet from "@/constants/abis/ethereumAvailTokenMainnet.json";
 import ethereumBridgeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
 
-import { ethConfig } from "@/config/walletConfig";
+
 import { Transaction, TRANSACTION_TYPES } from "@/types/transaction";
 import { Chain, TransactionStatus } from "@/types/common";
 import { appConfig } from "@/config/default";
@@ -33,6 +33,7 @@ import type {
   Transaction as MetamaskTransaction,
   TxPayload,
 } from "@avail-project/metamask-avail-types";
+import { config } from "@/config/walletConfig";
 
 export default function useBridge() {
   const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
@@ -55,7 +56,7 @@ export default function useBridge() {
 
   const getAvailBalanceOnEth = useCallback(async () => {
     // Get AVAIL balance on Ethereum chain
-    const balance = await readContract(ethConfig, {
+    const balance = await readContract(config, {
       address: appConfig.contracts.ethereum.availToken as `0x${string}`,
       abi:
         process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
@@ -75,7 +76,7 @@ export default function useBridge() {
   const getCurrentAllowanceOnEth = useCallback(async () => {
     try {
       // Get current allowance on Ethereum chain
-      const allowance = await readContract(ethConfig, {
+      const allowance = await readContract(config, {
         address: appConfig.contracts.ethereum.availToken as `0x${string}`,
         abi:
           process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
@@ -204,9 +205,7 @@ export default function useBridge() {
       await validateChain(TRANSACTION_TYPES.BRIDGE_ETH_TO_AVAIL);
 
       if ((await activeNetworkId()) !== networks.ethereum.id) {
-        throw new Error(
-          `Invalid network, please switch to ${networks.ethereum.name} network(id: ${networks.ethereum.id})`
-        );
+       switchNetwork(networks.ethereum.id);
       }
 
       // check approval

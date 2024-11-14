@@ -9,7 +9,7 @@ import { bridgeContractAbi } from "@/constants/abi";
 import ethereumBrigdeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
 import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
 
-import { config } from "@/app/providers";
+
 import {
   fetchLatestBlockhash,
   getAccountStorageProofs,
@@ -33,6 +33,8 @@ import useAppInit from "./useAppInit";
 import { useInvokeSnap } from "./Metamask/useInvokeSnap";
 import { checkTransactionStatus } from "./Metamask/utils";
 import { Transaction as MetamaskTransaction, TxPayload } from "@avail-project/metamask-avail-types";
+import { config } from "@/config/walletConfig";
+import { showSuccessMessage } from "@/utils/toasts";
 
 
 export default function useClaim() {
@@ -195,9 +197,7 @@ export default function useClaim() {
       await validateChain();
 
       if ((await activeNetworkId()) !== networks.ethereum.id) {
-        throw new Error(
-          `Network not supported, switching to ${networks.ethereum.name} network(id: ${networks.ethereum.id})`
-        );
+          switchNetwork(networks.ethereum.id);
       }
 
       const receive = await receiveAvail(proof);
