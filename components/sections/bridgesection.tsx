@@ -70,6 +70,7 @@ import {
 import React from "react";
 import useAppInit from "@/hooks/useAppInit";
 import { showFailedMessage } from "@/utils/toasts";
+import { ErrorDialog } from "../common/error";
 
 export const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -108,8 +109,10 @@ export default function BridgeSection() {
   const [isChecked, setIsChecked] = useState<CheckedState>(false);
   const [open, setOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const [error, setError] = useState<Error | string | null>(null);
   const [availToEthHash, setAvailToEthHash] = useState<string | undefined>("");
   const [ethToAvailHash, setEthToAvailHash] = useState<string | undefined>("");
+  const [errorDialog, setErrorDialog] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -184,7 +187,8 @@ export default function BridgeSection() {
       }
     } catch (error: any) {
       setTransactionInProgress(false);
-      showFailedMessage({ title: parseError(error) });
+      setErrorDialog(true);
+      setError(error);
     }
   }
 
@@ -314,7 +318,6 @@ export default function BridgeSection() {
                     ) : (
                       <>
                         <CheckCircle2 className={`h-4 w-4`} />
-
                         <p className="!text-left"> No Pending Claims</p>
                       </>
                     )}
@@ -674,28 +677,11 @@ export default function BridgeSection() {
           <TransactionSection />
         </TabsContent>
       </Tabs>
-
-      {/* {window.screen.width < 768 && (
-          <div className={badgeVariants({ variant: "avail" })}>
-            {pendingTransactionsNumber > 0 ? (
-              <>
-                <Loader2 className={`h-4 w-4 animate-spin`} />
-
-                <p className="!text-left">
-                  {" "}
-                  {pendingTransactionsNumber} Pending |{" "}
-                  {readyToClaimTransactionsNumber} Ready to Claim
-                </p>
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className={`h-4 w-4`} />
-
-                <p className="!text-left"> No Pending Claims</p>
-              </>
-            )}
-          </div>
-        )} */}
+      <ErrorDialog 
+  isOpen={errorDialog}
+  onOpenChange={(open) => setErrorDialog(open)}
+  error={error}
+/>
     </div>
   );
 }
