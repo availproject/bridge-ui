@@ -69,8 +69,7 @@ import {
 } from "../ui/hover-card";
 import React from "react";
 import useAppInit from "@/hooks/useAppInit";
-import { showFailedMessage } from "@/utils/toasts";
-import { ErrorDialog } from "../common/error";
+import { ErrorDialog } from "../common/errorDialog";
 
 export const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -196,7 +195,7 @@ export default function BridgeSection() {
     const isEthChain = fromChain === Chain.ETH;
     const balance = isEthChain ? ethBalance : availBalance;
     const isConnected = isEthChain ? account.address : selected;
-    
+
     const renderBalanceContent = () => {
       if (!isConnected) {
         return (
@@ -205,7 +204,7 @@ export default function BridgeSection() {
           </span>
         );
       }
-  
+
       if (balance === undefined || balance === null) {
         return (
           <div className="flex flex-row items-center ml-2">
@@ -214,7 +213,7 @@ export default function BridgeSection() {
           </div>
         );
       }
-  
+
       return (
         <span className="text-white font-bold mx-1 flex flex-row">
           {parseFloat(parseAmount(balance, 18)).toFixed(2)}
@@ -222,10 +221,14 @@ export default function BridgeSection() {
         </span>
       );
     };
-  
+
     return (
       <div className="flex flex-row items-end justify-start pl-1 font-ppmori">
-        <span className={`font-ppmori flex flex-row items-center text-white text-opacity-70 ${isEthChain ? 'pt-1' : ''}`}>
+        <span
+          className={`font-ppmori flex flex-row items-center text-white text-opacity-70 ${
+            isEthChain ? "pt-1" : ""
+          }`}
+        >
           Balance {renderBalanceContent()}
         </span>
       </div>
@@ -251,7 +254,6 @@ export default function BridgeSection() {
                 The Address has been added successfully and would be used for
                 future txns.
               </p>
-             
             </div>
           </div>
         ),
@@ -284,12 +286,12 @@ export default function BridgeSection() {
           <div className="flex flex-row pb-[2vh] items-center justify-between">
             <h1 className="font-ppmori items-center flex flex-row space-x-2 text-white text-opacity-80 text-2xl w-full ">
               <span className="relative flex flex-row items-center justify-center">
-              <TabsTrigger
-            value="bridge"
-            className="data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 data-[state=active]:border-b !rounded-none"
-          >
-            <h1 className="font-ppmori text-lg">Bridge</h1>
-          </TabsTrigger>
+                <TabsTrigger
+                  value="bridge"
+                  className="data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 data-[state=active]:border-b !rounded-none"
+                >
+                  <h1 className="font-ppmori text-lg">Bridge</h1>
+                </TabsTrigger>
                 <TabsTrigger
                   value="transactions"
                   className="relative font-ppmori text-lg data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 data-[state=active]:border-b !rounded-none"
@@ -330,7 +332,8 @@ export default function BridgeSection() {
         <TabsContent id="bridge" value="bridge" className="flex-1 ">
           <div className="lg:p-4 p-2">
             <Form {...form}>
-              <form id="bridge-form"
+              <form
+                id="bridge-form"
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="md:space-y-4 w-full"
               >
@@ -397,15 +400,20 @@ export default function BridgeSection() {
                                   className={
                                     "flex flex-row items-center justify-center space-x-2  font-ppmori"
                                   }
-                                >{fromChain === Chain.ETH ? <img
-                                  src={`/images/AVAILETHsmall.png`}
-                                  alt="logo"
-                                  className="w-8 "
-                                ></img> :   <img
-                                  src={`/images/AVAILsmall.png`}
-                                  alt="logo"
-                                  className="w-6 h-6"
-                                ></img>}                             
+                                >
+                                  {fromChain === Chain.ETH ? (
+                                    <img
+                                      src={`/images/AVAILETHsmall.png`}
+                                      alt="logo"
+                                      className="w-8 "
+                                    ></img>
+                                  ) : (
+                                    <img
+                                      src={`/images/AVAILsmall.png`}
+                                      alt="logo"
+                                      className="w-6 h-6"
+                                    ></img>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -494,7 +502,14 @@ export default function BridgeSection() {
                                   To Address
                                 </p>
                                 <input
-                                  className={`!bg-inherit ${(fromChain === Chain.ETH && selected?.address) || (fromChain === Chain.AVAIL && account?.address) ? 'placeholder:text-white placeholder:bg-[#2f3441] placeholder:p-4 !rounded-lg text-2xl ' : 'bg-none'} text-white text-opacity-90 placeholder:text-opacity-90 text-xl `}
+                                  className={`!bg-inherit ${
+                                    (fromChain === Chain.ETH &&
+                                      selected?.address) ||
+                                    (fromChain === Chain.AVAIL &&
+                                      account?.address)
+                                      ? "placeholder:text-white placeholder:bg-[#2f3441] placeholder:p-4 !rounded-lg text-2xl "
+                                      : "bg-none"
+                                  } text-white text-opacity-90 placeholder:text-opacity-90 text-xl `}
                                   style={{
                                     border: "none",
                                     background: "none",
@@ -507,18 +522,23 @@ export default function BridgeSection() {
                                   placeholder={
                                     fromChain === Chain.ETH
                                       ? selected?.address
-                                        ? (selected.address.slice(0, 12) + "..." + selected.address.slice(-4))
+                                        ? selected.address.slice(0, 12) +
+                                          "..." +
+                                          selected.address.slice(-4)
                                         : "Connect Wallet or paste address"
                                       : account?.address
-                                      ? (account.address.slice(0, 12) + "..." + account.address.slice(-4))
+                                      ? account.address.slice(0, 12) +
+                                        "..." +
+                                        account.address.slice(-4)
                                       : "Connect Wallet or paste address"
                                   }
                                   value={
                                     toAddress
-                                      ? toAddress.slice(0, 12) + "..." + toAddress.slice(-4)
+                                      ? toAddress.slice(0, 12) +
+                                        "..." +
+                                        toAddress.slice(-4)
                                       : ""
                                   }
-                                 
                                   onChange={(event) => {
                                     const fullAddress = event.target.value;
                                     setToAddress(fullAddress);
@@ -562,12 +582,17 @@ export default function BridgeSection() {
                                         htmlFor="terms1"
                                         className="text-sm space-y-4 font-light leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white text-opacity-60"
                                       >
-                                        <span>Please double-check if the address is
-                                        correct. Any tokens sent to an incorrect
-                                        address will be unrecoverable.
+                                        <span>
+                                          Please double-check if the address is
+                                          correct. Any tokens sent to an
+                                          incorrect address will be
+                                          unrecoverable.
                                         </span>
                                       </label>
-                                      <label className="text-sm pt-2 font-light leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white text-opacity-60">Priority will be given to the pasted address if case of preconnected account</label>
+                                      <label className="text-sm pt-2 font-light leading-snug peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white text-opacity-60">
+                                        Priority will be given to the pasted
+                                        address if case of preconnected account
+                                      </label>
                                     </div>
                                   </div>
                                 </AlertDialogDescription>
@@ -601,6 +626,7 @@ export default function BridgeSection() {
                   )}
                 />
                 <br />
+                {/* SUCCESS DIALOG */}
                 <Dialog open={openDialog} onOpenChange={setOpenDialog}>
                   <DialogContent className="sm:max-w-md bg-[#252831] !border-0">
                     <DialogHeader>
@@ -655,6 +681,15 @@ export default function BridgeSection() {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
+                {/* ERROR DIALOG */}
+                {errorDialog && (
+                  <ErrorDialog
+                    isOpen={errorDialog}
+                    onOpenChange={() => setErrorDialog(false)}
+                    error={error}
+                    claimDialog={true}
+                  />
+                )}
                 <LoadingButton
                   variant={"primary"}
                   loading={transactionInProgress}
@@ -664,7 +699,6 @@ export default function BridgeSection() {
                 >
                   {buttonStatus}
                 </LoadingButton>
-                
               </form>
             </Form>
           </div>
@@ -677,11 +711,6 @@ export default function BridgeSection() {
           <TransactionSection />
         </TabsContent>
       </Tabs>
-      <ErrorDialog 
-  isOpen={errorDialog}
-  onOpenChange={(open) => setErrorDialog(open)}
-  error={error}
-/>
     </div>
   );
 }

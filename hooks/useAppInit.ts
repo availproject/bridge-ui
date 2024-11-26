@@ -11,7 +11,6 @@ import { Logger } from "@/utils/logger";
 import {
   fetchAvlHead,
   fetchEthHead,
-  fetchLatestBlockhash,
 } from "@/services/api";
 import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
 import useSWR from 'swr';
@@ -29,7 +28,7 @@ const useAppInit = () => {
     setAvailBalance,
   } = useCommonStore();
   const { pendingTransactions } = useTransactions();
-  const { setAvlHead, setEthHead, setLatestBlockhash } = useLatestBlockInfo();
+  const { setAvlHead, setEthHead } = useLatestBlockInfo();
   
   const isInitialized = useRef(false);
 
@@ -85,12 +84,9 @@ const useAppInit = () => {
         fetchAvlHead(currentApi)
       ]);
 
-      const latestBlockhashRes = await fetchLatestBlockhash(ethHeadRes.data.slot);
-
       return {
         ethHead: ethHeadRes.data,
         avlHead: avlHeadRes.data,
-        latestBlockhash: latestBlockhashRes.data
       };
     } catch (error) {
       Logger.error(`ERROR_FETCHING_HEADS: ${error}`);
@@ -129,11 +125,9 @@ const useAppInit = () => {
       onSuccess: (data) => {
         setEthHead(data.ethHead);
         setAvlHead(data.avlHead);
-        setLatestBlockhash(data.latestBlockhash);
       }
     }
   );
-
 
   useEffect(() => {
     if (isInitialized.current) return;

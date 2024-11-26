@@ -6,7 +6,7 @@ import { Transaction } from "@/types/transaction";
 import { useEffect, useMemo } from "react";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useAccount } from "wagmi";
-import { Logger } from "@/utils/logger";
+import { pollWithDelay } from "@/utils/poller";
 
 /**
  * @description All the functionalities related to substrate wallet such as connecting, switching network, etc
@@ -21,7 +21,24 @@ export default function useTransactions() {
 
   const { selected } = useAvailAccount()
   const { address } = useAccount()
-  const { setTransactionLoader } = useTransactionsStore()
+  const { setTransactionLoader, transactionLoader } = useTransactionsStore()
+
+  useEffect(() => {
+    if (!selected?.address && !address) {
+      return
+    }
+
+    pollWithDelay(
+      fetchTransactions,
+      [
+          {
+              availAddress: selected?.address,
+              ethAddress: address,
+          }
+      ],
+      10,
+  );
+  }, []);
 
   useEffect(() => {
     if (!selected?.address && !address) {
@@ -50,7 +67,6 @@ export default function useTransactions() {
   }) => {
     try{
     setTransactionLoader(true);
-    Logger.info("FETCHING_TRANSACTIONS");
     const indexedTransactions = await getTransactionsFromIndexer(
      { availAddress: availAddress, ethAddress: ethAddress, sourceChain: sourceChain, destinationChain: destinationChain}
     );
@@ -71,62 +87,66 @@ export default function useTransactions() {
 
     
     const allTransactions: Transaction[] = [];
-    localTransactions.forEach((localTxn) => {
-      if (localTxn.status === TransactionStatus.CLAIM_PENDING) {
-        const pendingTxn = indexedTransactions.find((indexedTxn) => {
-          if (indexedTxn.status === TransactionStatus.READY_TO_CLAIM) {
-            return (
-              indexedTxn.sourceTransactionHash.toLowerCase() ===
-              localTxn.sourceTransactionHash.toLowerCase()
-            );
-          }
-          return false;
-        });
-        const isUniqueTxn = !allTransactions.some(
-          (txn) =>
-            txn.sourceTransactionHash.toLowerCase() ===
-            localTxn.sourceTransactionHash.toLowerCase(),
-        );
 
-        if (pendingTxn && isUniqueTxn) {
-          indexedTransactions.find((txn) => {
-            if (
+    if (!transactionLoader)  {
+      localTransactions.forEach((localTxn) => {
+        if (localTxn.status === TransactionStatus.CLAIM_PENDING) {
+          const pendingTxn = indexedTransactions.find((indexedTxn) => {
+            if (indexedTxn.status === TransactionStatus.READY_TO_CLAIM) {
+              return (
+                indexedTxn.sourceTransactionHash.toLowerCase() ===
+                localTxn.sourceTransactionHash.toLowerCase()
+              );
+            }
+            return false;
+          });
+          const isUniqueTxn = !allTransactions.some(
+            (txn) =>
               txn.sourceTransactionHash.toLowerCase() ===
-              localTxn.sourceTransactionHash.toLowerCase()
-            ) {
-              txn.status = TransactionStatus.CLAIM_PENDING;
-              return txn;
+              localTxn.sourceTransactionHash.toLowerCase(),
+          );
+  
+          if (pendingTxn && isUniqueTxn) {
+            indexedTransactions.find((txn) => {
+              if (
+                txn.sourceTransactionHash.toLowerCase() ===
+                localTxn.sourceTransactionHash.toLowerCase()
+              ) {
+                txn.status = TransactionStatus.CLAIM_PENDING;
+                return txn;
+              }
+            });
+          }
+        } else {
+          const indexedTxn = indexedTransactions.find((indexedTxn) => {
+            if (indexedTxn.sourceChain === Chain.ETH) {
+              return (
+                indexedTxn.sourceTransactionHash.toLowerCase() ===
+                localTxn.sourceTransactionHash.toLowerCase()
+              );
+            } else if (indexedTxn?.sourceChain === Chain.AVAIL) {
+              return (
+                indexedTxn.sourceBlockHash.toLowerCase() ===
+                localTxn.sourceBlockHash.toLowerCase()
+              );
             }
           });
-        }
-      } else {
-        const indexedTxn = indexedTransactions.find((indexedTxn) => {
-          if (indexedTxn.sourceChain === Chain.ETH) {
-            return (
-              indexedTxn.sourceTransactionHash.toLowerCase() ===
-              localTxn.sourceTransactionHash.toLowerCase()
-            );
-          } else if (indexedTxn?.sourceChain === Chain.AVAIL) {
-            return (
-              indexedTxn.sourceBlockHash.toLowerCase() ===
-              localTxn.sourceBlockHash.toLowerCase()
-            );
+          const isUniqueTxn = !allTransactions.some(
+            (txn) =>
+              txn.sourceTransactionHash.toLowerCase() ===
+              localTxn.sourceTransactionHash.toLowerCase(),
+          );
+          if (!indexedTxn && isUniqueTxn) {
+            allTransactions.push(localTxn);
           }
-        });
-        const isUniqueTxn = !allTransactions.some(
-          (txn) =>
-            txn.sourceTransactionHash.toLowerCase() ===
-            localTxn.sourceTransactionHash.toLowerCase(),
-        );
-        if (!indexedTxn && isUniqueTxn) {
-          allTransactions.push(localTxn);
         }
-      }
-    });
+      });
+  
+      allTransactions.push(...indexedTransactions);
+      return allTransactions;
+    }
 
-    allTransactions.push(...indexedTransactions);
-
-    return allTransactions;
+    return indexedTransactions;
   }, [indexedTransactions, localTransactions]);
 
   const pendingTransactions: Transaction[] = useMemo(() => {

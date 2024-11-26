@@ -91,7 +91,7 @@ export const getStatusTime = ({
     return "~";
   }
   if (status === "INITIATED") {
-    return "Waiting for indexer";
+    return "Waiting for finalisation";
   }
 
   //TODO: Change below to more accurate time
@@ -111,7 +111,7 @@ export const getStatusTime = ({
     const timeLeft = nextProofTimestamp - timeNow;
 
     if (timeLeft < 0) {
-      return `Soon`
+      return `—`
     }
 
     return `~${parseMinutes(timeLeft / 1000 / 60)}`;
@@ -124,7 +124,7 @@ export const getStatusTime = ({
     const timeLeft = nextProofTimestamp - timeNow;
 
     if (timeLeft < 0) {
-      return `Soon`
+      return `—`
     }
 
     return `~${parseMinutes(timeLeft / 1000 / 60)}`;

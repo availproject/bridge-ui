@@ -3,15 +3,12 @@ import { encodeAbiParameters, formatUnits } from "viem";
 import {
   executeParams,
   merkleProof,
-  TRANSACTION_TYPES,
 } from "@/types/transaction";
-import { bridgeContractAbi } from "@/constants/abi";
 import ethereumBrigdeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
 import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
 
 
 import {
-  fetchLatestBlockhash,
   getAccountStorageProofs,
   getMerkleProof,
 } from "@/services/api";
@@ -278,7 +275,7 @@ export default function useClaim() {
     }
 
     const proofs = await getAccountStorageProofs(
-      heads?.latestBlockhash?.blockHash,
+      ethHead.blockHash,
       executeParams.messageid,
     );
 

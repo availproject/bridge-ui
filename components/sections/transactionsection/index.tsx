@@ -37,8 +37,7 @@ import NoTransactions from "./notransactions";
 import { SuccessDialog } from "../../common/successClaim";
 import { useTransactionsStore } from "@/stores/transactionsStore";
 import Loading from "./loading";
-import ErrorDialog from "@/components/common/error";
-
+import ErrorDialog from "@/components/common/errorDialog";
 
 
 export default function TransactionSection() {
@@ -377,12 +376,12 @@ export default function TransactionSection() {
         destinationChain={dialogState.destinationChain}
         destinationTxnHash={dialogState.destinationTxnHash}
       />
-      <ErrorDialog
+      {errorDialog && <ErrorDialog
         isOpen={errorDialog}
         onOpenChange={() => setErrorDialog(false)}
         error={error}
         claimDialog={true}
-      />
+      /> }
       {/* Pagination */}
       {showPagination ? (
         <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
