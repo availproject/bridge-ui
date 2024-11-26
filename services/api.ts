@@ -1,5 +1,4 @@
 import { appConfig } from "@/config/default";
-import { substrateConfig } from "@/config/walletConfig";
 import { LatestBlockInfo } from "@/stores/lastestBlockInfo";
 import { AccountStorageProof, merkleProof } from "@/types/transaction";
 import { Logger } from "@/utils/logger";
@@ -36,14 +35,11 @@ export async function fetchAvlHead(api: ApiPromise): Promise<{
   data: LatestBlockInfo["avlHead"];
 }> {
   const response = await fetch(`${appConfig.bridgeApiBaseUrl}/avl/head`);
-  //TODO: Change below as response.json() does not contain endTimestamp.
   const avlHead: LatestBlockInfo["avlHead"] = await response.json();
   const blockHash = await api.rpc.chain.getBlockHash(avlHead.data.end);
   const block = await api.rpc.chain.getBlock(blockHash);
-  //Get first extrinsic which is timestamp.set, and extract the arg with timestamp.
   const timestamp = parseInt(block.block.extrinsics[0].args[0].toJSON() as string);
 
-  //TODO avoid opening multiple wss connections.
   return { data: { data: { ...avlHead.data, endTimestamp: timestamp } } };
 }
 
@@ -55,27 +51,11 @@ export async function fetchAvlHead(api: ApiPromise): Promise<{
 export async function fetchEthHead(): Promise<{
   data: LatestBlockInfo["ethHead"];
 }> {
-  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/eth/head`);
+  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/v1/eth/head`);
   const ethHead: LatestBlockInfo["ethHead"] = await response.json();
   return { data: ethHead };
 }
 
-
-/**
- * @description Fetches the latest blockhash for a given slot
- * @param slot 
- * @returns LatestBlockInfo["latestBlockhash"]
- */
-export async function fetchLatestBlockhash(
-  slot: LatestBlockInfo["ethHead"]["slot"]
-): Promise<{ data: LatestBlockInfo["latestBlockhash"] }> {
-  const response = await fetch(
-    `${appConfig.bridgeApiBaseUrl}/beacon/slot/${slot}`
-  );
-  const latestBlockhash: LatestBlockInfo["latestBlockhash"] =
-    await response.json();
-  return { data: latestBlockhash };
-}
 
 /**
  * @description Fetches the account storage proofs for a given blockhash and messageid
@@ -89,7 +69,7 @@ export async function getAccountStorageProofs(
   blockhash: string,
   messageid: number
 ) {
-  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/avl/proof/${blockhash}/${messageid}`)
+  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/v1/avl/proof/${blockhash}/${messageid}`)
     .catch((e: any) => {
       Logger.error(e);
       return Response.error();

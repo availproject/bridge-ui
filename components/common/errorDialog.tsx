@@ -41,12 +41,12 @@ export const ErrorDialog = ({
 
   const truncatedError =
     errorMessage.length > 150
-      ? errorMessage.slice(0, 150) + "..."
+      ? errorMessage.slice(0, 60) + "..."
       : errorMessage;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-[#252831] !border-0">
+      <DialogContent className="sm:max-w-md bg-[#252831] !border-0 !overflow-hidden">
         <DialogHeader>
           <DialogTitle className="font-thicccboisemibold text-white text-2xl mb-2">
             Transaction Failed
@@ -59,7 +59,7 @@ export const ErrorDialog = ({
           </div>
 
           <div className="flex flex-col space-y-2 items-center justify-center">
-            <p className="font-thicccboisemibold text-center text-white text-xl mt-3 w-[90%]">
+            <div className="font-thicccboisemibold text-center text-white text-xl mt-3 w-[90%]">
               {!isGenericError ? (
                 parsedError
               ) : (
@@ -68,13 +68,22 @@ export const ErrorDialog = ({
                   <br /> unexpected error
                 </p>
               )}
-            </p>
+            </div>
 
             <span>
               <p className="text-white/70 text-center w-[80%] mx-auto text-sm mt-4">
-                {claimDialog && <><span>Don&#39;t fret, yours funds are safe. </span><br  className="mb-2 pb-2"/></>} in the
-                meanwhile you can{" "}
-                <a className="text-white underline" target="_blank" href="https://avail-project.notion.site/Avail-Bridge-FAQs-13de67c666dd800ea9b9fd4d8935bd94">
+                {claimDialog && (
+                  <>
+                    <span>Don&#39;t fret, yours funds are safe. </span>
+                    <br className="mb-2 pb-2" />
+                  </>
+                )}{" "}
+                in the meanwhile you can{" "}
+                <a
+                  className="text-white underline"
+                  target="_blank"
+                  href="https://avail-project.notion.site/Avail-Bridge-FAQs-13de67c666dd800ea9b9fd4d8935bd94"
+                >
                   visit our FAQs
                 </a>{" "}
                 for common issues, or retry after a while.
@@ -82,20 +91,24 @@ export const ErrorDialog = ({
             </span>
 
             {isGenericError && (
-              <div className="w-[80%] !mt-6 bg-black/50 rounded-lg p-3 relative group">
-                <p className="text-white/70 text-sm break-words">
-                  {truncatedError}
-                </p>
-                <button
-                  onClick={copyToClipboard}
-                  className="absolute right-2 top-2 p-1 rounded hover:bg-white/10 transition-colors"
-                  aria-label="Copy error message"
-                >
-                  <Copy
-                    size={16}
-                    className={`${copied ? "text-green-500" : "text-white/70"}`}
-                  />
-                </button>
+              <div className="!max-w-[80%] !mt-6 bg-black/50 rounded-lg p-3">
+                <div className="relative">
+                  <p className="text-white/70 text-sm break-words overflow-hidden text-ellipsis max-h-[4.5rem] overflow-y-auto pr-4 w-full">
+                    {truncatedError}
+                  </p>
+                  <button
+                    onClick={copyToClipboard}
+                    className="absolute right-0 top-0 p-1 rounded hover:bg-white/10 transition-colors"
+                    aria-label="Copy error message"
+                  >
+                    <Copy
+                      size={16}
+                      className={`${
+                        copied ? "text-green-500" : "text-white/70"
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -103,7 +116,10 @@ export const ErrorDialog = ({
         <DialogFooter className="mt-4 text-center">
           <DialogClose asChild>
             <div className="w-full">
-              <a href="https://discord.gg/availproject" className="text-white underline mx-auto text-sm">
+              <a
+                href="https://discord.gg/availproject"
+                className="text-white underline mx-auto text-sm"
+              >
                 Found a bug? Report on Discord
               </a>
             </div>
