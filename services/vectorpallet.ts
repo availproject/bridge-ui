@@ -52,9 +52,7 @@ export async function sendMessage(
 }> {
   const injector = await getWalletBySource(account.source);
   const metadata = getInjectorMetadata(api);
-
-  //@ts-ignore
-  await injector?.metadata?.provide(metadata);
+  injector && await injector.extension.metadata.provide(metadata);
 
   const result: {blockhash: string, txHash: string} = await new Promise((resolve, reject) => {
     const unsubscribe = api.tx.vector
@@ -143,8 +141,7 @@ export async function executeTransaction(
   const injector = await getWalletBySource(account.source);
   const metadata = getInjectorMetadata(api);
   
-  //@ts-ignore
-  await injector?.metadata?.provide(metadata);
+  injector && await injector.extension.metadata.provide(metadata);
 
   const result: {blockhash: string, txHash: string} = await new Promise((resolve, reject) => {
     const unsubscribe = api.tx.vector
