@@ -2,37 +2,34 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { Badge, badgeVariants } from "../ui/badge";
+import { badgeVariants } from "../../ui/badge";
 import { IoMdClose } from "react-icons/io";
-import { Button } from "../ui/button";
-import useTransactions from "@/hooks/useTransactions";
-import { useAvailAccount } from "@/stores/availWalletHook";
+import { Button } from "../../ui/button";
 import { useEffect } from "react";
 import { useAccount } from "wagmi";
 import { ConnectKitButton } from "connectkit";
+import { Logger } from "@/utils/logger";
 
 export default function Eth() {
-  const { selected } = useAvailAccount();
-  const { address } = useAccount();
-  const { fetchTransactions } = useTransactions();
+  const { address, isConnected, connector } = useAccount();
 
-  useEffect(() => {
-    fetchTransactions({
-      availAddress: selected?.address,
-      ethAddress: address,
-    });
-  }, [address]);
-
-  const handleClick = (e : React.MouseEvent, callback: VoidFunction | undefined ) => {
+  const handleClick = (
+    e: React.MouseEvent,
+    callback: VoidFunction | undefined
+  ) => {
     e.preventDefault();
     e.stopPropagation();
     callback && callback();
   };
 
+  useEffect(() => {
+    Logger.info(`ETH_WALLET_CONNECTED: ${address} ${connector?.name}`);
+  }, [isConnected]);
+
   return (
     <>
       <ConnectKitButton.Custom>
-        {({ isConnected, show, truncatedAddress, ensName }) => {
+        {({ isConnected, show, truncatedAddress, ensName, address }) => {
           if (isConnected) {
             return (
               <div className={badgeVariants({ variant: "avail" })}>
@@ -47,7 +44,11 @@ export default function Eth() {
           }
 
           return (
-            <Button onClick={(e) => handleClick(e, show)} variant={"primary"} size={"sm"}>
+            <Button
+              onClick={(e) => handleClick(e, show)}
+              variant={"primary"}
+              size={"sm"}
+            >
               Connect Wallet
             </Button>
           );
