@@ -55,7 +55,8 @@ export default function useTransactionButtonState(
   const hasInsufficientBalance = useMemo(() => {
     if (!fromAmount || isNaN(fromAmount)) return false;
 
-    const amount = parseFloat(fromAmount?.toString()) * 10 ** 18;
+    const reservedAmount = 0.25; // .25 AVAIL
+    const amount = (parseFloat(fromAmount?.toString()) + reservedAmount) * 10 ** 18;
     if (isNaN(amount)) return false;
 
     const balanceMap = {

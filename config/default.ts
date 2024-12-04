@@ -4,6 +4,7 @@ import { createConfig, http } from "wagmi";
 import { getDefaultConfig } from 'connectkit';
 
 type AppConfig = {
+    assetId: string,
     networks: {
         ethereum: Chain,
     },
@@ -25,6 +26,7 @@ type AppConfig = {
 }
 
 export const appConfig: AppConfig = {
+    assetId: '0x0000000000000000000000000000000000000000000000000000000000000000',
     networks: {
     ethereum: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === 'mainnet' ? mainnet : sepolia,
     },

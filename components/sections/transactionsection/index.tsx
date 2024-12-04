@@ -145,7 +145,6 @@ export default function TransactionSection() {
         }
       } else if (chainFrom === Chain.ETH && blockhash && executeParams) {
         const successBlockhash = await initClaimEthtoAvail({
-          blockhash,
           sourceTransactionHash: txnHash,
           sourceTimestamp,
           atomicAmount,
@@ -194,8 +193,8 @@ export default function TransactionSection() {
               amount: txn.amount,
               from: txn.depositorAddress,
               to: txn.receiverAddress,
-              originDomain: 1,
-              destinationDomain: 2,
+              originDomain: 2,
+              destinationDomain: 1,
             }
           );
         }}

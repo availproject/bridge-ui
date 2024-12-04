@@ -11,6 +11,7 @@ import { pollWithDelay } from "@/utils/poller";
 /**
  * @description All the functionalities related to substrate wallet such as connecting, switching network, etc
  */
+
 export default function useTransactions() {
   const {
     indexedTransactions,
@@ -23,22 +24,6 @@ export default function useTransactions() {
   const { address } = useAccount()
   const { setTransactionLoader, transactionLoader } = useTransactionsStore()
 
-  useEffect(() => {
-    if (!selected?.address && !address) {
-      return
-    }
-
-    pollWithDelay(
-      fetchTransactions,
-      [
-          {
-              availAddress: selected?.address,
-              ethAddress: address,
-          }
-      ],
-      10,
-  );
-  }, []);
 
   useEffect(() => {
     if (!selected?.address && !address) {
@@ -52,29 +37,6 @@ export default function useTransactions() {
       localTransactions.push(..._localtxns);
     })();
   }, [selected?.address]);
-
-  // Fetch transactions from indexer
-  const fetchTransactions = async ({
-    availAddress,
-    ethAddress,
-    sourceChain,
-    destinationChain,
-  }: {
-    availAddress?: string;
-    ethAddress?: string;
-    sourceChain?: Chain;
-    destinationChain?: Chain;
-  }) => {
-    try{
-    setTransactionLoader(true);
-    const indexedTransactions = await getTransactionsFromIndexer(
-     { availAddress: availAddress, ethAddress: ethAddress, sourceChain: sourceChain, destinationChain: destinationChain}
-    );
-    setIndexedTransactions(indexedTransactions);
-    } catch (error) {} finally {
-      setTransactionLoader(false);
-    }
-  };
 
   // allTransactions = indexedTransactions + localTransactions
   const allTransactions: Transaction[] = useMemo(() => {
@@ -216,7 +178,6 @@ export default function useTransactions() {
     completedTransactions,
     paginatedPendingTransactions,
     paginatedCompletedTransactions,
-    fetchTransactions,
     addToLocalTransaction,
   };
 }

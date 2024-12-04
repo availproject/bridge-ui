@@ -53,11 +53,10 @@ export const showSuccessMessage = ({
         <div className="flex flex-row items-center justify-center !space-x-3 ">
           <RxCrossCircled className="mr-4 h-10 w-10" color="FF0000" />
           <div className="flex flex-col space-y-2">
-            <p className="mr-2 font-thicccboisemibold">
-              Transaction Failed
+            <p className="mr-2 font-thicccboisemibold text-white text-opacity-70">
+            {title ? title :  "Your Transaction has failed due to some error. Please try again later."} 
             </p>
             <p className="!text-xs !text-white !text-opacity-40 font-thicccboisemibold">
-             {title ? title :  "Your Transaction has failed due to some error. Please try again later."} 
             </p>
           </div>
         </div>

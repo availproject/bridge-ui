@@ -75,6 +75,8 @@
   },
   "devDependencies": {
     "@polkadot/types": "^11.3.1",
+    "@simbathesailor/babel-plugin-use-what-changed": "^2.1.0",
+    "@simbathesailor/use-what-changed": "^2.0.0",
     "@talismn/connect-wallets": "^1.2.5",
     "@types/json-bigint": "^1.0.4",
     "@types/node": "^20.17.6",
