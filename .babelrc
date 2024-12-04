@@ -4,7 +4,7 @@
     [
       "@simbathesailor/babel-plugin-use-what-changed",
       {
-        "active": true
+        "active": false
       }
     ]
   ]
