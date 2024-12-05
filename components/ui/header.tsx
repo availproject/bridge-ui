@@ -10,7 +10,7 @@ export default function NavBar() {
       >
         <InfoIcon className="w-4 h-4 mr-2 text-white text-opacity-60" />{" "}
         <span className="text-white text-opacity-60">
-        Ledger wallets are currently not supported by the bridge. Please do not sent to a Ledger address otherwise funds may be lost.
+        Ledger wallets are currently not supported by the bridge. Please do not send to a Ledger address otherwise funds may be lost.
         </span>
       </div>
       <div className="pt-4 space-x-4 w-screen flex flex-row items-center justify-center">
