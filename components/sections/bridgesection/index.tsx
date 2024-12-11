@@ -26,12 +26,7 @@ import useBridge from "@/hooks/useBridge";
 import { toast } from "@/components/ui/use-toast";
 import BigNumber from "bignumber.js";
 import { badgeVariants } from "../../ui/badge";
-import {
-  ArrowUpRight,
-  CheckCircle2,
-  InfoIcon,
-  Loader2,
-} from "lucide-react";
+import { ArrowUpRight, CheckCircle2, InfoIcon, Loader2 } from "lucide-react";
 import { parseAmount } from "@/utils/parsers";
 import { LoadingButton } from "../../ui/loadingbutton";
 import useTransactionButtonState from "@/hooks/useTransactionButtonState";
@@ -81,7 +76,6 @@ export const formSchema = z.object({
 });
 
 export default function BridgeSection() {
-
   const account = useAccount();
   const {
     fromChain,
@@ -296,18 +290,22 @@ export default function BridgeSection() {
                   value="transactions"
                   className="relative font-ppmori text-lg data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 data-[state=active]:border-b !rounded-none"
                 >
-                  <p className="data-[state=active]:border-b border-white">Transactions</p>
+                  <p className="data-[state=active]:border-b border-white">
+                    Transactions
+                  </p>
                   {pendingTransactionsNumber > 0 && (
                     <span className="absolute top-1 right-1 flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
                     </span>
                   )}
-                  </TabsTrigger>
-                 <TabsTrigger
-                  value="transactions" className="relative font-ppmori text-lg data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 !rounded-none">
-                    <PendingTxnsBadge/>
-               </TabsTrigger>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="transactions"
+                  className="relative font-ppmori text-lg data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 !rounded-none"
+                >
+                  <PendingTxnsBadge />
+                </TabsTrigger>
               </span>
             </h1>
           </div>
@@ -342,7 +340,11 @@ export default function BridgeSection() {
                           </span>
 
                           <div className="flex flex-row items-center justify-center ">
-                            {fromChain === Chain.ETH ? <Eth /> : <AvailWalletConnect/>}
+                            {fromChain === Chain.ETH ? (
+                              <Eth />
+                            ) : (
+                              <AvailWalletConnect />
+                            )}
                           </div>
                         </FormLabel>
                         <FormControl>
@@ -475,7 +477,11 @@ export default function BridgeSection() {
                             </div>
                           </span>
                           {/* this will be opposite here since it's the To field*/}
-                          {fromChain === Chain.ETH ? <AvailWalletConnect /> : <Eth />}
+                          {fromChain === Chain.ETH ? (
+                            <AvailWalletConnect />
+                          ) : (
+                            <Eth />
+                          )}
                         </FormLabel>
                         <FormControl>
                           <>
@@ -642,24 +648,33 @@ export default function BridgeSection() {
                     </div>
                     <DialogFooter className="sm:justify-start mt-1">
                       <DialogClose asChild>
-                        <Link
-                          target="_blank"
-                          href={
-                            fromChain === Chain.ETH
-                              ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${ethToAvailHash}`
-                              : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${availToEthHash}`
-                          }
-                          className="w-full !border-0"
-                        >
-                          <Button
-                            type="button"
-                            variant="primary"
+                      <div className="w-full flex flex-col items-center justify-center space-y-2">
+                          <Link
+                            target="_blank"
+                            href={
+                              fromChain === Chain.ETH
+                                ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${ethToAvailHash}`
+                                : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${availToEthHash}`
+                            }
                             className="w-full !border-0"
                           >
-                            View on Explorer{" "}
-                            <ArrowUpRight className="h-3 w-6" />
-                          </Button>
-                        </Link>
+                            <Button
+                              type="button"
+                              variant="primary"
+                              className="w-full !border-0"
+                            >
+                              View on Explorer{" "}
+                              <ArrowUpRight className="h-3 w-6" />
+                            </Button>
+                          </Link>
+                          <a
+                            href="https://avail-project.notion.site/159e67c666dd811c8cf5e13903418d78"
+                            className="text-white text-opacity-70 underline mx-auto text-sm"
+                            target="_blank"
+                          >
+                            Submit feedback?
+                          </a>
+                        </div>
                       </DialogClose>
                     </DialogFooter>
                   </DialogContent>

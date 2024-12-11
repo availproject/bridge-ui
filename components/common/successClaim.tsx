@@ -43,6 +43,7 @@ type SuccessDialogProps = {
           </div>
           <DialogFooter className="sm:justify-start mt-1">
             <DialogClose asChild>
+              <div className="flex flex-col items-center justify-center space-y-2">
               <Link
                 target="_blank"
                 href={getHref(destinationChain, destinationTxnHash)}
@@ -52,6 +53,14 @@ type SuccessDialogProps = {
                   View on Explorer <ArrowUpRight className="h-3 w-6" />
                 </Button>
               </Link>
+              <a
+                            href="https://avail-project.notion.site/159e67c666dd811c8cf5e13903418d78"
+                            className="text-white text-opacity-70 underline mx-auto text-sm"
+                            target="_blank"
+                          >
+                            Submit feedback?
+                          </a>
+              </div>
             </DialogClose>
           </DialogFooter>
         </DialogContent>
