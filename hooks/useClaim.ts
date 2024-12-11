@@ -1,12 +1,11 @@
-import { writeContract } from "@wagmi/core";
-import { encodeAbiParameters, formatUnits } from "viem";
+import { estimateGas, writeContract } from "@wagmi/core";
+import { encodeAbiParameters, encodeFunctionData, formatUnits } from "viem";
 import {
   executeParams,
   merkleProof,
 } from "@/types/transaction";
-import ethereumBrigdeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
+import ethereumBridgeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
 import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
-
 
 import {
   getAccountStorageProofs,
@@ -26,12 +25,11 @@ import { Logger } from "@/utils/logger";
 import { useCommonStore } from "@/stores/common";
 import { initApi } from "@/utils/common";
 import { ApiPromise } from "avail-js-sdk";
-import useAppInit from "./useAppInit";
 import { useInvokeSnap } from "./Metamask/useInvokeSnap";
 import { checkTransactionStatus } from "./Metamask/utils";
 import { Transaction as MetamaskTransaction, TxPayload } from "@avail-project/metamask-avail-types";
 import { config } from "@/config/walletConfig";
-import { showSuccessMessage } from "@/utils/toasts";
+import useAppInit from "./useAppInit";
 
 
 export default function useClaim() {
@@ -64,51 +62,65 @@ export default function useClaim() {
    */
   async function receiveAvail(merkleProof: merkleProof) {
     try {
-      const result = await writeContract(config, {
-        address: process.env.NEXT_PUBLIC_BRIDGE_PROXY_CONTRACT as `0x${string}`,
-        abi:
-          process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-            ? ethereumBrigdeMainnet
-            : ethereumBridgeTuring,
-        functionName: "receiveAVAIL",
-        args: [
-          [
-            "0x02",
-            merkleProof.message.from,
-            merkleProof.message.to,
-            merkleProof.message.originDomain,
-            merkleProof.message.destinationDomain,
-            encodeAbiParameters(
-              [
-                {
-                  name: "assetId",
-                  type: "bytes32",
-                },
-                {
-                  name: "amount",
-                  type: "uint256",
-                },
-              ],
-              [
-                merkleProof.message.message.fungibleToken.asset_id,
-                BigInt(merkleProof.message.message.fungibleToken.amount),
-              ]
-            ),
-            merkleProof.message.id,
-          ],
-          [
-            merkleProof.dataRootProof,
-            merkleProof.leafProof,
-            merkleProof.rangeHash,
-            merkleProof.dataRootIndex,
-            merkleProof.blobRoot,
-            merkleProof.bridgeRoot,
-            merkleProof.leaf,
-            merkleProof.leafIndex,
-          ],
+
+      const contractParams =  {
+        abi: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
+          ? ethereumBridgeMainnet
+          : ethereumBridgeTuring,
+      functionName: "receiveAVAIL",
+      args: [
+        [
+          "0x02",
+          merkleProof.message.from,
+          merkleProof.message.to,
+          merkleProof.message.originDomain,
+          merkleProof.message.destinationDomain,
+          encodeAbiParameters(
+            [
+              {
+                name: "assetId",
+                type: "bytes32",
+              },
+              {
+                name: "amount",
+                type: "uint256",
+              },
+            ],
+            [
+              merkleProof.message.message.fungibleToken.asset_id,
+              BigInt(merkleProof.message.message.fungibleToken.amount),
+            ]
+          ),
+          merkleProof.message.id,
         ],
+        [
+          merkleProof.dataRootProof,
+          merkleProof.leafProof,
+          merkleProof.rangeHash,
+          merkleProof.dataRootIndex,
+          merkleProof.blobRoot,
+          merkleProof.bridgeRoot,
+          merkleProof.leaf,
+          merkleProof.leafIndex,
+        ],
+      ],
+      }
+
+      const estimatedGas = await estimateGas(config, {
+        to: appConfig.contracts.avail.bridge as `0x${string}`,
+        data: encodeFunctionData(contractParams)
+      })
+
+      const gasWithBuffer = BigInt(10000000)
+      // (estimatedGas * BigInt(120)) / BigInt(100);
+    
+      const result = await writeContract(config, {
+        address: appConfig.contracts.ethereum.bridge as `0x${string}`,
+        ...contractParams,
+        // gas: gasWithBuffer,
       });
       return result;
+
     } catch (e: any) {
       throw new Error(`ERROR_RECIEVE_AVAIL ${e}`);
     }
@@ -121,49 +133,54 @@ export default function useClaim() {
     api: ApiPromise;
     executeParams: executeParams;
   }) => {
-    const txPayload = await invokeSnap({
-      method: "generateTransactionPayload",
-      params: {
-        module: "vector",
-        method: "execute",
-        args: [
-          executeParams.slot,
-          executeParams.addrMessage,
-          executeParams.accountProof,
-          executeParams.storageProof,
-        ],
-      },
-    });
-
-    const signedTx = await invokeSnap({
-      method: "signPayloadJSON",
-      params: {
-        payload: (txPayload as TxPayload).payload,
-      },
-    });
-
-    const txHash = await invokeSnap({
-      method: "send",
-      params: {
-        signature: (signedTx as {signature: string}).signature,
-        txPayload: txPayload,
-        network: 1,
-      },
-    });
-
-    const txnStatus = await checkTransactionStatus(api, (txHash as MetamaskTransaction).hash);
-
-    return txnStatus.isOk()
-    ? {
-        blockHash: txnStatus.value.blockhash,
-        txHash: (txHash as MetamaskTransaction).hash,
-        status: "Success",
-        message: "Transaction executed successfully",
-      }
-    : {
-        status: "Failed",
-        message: txnStatus.error.message,
-      };
+    try {
+      const txPayload = await invokeSnap({
+        method: "generateTransactionPayload",
+        params: {
+          module: "vector",
+          method: "execute",
+          args: [
+            executeParams.slot,
+            executeParams.addrMessage,
+            executeParams.accountProof,
+            executeParams.storageProof,
+          ],
+        },
+      });
+  
+      const signedTx = await invokeSnap({
+        method: "signPayloadJSON",
+        params: {
+          payload: (txPayload as TxPayload).payload,
+        },
+      });
+  
+      const txHash = await invokeSnap({
+        method: "send",
+        params: {
+          signature: (signedTx as {signature: string}).signature,
+          txPayload: txPayload,
+          network: 1,
+        },
+      });
+  
+      const txnStatus = await checkTransactionStatus(api, (txHash as MetamaskTransaction).hash);
+  
+      return txnStatus.isOk()
+      ? {
+          blockHash: txnStatus.value.blockhash,
+          txHash: (txHash as MetamaskTransaction).hash,
+          status: "Success",
+          message: "Transaction executed successfully",
+        }
+      : {
+          status: "Failed",
+          message: txnStatus.error.message,
+        };
+    } catch (e: any) {
+      Logger.error(`ERROR_IN_SNAP_VECTOR_EXECUTE: ${e}`);
+      throw e;
+    }
   };
 
   const initClaimAvailToEth = async ({
@@ -234,13 +251,11 @@ export default function useClaim() {
   };
 
   const initClaimEthtoAvail = async ({
-    blockhash,
     executeParams,
     sourceTransactionHash,
     sourceTimestamp,
     atomicAmount,
   }: {
-    blockhash: `0x${string}`;
     sourceTransactionHash: `0x${string}`;
     sourceTimestamp: string;
     atomicAmount: string;
@@ -255,7 +270,6 @@ export default function useClaim() {
   }) => {
     try {
       if (!selected) throw new Error("Connect a Avail account");
-      if (ethHead.slot === 0) throw new Error("Failed to fetch latest slot");
 
       let retriedApiConn: ApiPromise | null = null;
 
@@ -270,7 +284,7 @@ export default function useClaim() {
 
     const heads =  await refetchHeads();
 
-    if (!heads) {
+    if (!heads && ethHead.slot === 0) {
       throw new Error("Failed to fetch heads from api");
     }
 
@@ -295,17 +309,14 @@ export default function useClaim() {
             addrMessage: {
               message: {
                 FungibleToken: {
-                  assetId:
-                    "0x0000000000000000000000000000000000000000000000000000000000000000",
+                  assetId: appConfig.assetId as `0x${string}`,
                   amount: executeParams.amount,
                 },
               },
               from: `${executeParams.from.padEnd(66, "0")}`,
               to: u8aToHex(decodeAddress(executeParams.to)),
-
-              //TODO: check if this is correct, should'nt be the way it is right now.
-              originDomain: executeParams.destinationDomain,
-              destinationDomain: executeParams.originDomain,
+              originDomain: executeParams.originDomain,
+              destinationDomain: executeParams.destinationDomain,
               id: executeParams.messageid,
 
             },
@@ -346,17 +357,14 @@ export default function useClaim() {
           addrMessage: {
             message: {
               FungibleToken: {
-                assetId:
-                  "0x0000000000000000000000000000000000000000000000000000000000000000",
+                assetId: appConfig.assetId as `0x${string}`,
                 amount: executeParams.amount,
               },
             },
             from: `${executeParams.from.padEnd(66, "0")}`,
             to: u8aToHex(decodeAddress(executeParams.to)),
-
-            //TODO: check if this is correct, should'nt be the way it is right now.
-            originDomain: executeParams.destinationDomain,
-            destinationDomain: executeParams.originDomain,
+            originDomain: executeParams.originDomain,
+            destinationDomain: executeParams.destinationDomain,
             id: executeParams.messageid,
           },
           accountProof: proofs.accountProof,

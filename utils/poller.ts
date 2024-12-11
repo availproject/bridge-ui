@@ -12,10 +12,10 @@ type PollerCondition<T> = (result: T | undefined) => boolean;
 export async function pollWithDelay<T>(
     asyncFn: (...args: any[]) => Promise<T>,
     args: any[],
-    delay = 1000,
+    delay: number,
     condition: PollerCondition<T> = () => true
 ) {
-    const delayInMs = delay * 10000;
+    const delayInMs = delay * 1000;
 
     let result: T | undefined;
     while (condition(result)) {

@@ -117,10 +117,11 @@ export const ErrorDialog = ({
           <DialogClose asChild>
             <div className="w-full">
               <a
-                href="https://discord.gg/availproject"
+                href="https://avail-project.notion.site/159e67c666dd811c8cf5e13903418d78"
                 className="text-white underline mx-auto text-sm"
+                target="_blank"
               >
-                Found a bug? Report on Discord
+                Found a bug? Submit feedback here
               </a>
             </div>
           </DialogClose>
