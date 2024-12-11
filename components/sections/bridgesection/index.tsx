@@ -68,6 +68,7 @@ import React from "react";
 import useAppInit from "@/hooks/useAppInit";
 import { ErrorDialog } from "../../common/errorDialog";
 import AvailWalletConnect from "../../wallets/avail";
+import PendingTxnsBadge from "@/components/common/pendingTxnsBadge";
 
 export const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -305,6 +306,7 @@ export default function BridgeSection() {
                   </TabsTrigger>
                  <TabsTrigger
                   value="transactions" className="relative font-ppmori text-lg data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 !rounded-none">
+                    <PendingTxnsBadge/>
                </TabsTrigger>
               </span>
             </h1>
