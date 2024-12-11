@@ -305,26 +305,6 @@ export default function BridgeSection() {
                   </TabsTrigger>
                  <TabsTrigger
                   value="transactions" className="relative font-ppmori text-lg data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 !rounded-none">
-                {window && window.screen.width > 768 && (
-                  <div className={badgeVariants({ variant: "avail" })}>
-                    {pendingTransactionsNumber > 0 ? (
-                      <>
-                        <Loader2 className={`h-4 w-4 animate-spin`} />
-                        <p className="!text-left">
-                          {" "}
-                          {pendingTransactionsNumber} Pending{" "}
-                          <span className="mx-2">|</span>{" "}
-                          {readyToClaimTransactionsNumber} Claim Ready
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className={`h-4 w-4`} />
-                        <p className="!text-left"> No Pending Claims</p>
-                      </>
-                    )}
-                  </div>
-                )}
                </TabsTrigger>
               </span>
             </h1>
