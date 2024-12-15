@@ -4,7 +4,7 @@ import { Wallet, WalletAccount } from "@talismn/connect-wallets";
 export interface WalletSelectionProps {
   supportedWallets: Wallet[];
   onWalletSelect: (wallet: Wallet) => void;
-  detectMetaMask: boolean;
+  detectMetaMask: () => boolean;
 }
 
 export interface AccountSelectionProps {

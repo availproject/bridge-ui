@@ -191,7 +191,7 @@ export default function AvailWalletConnect() {
                 <WalletSelector 
                   supportedWallets={supportedWallets} 
                   onWalletSelect={handleWalletSelect}
-                  detectMetaMask={detectMetaMask()}
+                  detectMetaMask={detectMetaMask}
                 />
                 </>
               ) : (
