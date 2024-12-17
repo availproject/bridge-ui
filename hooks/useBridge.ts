@@ -1,13 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect } from "react";
 import BigNumber from "bignumber.js";
-import { useAccount, useWriteContract } from "wagmi";
-import { readContract } from "@wagmi/core";
-
-import ethereumAvailTokenTuring from "@/constants/abis/ethereumAvailTokenTuring.json";
-import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
-import ethereumAvailTokenMainnet from "@/constants/abis/ethereumAvailTokenMainnet.json";
-import ethereumBridgeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
+import { useAccount, useSimulateContract, useWriteContract } from "wagmi";
+import { estimateGas, readContract, simulateContract } from "@wagmi/core";
 
 
 import { Transaction, TRANSACTION_TYPES } from "@/types/transaction";
@@ -25,9 +20,12 @@ import { ONE_POWER_EIGHTEEN } from "@/constants/bigNumber";
 import { useCommonStore } from "@/stores/common";
 import { ApiPromise } from "avail-js-sdk";
 import { showSuccessMessage } from "@/utils/toasts";
-import { formatUnits } from "viem";
+import { encodeFunctionData, formatUnits } from "viem";
 import { useInvokeSnap } from "./Metamask";
 import { checkTransactionStatus } from "./Metamask/utils";
+
+import bridgeImplAbi from "@/constants/abis/bridgeImplAbi.json";
+import availTokenAbi from "@/constants/abis/availTokenAbi.json";
 
 import type {
   Transaction as MetamaskTransaction,
@@ -58,10 +56,7 @@ export default function useBridge() {
     // Get AVAIL balance on Ethereum chain
     const balance = await readContract(config, {
       address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-      abi:
-        process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-          ? ethereumAvailTokenMainnet
-          : ethereumAvailTokenTuring,
+      abi: availTokenAbi,
       functionName: "balanceOf",
       args: [activeUserAddress],
       chainId: networks.ethereum.id,
@@ -78,17 +73,14 @@ export default function useBridge() {
       // Get current allowance on Ethereum chain
       const allowance = await readContract(config, {
         address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-        abi:
-          process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-            ? ethereumAvailTokenMainnet
-            : ethereumAvailTokenTuring,
+        abi: availTokenAbi,
         functionName: "allowance",
         args: [activeUserAddress, appConfig.contracts.ethereum.bridge],
         chainId: networks.ethereum.id,
       });
 
       if (!allowance) return new BigNumber(0);
-      //@ts-ignore TODO: P2
+      //@ts-expect-error
       return new BigNumber(allowance);
     } catch (error) {
       throw new Error("error fetching allowance");
@@ -99,10 +91,7 @@ export default function useBridge() {
     // approve on ethereum chain
     const txHash = await writeContractAsync({
       address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-      abi:
-        process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-          ? ethereumAvailTokenMainnet
-          : ethereumAvailTokenTuring,
+      abi: availTokenAbi,
       functionName: "approve",
       // args: [spender, amount]
       args: [appConfig.contracts.ethereum.bridge, atomicAmount],
@@ -123,16 +112,25 @@ export default function useBridge() {
       const byte32DestinationAddress =
         substrateAddressToPublicKey(destinationAddress);
 
+        const estimatedGas = await estimateGas(config, {
+          to: appConfig.contracts.ethereum.bridge as `0x${string}`,
+          data: encodeFunctionData({
+            abi: bridgeImplAbi,
+            functionName: "sendAVAIL",
+            args: [byte32DestinationAddress, atomicAmount],
+          })
+        })
+
+      const gasWithBuffer = (estimatedGas * BigInt(120)) / BigInt(100);
+      
       const txHash = await writeContractAsync({
         address: appConfig.contracts.ethereum.bridge as `0x${string}`,
-        abi:
-          process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-            ? ethereumBridgeMainnet
-            : ethereumBridgeTuring,
+        abi: bridgeImplAbi,
         functionName: "sendAVAIL",
         // args: [recipient, amount]
         args: [byte32DestinationAddress, atomicAmount],
         chainId: networks.ethereum.id,
+        gas: gasWithBuffer,
       });
 
       return txHash;
@@ -156,7 +154,7 @@ export default function useBridge() {
           {
             FungibleToken: {
               assetId:
-                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                appConfig.assetId,
               amount: atomicAmount,
             },
           },
@@ -197,7 +195,6 @@ export default function useBridge() {
     destinationAddress: string;
   }) => {
     try {
-      console.log("activeUserAddress", activeUserAddress);
       if (!activeUserAddress) {
         throw new Error("No account selected");
       }
@@ -356,7 +353,7 @@ export default function useBridge() {
           message: {
             FungibleToken: {
               assetId:
-                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                appConfig.assetId,
               amount: BigInt(atomicAmount),
             },
           },

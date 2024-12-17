@@ -1,11 +1,9 @@
-import { toast } from "@/components/ui/use-toast";
 import { isNumber } from "@polkadot/util";
 import {
   ApiPromise,
   types,
   signedExtensions,
 } from "avail-js-sdk";
-import { substrateConfig } from "@/config/walletConfig";
 import { getWalletBySource, WalletAccount } from "@talismn/connect-wallets";
 import { SignerOptions } from "@polkadot/api/types";
 import { executeParams, sendMessageParams } from "@/types/transaction";
@@ -17,7 +15,7 @@ import { Logger } from "@/utils/logger";
  * @param api 
  * @returns injected metadata
  */
-const getInjectorMetadata = (api: ApiPromise) => {
+export const getInjectorMetadata = (api: ApiPromise) => {
   return {
     chain: api.runtimeChain.toString(),
     specVersion: api.runtimeVersion.specVersion.toNumber(),
@@ -50,11 +48,8 @@ export async function sendMessage(
   blockhash?: string;
   txHash?: string;
 }> {
-  const injector = await getWalletBySource(account.source);
-  const metadata = getInjectorMetadata(api);
 
-  //@ts-ignore
-  await injector?.metadata?.provide(metadata);
+  const injector = getWalletBySource(account.source);
 
   const result: {blockhash: string, txHash: string} = await new Promise((resolve, reject) => {
     const unsubscribe = api.tx.vector
@@ -82,10 +77,6 @@ export async function sendMessage(
                 } else {
                   errorInfo = dispatchError.toString();
                 }
-
-                toast({
-                  title: `Transaction failed. Status: ${status} with error: ${errorInfo}`,
-                });
                 reject(
                   new Error(
                     `Transaction failed. Status: ${status} with error: ${errorInfo}`
@@ -140,11 +131,7 @@ export async function executeTransaction(
   blockhash?: string;
   txHash?: string;
 }> {
-  const injector = await getWalletBySource(account.source);
-  const metadata = getInjectorMetadata(api);
-  
-  //@ts-ignore
-  await injector?.metadata?.provide(metadata);
+  const injector = getWalletBySource(account.source);
 
   const result: {blockhash: string, txHash: string} = await new Promise((resolve, reject) => {
     const unsubscribe = api.tx.vector
@@ -181,10 +168,6 @@ export async function executeTransaction(
                 } else {
                   errorInfo = dispatchError.toString();
                 }
-
-                toast({
-                  title: `Transaction failed. Status: ${status} with error: ${errorInfo}`,
-                });
                 Logger.info(`ExtrinsicFailed: ${errorInfo}`);
                 reject(
                   new Error(

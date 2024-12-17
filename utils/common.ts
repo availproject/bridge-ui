@@ -8,8 +8,7 @@ import { config, substrateConfig } from "@/config/walletConfig";
 import { readContract } from "@wagmi/core";
 import { Chain, TransactionStatus } from "@/types/common";
 import { appConfig } from "@/config/default";
-import ethereumAvailTokenTuring from "@/constants/abis/ethereumAvailTokenTuring.json";
-import ethereumAvailTokenMainnet from "@/constants/abis/ethereumAvailTokenMainnet.json";
+import availTokenAbi from "@/constants/abis/availTokenAbi.json";
 import { isAddress } from "viem";
 import { Logger } from "./logger";
 import { parseMinutes } from "./parsers";
@@ -39,10 +38,7 @@ export async function _getBalance(
         if (ethAddress) {
           const balance = await readContract(config, {
             address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-            abi:
-              process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-                ? ethereumAvailTokenMainnet
-                : ethereumAvailTokenTuring,
+            abi: availTokenAbi,
             functionName: "balanceOf",
             args: [ethAddress],
             chainId: networks.ethereum.id,

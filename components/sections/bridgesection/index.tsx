@@ -15,28 +15,20 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useEffect, useState } from "react";
-import Avail from "../wallets/avail";
-import Eth from "../wallets/eth";
+import Eth from "../../wallets/eth";
 import { _getBalance, validAddress } from "@/utils/common";
 import { useAccount } from "wagmi";
 import { useAvailAccount } from "@/stores/availWalletHook";
 import { useCommonStore } from "@/stores/common";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
 import { Chain, CheckedState } from "@/types/common";
 import useBridge from "@/hooks/useBridge";
 import { toast } from "@/components/ui/use-toast";
-import { parseError } from "@/utils/parseError";
 import BigNumber from "bignumber.js";
-import { badgeVariants } from "../ui/badge";
-import {
-  ArrowUpRight,
-  CheckCircle2,
-  Copy,
-  InfoIcon,
-  Loader2,
-} from "lucide-react";
+import { badgeVariants } from "../../ui/badge";
+import { ArrowUpRight, CheckCircle2, InfoIcon, Loader2 } from "lucide-react";
 import { parseAmount } from "@/utils/parsers";
-import { LoadingButton } from "../ui/loadingbutton";
+import { LoadingButton } from "../../ui/loadingbutton";
 import useTransactionButtonState from "@/hooks/useTransactionButtonState";
 import {
   AlertDialog,
@@ -48,10 +40,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "../ui/alert-dialog";
-import { Checkbox } from "../ui/checkbox";
+} from "../../ui/alert-dialog";
+import { Checkbox } from "../../ui/checkbox";
 import { RxCrossCircled } from "react-icons/rx";
-import TransactionSection from "./transactionsection";
+import TransactionSection from "../transactionsection";
 import { FaCheckCircle } from "react-icons/fa";
 import {
   Dialog,
@@ -60,16 +52,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import { Button } from "../ui/button";
+} from "../../ui/dialog";
+import { Button } from "../../ui/button";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "../ui/hover-card";
+} from "../../ui/hover-card";
 import React from "react";
 import useAppInit from "@/hooks/useAppInit";
-import { ErrorDialog } from "../common/errorDialog";
+import { ErrorDialog } from "../../common/errorDialog";
+import AvailWalletConnect from "../../wallets/avail";
+import PendingTxnsBadge from "@/components/common/pendingTxnsBadge";
 
 export const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -237,8 +231,8 @@ export default function BridgeSection() {
 
   async function PasteAddressAction() {
     const address = await navigator.clipboard.readText();
-    const a = await validAddress(address, toChain);
-    a &&
+    const validityCheck = validAddress(address, toChain);
+    validityCheck &&
       (form.setValue("toAddress", address),
       setToAddress(address),
       setOpen(false),
@@ -259,7 +253,7 @@ export default function BridgeSection() {
         ),
       }));
 
-    !a &&
+    !validityCheck &&
       toast({
         title: (
           <div className="flex flex-row items-center justify-center !space-x-3 ">
@@ -296,7 +290,9 @@ export default function BridgeSection() {
                   value="transactions"
                   className="relative font-ppmori text-lg data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 data-[state=active]:border-b !rounded-none"
                 >
-                  <p>Transactions</p>
+                  <p className="data-[state=active]:border-b border-white">
+                    Transactions
+                  </p>
                   {pendingTransactionsNumber > 0 && (
                     <span className="absolute top-1 right-1 flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
@@ -304,27 +300,12 @@ export default function BridgeSection() {
                     </span>
                   )}
                 </TabsTrigger>
-                {window.screen.width > 768 && (
-                  <div className={badgeVariants({ variant: "avail" })}>
-                    {pendingTransactionsNumber > 0 ? (
-                      <>
-                        <Loader2 className={`h-4 w-4 animate-spin`} />
-
-                        <p className="!text-left">
-                          {" "}
-                          {pendingTransactionsNumber} Pending{" "}
-                          <span className="mx-2">|</span>{" "}
-                          {readyToClaimTransactionsNumber} Claim Ready
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className={`h-4 w-4`} />
-                        <p className="!text-left"> No Pending Claims</p>
-                      </>
-                    )}
-                  </div>
-                )}
+                <TabsTrigger
+                  value="transactions"
+                  className="relative font-ppmori text-lg data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 !rounded-none"
+                >
+                  <PendingTxnsBadge />
+                </TabsTrigger>
               </span>
             </h1>
           </div>
@@ -359,7 +340,11 @@ export default function BridgeSection() {
                           </span>
 
                           <div className="flex flex-row items-center justify-center ">
-                            {fromChain === Chain.ETH ? <Eth /> : <Avail />}
+                            {fromChain === Chain.ETH ? (
+                              <Eth />
+                            ) : (
+                              <AvailWalletConnect />
+                            )}
                           </div>
                         </FormLabel>
                         <FormControl>
@@ -405,7 +390,7 @@ export default function BridgeSection() {
                                     <img
                                       src={`/images/AVAILETHsmall.png`}
                                       alt="logo"
-                                      className="w-8 "
+                                      className="w-8"
                                     ></img>
                                   ) : (
                                     <img
@@ -433,7 +418,7 @@ export default function BridgeSection() {
                                         : availBalance
                                         ? parseFloat(
                                             parseAmount(availBalance, 18)
-                                          ) - 1
+                                          ) - 0.3
                                         : 0;
 
                                     value && form.setValue("fromAmount", value);
@@ -492,7 +477,11 @@ export default function BridgeSection() {
                             </div>
                           </span>
                           {/* this will be opposite here since it's the To field*/}
-                          {fromChain === Chain.ETH ? <Avail /> : <Eth />}
+                          {fromChain === Chain.ETH ? (
+                            <AvailWalletConnect />
+                          ) : (
+                            <Eth />
+                          )}
                         </FormLabel>
                         <FormControl>
                           <>
@@ -659,24 +648,33 @@ export default function BridgeSection() {
                     </div>
                     <DialogFooter className="sm:justify-start mt-1">
                       <DialogClose asChild>
-                        <Link
-                          target="_blank"
-                          href={
-                            fromChain === Chain.ETH
-                              ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${ethToAvailHash}`
-                              : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${availToEthHash}`
-                          }
-                          className="w-full !border-0"
-                        >
-                          <Button
-                            type="button"
-                            variant="primary"
+                      <div className="w-full flex flex-col items-center justify-center space-y-2">
+                          <Link
+                            target="_blank"
+                            href={
+                              fromChain === Chain.ETH
+                                ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${ethToAvailHash}`
+                                : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${availToEthHash}`
+                            }
                             className="w-full !border-0"
                           >
-                            View on Explorer{" "}
-                            <ArrowUpRight className="h-3 w-6" />
-                          </Button>
-                        </Link>
+                            <Button
+                              type="button"
+                              variant="primary"
+                              className="w-full !border-0"
+                            >
+                              View on Explorer{" "}
+                              <ArrowUpRight className="h-3 w-6" />
+                            </Button>
+                          </Link>
+                          <a
+                            href="https://avail-project.notion.site/159e67c666dd811c8cf5e13903418d78"
+                            className="text-white text-opacity-70 underline mx-auto text-sm"
+                            target="_blank"
+                          >
+                            Submit feedback?
+                          </a>
+                        </div>
                       </DialogClose>
                     </DialogFooter>
                   </DialogContent>
@@ -690,6 +688,8 @@ export default function BridgeSection() {
                     claimDialog={true}
                   />
                 )}
+
+                {/* SUBMIT BUTTON */}
                 <LoadingButton
                   variant={"primary"}
                   loading={transactionInProgress}
