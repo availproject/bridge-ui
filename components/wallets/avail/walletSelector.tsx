@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-// components/WalletConnection/WalletSelector.tsx
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import Image from "next/image";
 import { Wallet } from '@talismn/connect-wallets';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import { WalletSelectionProps } from './types';
 export const WalletSelector = memo(({
   supportedWallets, 
   onWalletSelect, 
-  detectMetaMask 
+  metamaskInstalled 
 }: WalletSelectionProps) => {
   const sortedWallets = React.useMemo(() => 
     supportedWallets.sort((a, b) => {
@@ -25,9 +24,9 @@ export const WalletSelector = memo(({
       {/* Metamask Snap Button */}
       <Button
         variant="default"
-        disabled={!detectMetaMask()}
+        disabled={!metamaskInstalled}
         className="!text-lg font-thin bg-[#3a3b3cb1] text-left font-ppmori rounded-xl !p-8"
-        onClick={() => onWalletSelect({ title: 'Avail Snap' } as Wallet)}
+        onClick={() => onWalletSelect({ title: 'MetamaskSnap' } as Wallet)}
         key="Metamask"
       >
         <div className="flex flex-row">

@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 
 import { useMetaMaskContext } from './MetamaskContext';
 import { useRequest } from './useRequest';
 import { GetSnapsResponse } from './types';
 import { defaultSnapOrigin } from '.';
+import { log } from 'console';
 
 /**
  * A Hook to retrieve useful data from MetaMask.
@@ -14,6 +15,22 @@ export const useMetaMask = () => {
   const request = useRequest();
 
   const [isFlask, setIsFlask] = useState(false);
+  const [metamaskInstalled, setMetamaskInstalled] = useState(false);
+
+  useEffect(() => {
+    const detectMetaMask = () => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+      
+      const { ethereum } = window;
+      const isMetaMaskInstalled = Boolean(ethereum && ethereum.isMetaMask);
+      setMetamaskInstalled(isMetaMaskInstalled);
+    };
+
+    detectMetaMask();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const snapsDetected = provider !== null;
 
@@ -37,15 +54,6 @@ export const useMetaMask = () => {
     const { ethereum } = window;
     return Boolean(ethereum && ethereum.isMetaMask);
   };
-  
-  try {
-    const isMetaMaskInstalled = detectMetaMask();
-    if (!isMetaMaskInstalled) {
-      console.log('Please install MetaMask!');
-    }
-  } catch (error) {
-    console.error('Error during MetaMask detection:', error);
-  }
 
   /**
    * Get the Snap informations from MetaMask.
@@ -70,5 +78,5 @@ export const useMetaMask = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [provider]);
 
-  return { isFlask, snapsDetected, installedSnap, getSnap, detectMetaMask };
+  return { isFlask, snapsDetected, installedSnap, getSnap, detectMetaMask, metamaskInstalled };
 };

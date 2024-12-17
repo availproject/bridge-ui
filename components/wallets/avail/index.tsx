@@ -37,7 +37,7 @@ export default function AvailWalletConnect() {
     setSelectedWallet 
   } = useAvailAccount();
   
-  const { installedSnap, detectMetaMask } = useMetaMask();
+  const { installedSnap, metamaskInstalled } = useMetaMask();
   const { api } = useCommonStore();
 
   const getSupportedWallets = useCallback(() => {
@@ -93,12 +93,13 @@ export default function AvailWalletConnect() {
     cookie.substrateAddress, 
     cookie.substrateWallet, 
     installedSnap,
+    metamaskInstalled,
     getSupportedWallets
   ]);
 
   
   const handleWalletSelect = useCallback(async (wallet: Wallet) => {
-    if (wallet.title === 'Avail Snap') {
+    if (wallet.title === 'MetamaskSnap') {
       try{
         await requestSnap();
         const address = await invokeSnap({ method: "getAddress" });
@@ -120,7 +121,7 @@ export default function AvailWalletConnect() {
       setEnabledAccounts(substrateAccounts);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [installedSnap, metamaskInstalled]);
 
   const handleAccountSelect = useCallback(async (account: WalletAccount) => {
     setSelected(account);
@@ -134,7 +135,7 @@ export default function AvailWalletConnect() {
       setCookie,
     })
     setOpen(false);
-    Logger.info(`AVAIL_WALLET_CONNNECT - ${selectedWallet?.title} - ${account.address}`,);
+    Logger.info(`AVAIL_WALLET_CONNECT - ${selectedWallet?.title} - ${account.address}`,);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedWallet]);
 
@@ -191,7 +192,7 @@ export default function AvailWalletConnect() {
                 <WalletSelector 
                   supportedWallets={supportedWallets} 
                   onWalletSelect={handleWalletSelect}
-                  detectMetaMask={detectMetaMask}
+                 metamaskInstalled={metamaskInstalled}
                 />
                 </>
               ) : (
