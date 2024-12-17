@@ -22,10 +22,10 @@ export const showSuccessMessage = ({
         <div className="flex flex-row items-center justify-center !space-x-3 ">
           <FaCheckCircle className="mr-4 h-10 w-10" color="0BDA51" />
           <div className="flex flex-col space-y-2">
-            <p className="mr-2 font-thicccboisemibold">
+            <div className="mr-2 font-thicccboisemibold">
               {title ? title : "Transaction Initiated Successfully"}
-            </p>
-            <p className="!text-xs !text-white !text-opacity-40 font-thicccboisemibold">
+            </div>
+            <div className="!text-xs !text-white !text-opacity-40 font-thicccboisemibold">
               {desc ? desc : "Your Transaction was Initiated Successfully."}
               {blockhash && <a
                 target="_blank"
@@ -39,7 +39,7 @@ export const showSuccessMessage = ({
                 <p>View on Explorer. </p>
                 <ArrowUpRight className="h-3 w-6" />
               </a>}
-            </p>
+            </div>
           </div>
         </div>
       ),
@@ -55,8 +55,6 @@ export const showSuccessMessage = ({
           <div className="flex flex-col space-y-2">
             <p className="mr-2 font-thicccboisemibold text-white text-opacity-70">
             {title ? title :  "Your Transaction has failed due to some error. Please try again later."} 
-            </p>
-            <p className="!text-xs !text-white !text-opacity-40 font-thicccboisemibold">
             </p>
           </div>
         </div>

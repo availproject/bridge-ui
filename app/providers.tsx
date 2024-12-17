@@ -5,7 +5,7 @@ import { WagmiProvider} from "wagmi";
 import { ConnectKitProvider } from "connectkit";
 import { MetaMaskProvider } from "@/hooks/Metamask";
 import { config } from "@/config/walletConfig";
-import { Initialize } from "@/components/common/initialise";
+import { Initialize } from "@/components/common/initialize";
 
 const queryClient = new QueryClient();
 
