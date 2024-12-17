@@ -4,11 +4,6 @@ import BigNumber from "bignumber.js";
 import { useAccount, useSimulateContract, useWriteContract } from "wagmi";
 import { estimateGas, readContract, simulateContract } from "@wagmi/core";
 
-import ethereumAvailTokenTuring from "@/constants/abis/ethereumAvailTokenTuring.json";
-import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
-import ethereumAvailTokenMainnet from "@/constants/abis/ethereumAvailTokenMainnet.json";
-import ethereumBridgeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
-
 
 import { Transaction, TRANSACTION_TYPES } from "@/types/transaction";
 import { Chain, TransactionStatus } from "@/types/common";
@@ -28,6 +23,9 @@ import { showSuccessMessage } from "@/utils/toasts";
 import { encodeFunctionData, formatUnits } from "viem";
 import { useInvokeSnap } from "./Metamask";
 import { checkTransactionStatus } from "./Metamask/utils";
+
+import bridgeImplAbi from "@/constants/abis/bridgeImplAbi.json";
+import availTokenAbi from "@/constants/abis/availTokenAbi.json";
 
 import type {
   Transaction as MetamaskTransaction,
@@ -58,10 +56,7 @@ export default function useBridge() {
     // Get AVAIL balance on Ethereum chain
     const balance = await readContract(config, {
       address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-      abi:
-        process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-          ? ethereumAvailTokenMainnet
-          : ethereumAvailTokenTuring,
+      abi: availTokenAbi,
       functionName: "balanceOf",
       args: [activeUserAddress],
       chainId: networks.ethereum.id,
@@ -78,10 +73,7 @@ export default function useBridge() {
       // Get current allowance on Ethereum chain
       const allowance = await readContract(config, {
         address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-        abi:
-          process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-            ? ethereumAvailTokenMainnet
-            : ethereumAvailTokenTuring,
+        abi: availTokenAbi,
         functionName: "allowance",
         args: [activeUserAddress, appConfig.contracts.ethereum.bridge],
         chainId: networks.ethereum.id,
@@ -99,10 +91,7 @@ export default function useBridge() {
     // approve on ethereum chain
     const txHash = await writeContractAsync({
       address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-      abi:
-        process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-          ? ethereumAvailTokenMainnet
-          : ethereumAvailTokenTuring,
+      abi: availTokenAbi,
       functionName: "approve",
       // args: [spender, amount]
       args: [appConfig.contracts.ethereum.bridge, atomicAmount],
@@ -126,9 +115,7 @@ export default function useBridge() {
         const estimatedGas = await estimateGas(config, {
           to: appConfig.contracts.ethereum.bridge as `0x${string}`,
           data: encodeFunctionData({
-            abi: process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-              ? ethereumBridgeMainnet
-              : ethereumBridgeTuring,
+            abi: bridgeImplAbi,
             functionName: "sendAVAIL",
             args: [byte32DestinationAddress, atomicAmount],
           })
@@ -138,10 +125,7 @@ export default function useBridge() {
       
       const txHash = await writeContractAsync({
         address: appConfig.contracts.ethereum.bridge as `0x${string}`,
-        abi:
-          process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-            ? ethereumBridgeMainnet
-            : ethereumBridgeTuring,
+        abi: bridgeImplAbi,
         functionName: "sendAVAIL",
         // args: [recipient, amount]
         args: [byte32DestinationAddress, atomicAmount],
