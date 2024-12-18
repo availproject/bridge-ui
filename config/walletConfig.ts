@@ -1,22 +1,22 @@
 /* eslint-disable import/no-anonymous-default-export */
-export const substrateConfig = {
-  seed: "",
-  endpoint: process.env.NEXT_PUBLIC_AVAIL_RPC || "",
-  appId: 0,
-}
+
 
 import { http, createConfig } from '@wagmi/core'
 import { appConfig } from './default'
 import { getDefaultConfig } from 'connectkit'
-import { mainnet, sepolia } from '@wagmi/core/chains'
+import { base, baseSepolia, mainnet, sepolia } from '@wagmi/core/chains'
 
+
+export const substrateConfig = {
+  endpoint: process.env.NEXT_PUBLIC_AVAIL_RPC || "",
+}
 
 export const config = createConfig(
   getDefaultConfig({
-    chains: [appConfig.networks.ethereum],
+    chains: [appConfig.networks.ethereum, appConfig.networks.base],
     transports: {
-      [mainnet.id]: http(process.env.NEXT_PUBLIC_MAINNET_RPC || ""),
-      [sepolia.id]: http(process.env.NEXT_PUBLIC_SEPOLIA_RPC || ""),
+   [appConfig.networks.ethereum.id]: http( process.env.NEXT_PUBLIC_ETH_RPC || "" ),
+   [appConfig.networks.base.id]: http(process.env.NEXT_PUBLIC_BASE_RPC || "" ),
     },
     walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "e77cdade22390c135f6dfb134f075abe",
     appName: "Bridge UI",

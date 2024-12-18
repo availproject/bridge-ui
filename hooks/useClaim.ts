@@ -59,7 +59,7 @@ export default function useClaim() {
   async function receiveAvail(merkleProof: merkleProof) {
     try {
       const result = await writeContract(config, {
-        address: process.env.NEXT_PUBLIC_BRIDGE_PROXY_CONTRACT as `0x${string}`,
+        address: appConfig.contracts.ethereum.bridge as `0x${string}`,
         abi: bridgeImplAbi,     
         functionName: "receiveAVAIL",
         args: [

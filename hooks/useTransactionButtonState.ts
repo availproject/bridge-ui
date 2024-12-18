@@ -63,6 +63,7 @@ export default function useTransactionButtonState(
     const balanceMap = {
       [Chain.ETH]: ethBalance,
       [Chain.AVAIL]: availBalance,
+      [Chain.BASE]: "0",
     };
 
     const currentBalance = balanceMap[fromChain];

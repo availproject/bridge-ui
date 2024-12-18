@@ -25,7 +25,6 @@ import { Chain, CheckedState } from "@/types/common";
 import useBridge from "@/hooks/useBridge";
 import { toast } from "@/components/ui/use-toast";
 import BigNumber from "bignumber.js";
-import { badgeVariants } from "../../ui/badge";
 import { ArrowUpRight, CheckCircle2, InfoIcon, Loader2 } from "lucide-react";
 import { parseAmount } from "@/utils/parsers";
 import { LoadingButton } from "../../ui/loadingbutton";
@@ -64,6 +63,8 @@ import useAppInit from "@/hooks/useAppInit";
 import { ErrorDialog } from "../../common/errorDialog";
 import AvailWalletConnect from "../../wallets/avail";
 import PendingTxnsBadge from "@/components/common/pendingTxnsBadge";
+import ChainSwitcher from "./chainSwitcherDropdown";
+import { useChainBalance } from "./balanceHandler";
 
 export const formSchema = z.object({
   fromAmount: z.preprocess(
@@ -86,14 +87,13 @@ export default function BridgeSection() {
     setToAddress,
     toAddress,
     pendingTransactionsNumber,
-    readyToClaimTransactionsNumber,
     ethBalance,
     availBalance,
   } = useCommonStore();
+
   const { selected } = useAvailAccount();
   const { refetchBalances } = useAppInit();
   const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
-
   const [transactionInProgress, setTransactionInProgress] =
     useState<boolean>(false);
   const { buttonStatus, isDisabled, availAmountToDollars } =
@@ -328,15 +328,7 @@ export default function BridgeSection() {
                         <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end  ">
                           <span className="font-ppmori flex flex-row items-center space-x-2">
                             <p className="text-opacity-80 text-white ">From</p>
-                            <div
-                              className={badgeVariants({ variant: "avail" })}
-                            >
-                              <img
-                                src={`/images/${fromChain}small.png`}
-                                alt="logo"
-                              ></img>
-                              <p className="!text-left">{fromChain}</p>
-                            </div>
+                            <ChainSwitcher selectedChain={fromChain} type="from" />
                           </span>
 
                           <div className="flex flex-row items-center justify-center ">
@@ -441,7 +433,6 @@ export default function BridgeSection() {
                             </div>
                           </>
                         </FormControl>
-
                         <FormMessage />
                       </FormItem>
                     </>
@@ -466,15 +457,7 @@ export default function BridgeSection() {
                         <FormLabel className="font-thicccboiregular !text-lg flex flex-row justify-between items-end  ">
                           <span className="font-ppmori flex flex-row items-center space-x-2">
                             <p className="text-opacity-80 text-white ">To</p>
-                            <div
-                              className={badgeVariants({ variant: "avail" })}
-                            >
-                              <img
-                                src={`/images/${toChain}small.png`}
-                                alt="logo"
-                              ></img>
-                              <p className="!text-left">{toChain}</p>
-                            </div>
+                            <ChainSwitcher selectedChain={toChain} type="to" />
                           </span>
                           {/* this will be opposite here since it's the To field*/}
                           {fromChain === Chain.ETH ? (
