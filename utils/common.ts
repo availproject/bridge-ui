@@ -4,57 +4,25 @@ import {
   initialize,
   isValidAddress,
 } from "avail-js-sdk";
-import { config, substrateConfig } from "@/config/walletConfig";
-import { readContract } from "@wagmi/core";
+import { substrateConfig } from "@/config/walletConfig";
 import { Chain, TransactionStatus } from "@/types/common";
-import { appConfig } from "@/config/default";
-import availTokenAbi from "@/constants/abis/availTokenAbi.json";
 import { isAddress } from "viem";
 import { Logger } from "./logger";
 import { parseMinutes } from "./parsers";
 import { LatestBlockInfo } from "@/stores/lastestBlockInfo";
+import { appConfig } from "@/config/default";
 
-const networks = appConfig.networks;
 
-export async function _getBalance(
-  chain: Chain,
-  api: ApiPromise,
-  availAddress?: string,
-  ethAddress?: `0x${string}`
-): Promise<string | undefined> {
-  try {
-    switch (chain) {
-      case Chain.AVAIL:
-        if (availAddress) {
-          const oldBalance: any = await api.query.system.account(availAddress);
-          const atomicBalance =
-            oldBalance.data.free.toHuman().replace(/,/g, "") -
-            oldBalance.data.frozen.toHuman().replace(/,/g, "");
-          return atomicBalance.toString();
-        }
-        break;
 
-      case Chain.ETH:
-        if (ethAddress) {
-          const balance = await readContract(config, {
-            address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-            abi: availTokenAbi,
-            functionName: "balanceOf",
-            args: [ethAddress],
-            chainId: networks.ethereum.id,
-          });
-          if (balance === undefined) return undefined;
-          return balance as string;
-        }
-        break;
+ //In milliseconds - 20 minutes.
+ export const TELEPATHY_INTERVAL = 1200000;
+ //In milliseconds - 120 minutes.
+ export const VECTORX_INTERVAL = 7200000;
+ const networks = appConfig.networks;
 
-      default:
-        throw new Error("INVALID_CHAIN");
-    }
-  } catch (error) {
-    Logger.error(`ERROR_FETCHING_BALANCE: ${error}`);
-  }
-}
+ export const nini = (sec: number) =>
+  new Promise((resolve) => setTimeout(resolve, sec * 1000));
+
 
 export function validAddress(address: string, chain: Chain) {
   if (chain === Chain.AVAIL) {
@@ -127,27 +95,20 @@ export const getStatusTime = ({
   }
 };
 
-export const nini = (sec: number) =>
-  new Promise((resolve) => setTimeout(resolve, sec * 1000));
-
 export const initApi = async (retries = 3): Promise<ApiPromise> => {
   try {
+    console.log(`Initializing API. Retries left: ${retries}`);
     const initializedApi = await initialize(substrateConfig.endpoint);
+    console.log("API initialized", initializedApi);
     return initializedApi;
   } catch (error) {
     disconnect();
     if (retries > 0) {
       await nini(2);
-      Logger.debug(`Retrying to initialize API. Retries left: ${retries}`);
+      console.debug(`Retrying to initialize API. Retries left: ${retries}`);
       return initApi(retries - 1);
     } else {
       throw new Error(`RPC_INITIALIZE_ERROR: ${error}`);
     }
   }
 };
-
-
-  //In milliseconds - 20 minutes.
-  export const TELEPATHY_INTERVAL = 1200000;
-  //In milliseconds - 120 minutes.
-  export const VECTORX_INTERVAL = 7200000;
