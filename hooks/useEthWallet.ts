@@ -26,7 +26,7 @@ export default function useEthWallet() {
     return chainId;
   };
 
-  const validateChain = async (targetChain: Chain) => {
+  const validateandSwitchChain = async (targetChain: Chain) => {
     switch (targetChain) {
       case Chain.ETH: {
         if ((await activeNetworkId()) !== appConfig.networks.ethereum.id) {
@@ -48,6 +48,6 @@ export default function useEthWallet() {
   return {
     activeUserAddress,
     activeNetworkId,
-    validateChain,
+    validateandSwitchChain,
   };
 }

@@ -7,13 +7,6 @@ import axios from "axios";
 import jsonbigint from "json-bigint";
 const JSONBigInt = jsonbigint({ useNativeBigInt: true });
 
-
-/**
- * @description Fetches the merkle proof for a given blockhash and index
- * @flow AVAIL -> ETH
- * 
- * @returns merkleProof
- */
 export const getMerkleProof = async (blockhash: string, index: number) => {
   const response = await axios.get(`${appConfig.bridgeApiBaseUrl}/eth/proof/${blockhash}`, {
     params: { index },
@@ -44,13 +37,6 @@ export async function fetchEthHead(): Promise<{
   return { data: ethHead };
 }
 
-
-/**
- * @description Fetches the account storage proofs for a given blockhash and messageid
- * @flow ETH -> AVAIL
- * 
- * @returns AccountStorageProof
- */
 export async function getAccountStorageProofs(
   blockhash: string,
   messageid: number
@@ -64,3 +50,23 @@ export async function getAccountStorageProofs(
   const result: AccountStorageProof = await response.json();
   return result;
 }
+
+export async function fetchTokenPrice({
+  coin,
+  fiat,
+}: {
+  coin: string;
+  fiat: string;
+}): Promise<number> {
+  const response = await fetch(
+    `/api/getTokenPrice?coins=${coin}&fiats=${fiat}`
+  );
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      `status: ${response.status}, message: ${errorData.error || "Unknown error"}`
+    );
+  }
+  const data = await response.json();
+  return Number(data.price[coin][fiat]);
+};

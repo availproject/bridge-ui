@@ -1,4 +1,6 @@
-import BridgeSection from "@/components/sections/bridgesection";
+
+
+import Container from "@/components/common/container";
 import { InfoIcon } from "lucide-react";
 
 export default function Home() {
@@ -6,7 +8,7 @@ export default function Home() {
     <main className="">
       <div className="relative !mt-12 w-screen items-center justify-center flex flex-col">
         <section className="z-10 flex items-center justify-center">
-          <BridgeSection />
+          <Container />
         </section>
       </div>
       <div className="font-mono flex flexx-row items-center text-[#ffffffa2] max-md:px-6 mt-20 text-xl md:w-1/2 mx-auto  space-x-2 ">

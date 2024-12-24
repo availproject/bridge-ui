@@ -1,11 +1,11 @@
-import { WalletAccount } from "@talismn/connect-wallets";
+import { Wallet, WalletAccount } from "@talismn/connect-wallets";
 import { create } from "zustand";
 
 interface AvailWallet {
   selected: WalletAccount | null;
   setSelected: (selected: WalletAccount | null) => void;
-  selectedWallet: any;
-  setSelectedWallet: (selectedWallet: any) => void;
+  selectedWallet: Wallet | null;
+  setSelectedWallet: (selectedWallet: Wallet | null) => void;
 }
 
 export const useAvailAccount = create<AvailWallet>((set) => ({

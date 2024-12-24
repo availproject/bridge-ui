@@ -46,8 +46,7 @@ export const showSuccessMessage = ({
     });
   };
   
-  
-  export const showFailedMessage = ({title, description} : {title: string, description?: string}) => {
+export const showFailedMessage = ({title, description} : {title: string, description?: string}) => {
     toast({
       title: (
         <div className="flex flex-row items-center justify-center !space-x-3 ">

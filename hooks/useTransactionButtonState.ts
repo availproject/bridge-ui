@@ -1,8 +1,9 @@
-import { useAvailAccount } from "@/stores/availWalletHook";
+import { useAvailAccount } from "@/stores/availwallet";
+import { useBalanceStore } from "@/stores/balances";
 import { useCommonStore } from "@/stores/common";
 import { Chain } from "@/types/common";
 import { validAddress } from "@/utils/common";
-import { Logger } from "@/utils/logger";
+import BigNumber from "bignumber.js";
 import { useMemo } from "react";
 import { useAccount } from "wagmi";
 
@@ -11,23 +12,15 @@ export default function useTransactionButtonState(
 ) {
   const account = useAccount();
   const { selected } = useAvailAccount();
-  const {
-    fromChain,
-    dollarAmount,
-    toChain,
-    fromAmount,
-    toAddress,
-    ethBalance,
-    availBalance,
-  } = useCommonStore();
+  const { fromChain, toChain, fromAmount, toAddress } =
+    useCommonStore();
+  const { balances } = useBalanceStore();
 
   const isWalletConnected = useMemo(() => {
-    if (fromChain === Chain.ETH) {
-      return account?.address && true;
-    }
     if (fromChain === Chain.AVAIL) {
       return selected?.address && true;
-    }
+    } 
+      return account.address && true;
   }, [account.address, selected?.address, fromChain]);
 
   const isInvalidAmount = useMemo(() => {
@@ -40,37 +33,31 @@ export default function useTransactionButtonState(
     );
   }, [fromAmount]);
 
-  const isValidToAddress = useMemo( () => {
+  const isValidToAddress = useMemo(() => {
     if (fromChain === Chain.AVAIL) {
       return Boolean(
-        (account?.address) || (toAddress && validAddress(toAddress, Chain.ETH))
+        account?.address || (toAddress && validAddress(toAddress, Chain.ETH))
       );
     } else {
       return Boolean(
-        (selected?.address) || (toAddress && validAddress(toAddress, Chain.AVAIL))
+        selected?.address || (toAddress && validAddress(toAddress, Chain.AVAIL))
       );
     }
   }, [toAddress, fromChain, selected?.address, account?.address]);
 
   const hasInsufficientBalance = useMemo(() => {
-    if (!fromAmount || isNaN(fromAmount)) return false;
+    if (!fromAmount || isNaN(Number(fromAmount))) return false;
 
     const reservedAmount = fromChain === Chain.AVAIL ? 0.25 : 0; // .25 AVAIL ONLY WHEN FROM CHAIN IS AVAIL
 
-    const amount = (parseFloat(fromAmount?.toString()) + reservedAmount) * 10 ** 18;
+    const amount = parseFloat(fromAmount?.toString()) + reservedAmount;
     if (isNaN(amount)) return false;
 
-    const balanceMap = {
-      [Chain.ETH]: ethBalance,
-      [Chain.AVAIL]: availBalance,
-      [Chain.BASE]: "0",
-    };
+    const currentBalance = balances[fromChain];
+    if (currentBalance.error || currentBalance.status === "loading") return true;
 
-    const currentBalance = balanceMap[fromChain];
-    if (currentBalance === undefined || currentBalance === null) return true;
-
-    return parseFloat(currentBalance) < amount;
-  }, [ethBalance, availBalance, fromAmount, fromChain]);
+    return new BigNumber(currentBalance.value).lt(amount);
+  }, [balances, fromAmount, fromChain]);
 
   const buttonStatus = useMemo(() => {
     if (!isWalletConnected) {
@@ -102,8 +89,6 @@ export default function useTransactionButtonState(
     toChain,
   ]);
 
-
-
   const isDisabled = useMemo(() => {
     return (
       transactionInProgress ||
@@ -120,9 +105,5 @@ export default function useTransactionButtonState(
     isValidToAddress,
   ]);
 
-  const availAmountToDollars: number = useMemo(() => {
-    return fromAmount ? fromAmount * dollarAmount : 0;
-  }, [fromAmount, dollarAmount]);
-
-  return { buttonStatus, isDisabled, availAmountToDollars };
+  return { buttonStatus, isDisabled };
 }

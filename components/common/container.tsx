@@ -1,0 +1,69 @@
+"use client";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from "react";
+import TransactionSection from "../sections/transactions";
+import PendingTxnsBadge from "@/components/common/pendingtxnsbadge";
+import BridgeSection from "../sections/bridge";
+
+export default function Container() {
+  const [activeTab, setActiveTab] = useState("bridge");
+
+  return (
+    <div className="text-white w-full my-4 flex flex-col space-y-3 items-center justify-center">
+      <Tabs
+        defaultValue="bridge"
+        value={activeTab}
+        onValueChange={setActiveTab}
+        id="container"
+        className="section_bg p-2 w-screen max-sm:rounded-none max-sm:border-x-0 sm:w-[70vw] lg:w-[50vw] xl:w-[40vw]"
+      >
+        <TabsList className="flex flex-row items-start justify-start bg-transparent !border-0 p-2 mb-6 mx-2 mt-1">
+          <div className="flex flex-row pb-[2vh] items-center justify-between">
+            <h1 className="font-ppmori items-center flex flex-row space-x-2 text-white text-opacity-80 text-2xl w-full ">
+              <span className="relative flex flex-row items-center justify-center">
+                <TabsTrigger
+                  value="bridge"
+                  className="data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 data-[state=active]:border-b !rounded-none"
+                >
+                  <h1 className="font-ppmori text-lg">Bridge</h1>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="transactions"
+                  className="relative font-ppmori text-lg data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 data-[state=active]:border-b !rounded-none"
+                >
+                  <p className="data-[state=active]:border-b border-white">
+                    Transactions
+                  </p>
+                  {activeTab === "transactions" && (
+                    <span className="absolute top-1 right-1 flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                    </span>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="transactions"
+                  className="relative font-ppmori text-lg data-[state=active]:bg-inherit data-[state=active]:bg-opacity-100 !rounded-none"
+                >
+                  <PendingTxnsBadge />
+                </TabsTrigger>
+              </span>
+            </h1>
+          </div>
+        </TabsList>
+        <TabsContent id="bridge" value="bridge" className="flex-1">
+       <BridgeSection/>
+        </TabsContent>
+        <TabsContent
+          id="transactions"
+          value="transactions"
+          className="text-white h-full"
+        >
+          <TransactionSection />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+

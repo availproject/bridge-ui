@@ -3,7 +3,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { getWallets, Wallet, WalletAccount } from "@talismn/connect-wallets";
 import { useCookies } from "react-cookie";
-import { useAvailAccount } from "@/stores/availWalletHook";
 import { useInvokeSnap, useMetaMask, useRequestSnap } from "@/hooks/Metamask";
 import { DisconnectWallet } from './disconnectWallet';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -12,10 +11,11 @@ import { AccountSelector } from './accountSelector';
 import { updateMetadata } from './utils';
 import { WalletSelector } from './walletSelector';
 import { ArrowLeft, InfoIcon } from 'lucide-react';
-import { useCommonStore } from '@/stores/common';
 import { showFailedMessage } from '@/utils/toasts';
 import { ExtendedWalletAccount } from './types';
 import { Logger } from '@/utils/logger';
+import { useAvailAccount } from '@/stores/availwallet';
+import { useApi } from '@/stores/api';
 
 export default function AvailWalletConnect() {
   const [open, setOpen] = useState(false);
@@ -23,6 +23,7 @@ export default function AvailWalletConnect() {
   const [enabledAccounts, setEnabledAccounts] = useState<WalletAccount[]>([]);
   const requestSnap = useRequestSnap();
   const invokeSnap = useInvokeSnap();
+  const {api} = useApi();
   
   const [cookie, setCookie, removeCookie] = useCookies([
     "substrateAddress", 
@@ -38,7 +39,6 @@ export default function AvailWalletConnect() {
   } = useAvailAccount();
   
   const { installedSnap, metamaskInstalled } = useMetaMask();
-  const { api } = useCommonStore();
 
   const getSupportedWallets = useCallback(() => {
     const wallets = getWallets();

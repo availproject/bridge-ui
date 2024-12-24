@@ -1,24 +1,38 @@
-
+import { fetchTokenPrice } from "@/services/bridgeapi";
 import { Chain } from "@/types/common";
-import { initApi } from "@/utils/common";
-import { ApiPromise } from "avail-js-sdk";
 import { create } from "zustand";
 
-type ChainBalances = Record<Chain, number>;
+const EMPTY_AMOUNT = '' as const
 
+interface DialogBase {
+    isOpen: boolean
+    onOpenChange: (open: boolean) => void
+    claimDialog: boolean
+}
+
+interface SuccessDialog extends DialogBase {
+    details: { chain: Chain; hash: string } | null
+    setDetails: (details: { chain: Chain; hash: string }) => void
+}
+
+interface ErrorDialog extends DialogBase {
+    error: Error | string | null
+    setError: (error: Error | string | null) => void
+}
 interface CommonStore {
     fromChain: Chain
     setFromChain: (fromChain: Chain) => void
     dollarAmount: number
     setDollarAmount: (dollarAmount: number) => void
+    fetchDollarAmount: () => Promise<number>
     toChain: Chain
     setToChain: (toChain: Chain) => void
-    api?: ApiPromise
-    setApi: (api: ApiPromise) => void
-    fromAmount: number
-    setFromAmount: (fromAmount: number) => void
+    fromAmount: string
+    setFromAmount: (fromAmount: string) => void
     toAddress: string | undefined
     setToAddress: (toAddress: string) => void
+    successDialog: SuccessDialog
+    errorDialog: ErrorDialog
 }
 
 export const useCommonStore = create<CommonStore>((set) => ({
@@ -26,14 +40,44 @@ export const useCommonStore = create<CommonStore>((set) => ({
     setFromChain: (fromChain) => set({ fromChain }),
     dollarAmount: 0,
     setDollarAmount: (dollarAmount) => set({ dollarAmount }),
+    fetchDollarAmount: async () => {
+        const price = await fetchTokenPrice({
+            coin: "avail",
+            fiat: "usd",
+        });
+        set({ dollarAmount: price });
+        return price;
+      },
     toChain: Chain.ETH,
     setToChain: (toChain) => set({ toChain }),
-    api: undefined,
-    setApi: (api) => set({ api }),
-    fromAmount: 0,
+    fromAmount: EMPTY_AMOUNT,
     setFromAmount: (fromAmount) => set({ fromAmount }),
     toAddress: undefined,
     setToAddress: (toAddress) => set({ toAddress }),
-}));
-
- 
+    successDialog: {
+        isOpen: false,
+        onOpenChange: (open: boolean) => 
+            set((state) => ({ 
+                successDialog: { ...state.successDialog, isOpen: open } 
+            })),
+        claimDialog: false,
+        details: null, 
+        setDetails: (details: { chain: Chain; hash: string }) => 
+            set((state) => ({ 
+                successDialog: { ...state.successDialog, details } 
+            }))
+    },
+    errorDialog: {
+        isOpen: false,
+        onOpenChange: (open: boolean) => 
+            set((state) => ({ 
+                errorDialog: { ...state.errorDialog, isOpen: open } 
+            })),
+        claimDialog: false,
+        error: null,
+        setError: (error: Error | string | null) => 
+            set((state) => ({ 
+                errorDialog: { ...state.errorDialog, error } 
+            }))
+    },
+}))

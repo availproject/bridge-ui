@@ -26,18 +26,14 @@ import { useEffect, useMemo, useState } from "react";
 import { LoadingButton } from "../../ui/loadingbutton";
 import { Transaction } from "@/types/transaction";
 import { CiCircleQuestion } from "react-icons/ci";
-import { useLatestBlockInfo } from "@/stores/lastestBlockInfo";
 import { Logger } from "@/utils/logger";
 import { showFailedMessage } from "@/utils/toasts";
-import { getStatusTime } from "@/utils/common";
 import TxnAddresses from "./txnaddresses";
 import ParsedDate from "./parseddate";
 import CompletedTransactions from "./completedtransactions";
 import NoTransactions from "./notransactions";
-import { SuccessDialog } from "../../common/successClaim";
 import { useTransactionsStore } from "@/stores/transactionsStore";
 import Loading from "./loading";
-import ErrorDialog from "@/components/common/errorDialog";
 
 
 export default function TransactionSection() {
@@ -47,7 +43,6 @@ export default function TransactionSection() {
     paginatedCompletedTransactions,
     paginatedPendingTransactions,
   } = useTransactions();
-  const { avlHead, ethHead } = useLatestBlockInfo();
   const { initClaimAvailToEth, initClaimEthtoAvail } = useClaim();
   const {transactionLoader } = useTransactionsStore();
 
@@ -241,7 +236,7 @@ export default function TransactionSection() {
                         <ParsedDate sourceTimestamp={txn.sourceTimestamp} />
                       </div>
                     </span>
-                    <span className="flex flex-row space-x-2">
+                    <span className="flex flex-row space-x-2">  
                       <p className="text-white !text-md lg:text-lg font-thicccboisemibold">
                         {parseAvailAmount(txn.amount)} AVAIL
                       </p>
@@ -302,11 +297,11 @@ export default function TransactionSection() {
                     </span>
                     <p className="text-xs flex flex-row items-end justify-end text-right text-white text-opacity-70 space-x-1">
                       <span>
-                        {getStatusTime({
+                        {/* {getStatusTime({
                           from: txn.sourceChain,
                           status: txn.status,
                           heads: { eth: ethHead, avl: avlHead },
-                        })}
+                        })} */}
                       </span>{" "}
                       <Clock className="w-4 h-4" />
                     </p>
@@ -369,18 +364,18 @@ export default function TransactionSection() {
           </div>
         </TabsContent>
       </Tabs>
-      <SuccessDialog
+      {/* <SuccessDialog
         isOpen={dialogState.isOpen}
         onClose={() => setDialogState(prev => ({ ...prev, isOpen: false }))}
         destinationChain={dialogState.destinationChain}
         destinationTxnHash={dialogState.destinationTxnHash}
-      />
-      {errorDialog && <ErrorDialog
+      /> */}
+      {/* {errorDialog && <ErrorDialog
         isOpen={errorDialog}
         onOpenChange={() => setErrorDialog(false)}
         error={error}
         claimDialog={true}
-      /> }
+      /> } */}
       {/* Pagination */}
       {showPagination ? (
         <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">

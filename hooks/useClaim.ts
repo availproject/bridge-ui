@@ -16,10 +16,10 @@ import {
  fetchEthHead,
  getAccountStorageProofs,
  getMerkleProof 
-} from "@/services/api";
-import { executeTransaction } from "@/services/vectorpallet";
+} from "@/services/bridgeapi";
+import { executeTransaction } from "@/services/pallet";
 
-import { useAvailAccount } from "@/stores/availWalletHook";
+import { useAvailAccount } from "@/stores/availwallet";
 import { useApi } from "@/stores/api";
 import useTransactions from "./useTransactions";
 import useEthWallet from "./useEthWallet";
@@ -34,7 +34,7 @@ import { checkTransactionStatus } from "./Metamask/utils";
 
 export default function useClaim() {
   
-  const { validateChain } = useEthWallet();
+  const { validateandSwitchChain } = useEthWallet();
   const { selected } = useAvailAccount();
   const { address } = useAccount();
   const { addToLocalTransaction } = useTransactions();
@@ -173,7 +173,7 @@ export default function useClaim() {
   }: AvailToEthClaimParams) => {
     try {
       if (!address) throw new Error("Connect a Eth account");
-      await validateChain(Chain.ETH);
+      await validateandSwitchChain(Chain.ETH);
 
       const proof: merkleProof = await getMerkleProof(
         blockhash,

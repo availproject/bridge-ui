@@ -1,10 +1,10 @@
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { badgeVariants } from "../ui/badge";
-import { useCommonStore } from "@/stores/common";
+import { useTransactionsStore } from "@/stores/transactionsStore";
 
 export default function PendingTxnsBadge() {
   const { pendingTransactionsNumber, readyToClaimTransactionsNumber } =
-    useCommonStore();
+    useTransactionsStore();
 
   return (
     <div className="hidden md:flex">

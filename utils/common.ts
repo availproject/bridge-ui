@@ -3,35 +3,29 @@ import {
   disconnect,
   initialize,
   isValidAddress,
+  Keyring,
 } from "avail-js-sdk";
 import { substrateConfig } from "@/config/walletConfig";
 import { Chain, TransactionStatus } from "@/types/common";
 import { isAddress } from "viem";
-import { Logger } from "./logger";
 import { parseMinutes } from "./parsers";
+import { ethers } from "ethers";
 import { LatestBlockInfo } from "@/stores/lastestBlockInfo";
-import { appConfig } from "@/config/default";
-
-
 
  //In milliseconds - 20 minutes.
- export const TELEPATHY_INTERVAL = 1200000;
+export const TELEPATHY_INTERVAL = 1200000;
  //In milliseconds - 120 minutes.
- export const VECTORX_INTERVAL = 7200000;
- const networks = appConfig.networks;
+export const VECTORX_INTERVAL = 7200000;
+export const decimal_points = 2
 
- export const nini = (sec: number) =>
+export const nini = (sec: number) =>
   new Promise((resolve) => setTimeout(resolve, sec * 1000));
 
 
 export function validAddress(address: string, chain: Chain) {
   if (chain === Chain.AVAIL) {
-    return isValidAddress(address);
-  }
-  if (chain === Chain.ETH) {
-    return isAddress(address);
-  }
-  return false;
+    return isValidAddress(address);}
+  return isAddress(address);
 }
 
 export function getHref(destinationChain: Chain, txnHash: string) {
@@ -112,3 +106,32 @@ export const initApi = async (retries = 3): Promise<ApiPromise> => {
     }
   }
 };
+
+export const stringToByte32 = (str: string) => {
+    return ethers.utils.keccak256(str);
+}
+
+function uint8ArrayToByte32String(uint8Array: Uint8Array) {
+    if (!(uint8Array instanceof Uint8Array)) {
+        throw new Error('Input must be a Uint8Array');
+    }
+    let hexString = '';
+    for (const byte of uint8Array as any) {
+        hexString += byte.toString(16).padStart(2, '0');
+    }
+    if (hexString.length !== 64) {
+        throw new Error('Input must be 32 bytes long');
+    }
+    return '0x' + hexString;
+}
+
+export const substrateAddressToPublicKey = (address: string) => {
+    const accountId = address;
+    const keyring = new Keyring({ type: 'sr25519' });
+
+    const pair = keyring.addFromAddress(accountId);
+    const publicKeyByte8Array = pair.publicKey
+    const publicKeyByte32String = uint8ArrayToByte32String(publicKeyByte8Array);
+
+    return publicKeyByte32String;
+}

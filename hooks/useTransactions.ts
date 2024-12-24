@@ -1,15 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { getTransactionsFromIndexer } from "@/services/transactions";
-import { useTransactionsStore } from "@/stores/transactionsStore";
+import { BasicTransaction, useTransactionsStore } from "@/stores/transactionsStore";
 import { Chain, TransactionStatus } from "@/types/common";
 import { Transaction } from "@/types/transaction";
 import { useEffect, useMemo } from "react";
-import { useAvailAccount } from "@/stores/availWalletHook";
+import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
 import { pollWithDelay } from "@/utils/poller";
 
 /**
- * @description All the functionalities related to substrate wallet such as connecting, switching network, etc
+ * @description All the functionalities related managing transactions
  */
 
 export default function useTransactions() {
@@ -46,7 +46,6 @@ export default function useTransactions() {
      * else add it to allTransactions
      * but deleting will create circular dependency, hence leave it as it is
      */
-
     
     const allTransactions: Transaction[] = [];
 
@@ -149,7 +148,9 @@ export default function useTransactions() {
     return chunks
   },[completedTransactions]);
 
-  const addToLocalTransaction = (transaction: Transaction) => {
+
+
+  const addToLocalTransaction = (transaction: Partial<Transaction> & BasicTransaction) => {
     const localTransactionsKey = `localTransactions:${selected?.address}`;
     const existingTransactions = JSON.parse(localStorage.getItem(localTransactionsKey) || '[]');
    

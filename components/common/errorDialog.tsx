@@ -9,22 +9,16 @@ import {
 import { RxCrossCircled } from "react-icons/rx";
 import { Copy } from "lucide-react";
 import { useState } from "react";
-import { parseError } from "@/utils/parseError";
+import { parseError } from "@/utils/parsers";
+import { useCommonStore } from "@/stores/common";
 
-type ErrorDialogProps = {
-  isOpen: boolean;
-  claimDialog?: boolean;
-  onOpenChange: (open: boolean) => void;
-  error: Error | string | null;
-};
+export const ErrorDialog = () => {
 
-export const ErrorDialog = ({
-  isOpen,
-  onOpenChange,
-  error,
-  claimDialog,
-}: ErrorDialogProps) => {
+  const { errorDialog } = useCommonStore();
+  const { isOpen, onOpenChange, error, claimDialog } = errorDialog;
   const [copied, setCopied] = useState(false);
+
+  if (!isOpen) return null;
 
   const copyToClipboard = () => {
     if (error) {
