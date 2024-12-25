@@ -1,6 +1,6 @@
 import { LoadingButton } from "@/components/ui/loadingbutton";
 import useBridge from "@/hooks/useBridge";
-import useTransactionButtonState from "@/hooks/useTransactionButtonState";
+import useSubmitTxnState from "@/hooks/useSubmitTxnState";
 import { useCommonStore } from "@/stores/common";
 import { Chain } from "@/types/common";
 import { validAddress } from "@/utils/common";
@@ -28,7 +28,7 @@ const {
 
 const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
 const { buttonStatus, isDisabled } =
-  useTransactionButtonState(transactionInProgress);
+  useSubmitTxnState(transactionInProgress);
 
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();

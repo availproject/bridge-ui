@@ -1,5 +1,5 @@
 import { appConfig } from "@/config/default";
-import { LatestBlockInfo } from "@/stores/lastestBlockInfo";
+import { LatestBlockInfo } from "@/stores/blockinfo";
 import { AccountStorageProof, merkleProof } from "@/types/transaction";
 import { Logger } from "@/utils/logger";
 import { ApiPromise } from "avail-js-sdk";
@@ -70,3 +70,4 @@ export async function fetchTokenPrice({
   const data = await response.json();
   return Number(data.price[coin][fiat]);
 };
+

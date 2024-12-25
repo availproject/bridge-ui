@@ -10,7 +10,7 @@ import { Chain, TransactionStatus } from "@/types/common";
 import { isAddress } from "viem";
 import { parseMinutes } from "./parsers";
 import { ethers } from "ethers";
-import { LatestBlockInfo } from "@/stores/lastestBlockInfo";
+import { LatestBlockInfo } from "@/stores/blockinfo";
 
  //In milliseconds - 20 minutes.
 export const TELEPATHY_INTERVAL = 1200000;

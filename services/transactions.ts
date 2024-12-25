@@ -51,6 +51,14 @@ async function fetchTransactions(userAddress: string, sourceChain?: string, dest
     }
 }
 
+const fetchWithErrorHandling = async (address: string, source: Chain, dest?: Chain) => {
+    try {
+        return await fetchTransactions(address, source, dest);
+    } catch (error) {
+        Logger.error(`Failed to fetch transactions for ${address} from ${source} to ${dest}: ${error}`);
+        return [];
+    }
+};
 
 /**
  * @description Fetches transactions and adds to store, based on wallet logged in
@@ -74,19 +82,25 @@ export const getTransactionsFromIndexer = async (
             }
         });
     };
+
+    const fetchPromises: Promise<Transaction[]>[] = [];
+    
     if (ethAddress) {
-        const ethTransactions = await fetchTransactions(ethAddress, Chain.ETH, destinationChain);
-        addUniqueTransactions(ethTransactions);
-        const receiverEthTransactions = await fetchTransactions(ethAddress, Chain.AVAIL, destinationChain);
-        addUniqueTransactions(receiverEthTransactions);
+        fetchPromises.push(
+            fetchWithErrorHandling(ethAddress, Chain.ETH),
+            fetchWithErrorHandling(ethAddress, Chain.AVAIL)
+        );
     }
 
     if (availAddress) {
-        const availTransactions = await fetchTransactions(availAddress, Chain.AVAIL, destinationChain);
-        addUniqueTransactions(availTransactions);
-        const receiverAvailTransactions = await fetchTransactions(availAddress, Chain.ETH, destinationChain);
-        addUniqueTransactions(receiverAvailTransactions);
+        fetchPromises.push(
+            fetchWithErrorHandling(availAddress, Chain.AVAIL),
+            fetchWithErrorHandling(availAddress, Chain.ETH)
+        );
     }
+
+    const results = await Promise.all(fetchPromises);
+    results.forEach(addUniqueTransactions);
 
     return allTransactions;
 };

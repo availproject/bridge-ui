@@ -1,13 +1,41 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TransactionSection from "../sections/transactions";
 import PendingTxnsBadge from "@/components/common/pendingtxnsbadge";
 import BridgeSection from "../sections/bridge";
+import { useAvailAccount } from "@/stores/availwallet";
+import { useAccount } from "wagmi";
+import { useTransactionsStore } from "@/stores/transactions";
 
 export default function Container() {
   const [activeTab, setActiveTab] = useState("bridge");
+
+  const { selected } = useAvailAccount();
+  const { address } = useAccount();
+  const {fetchIndexedTransactions, setTransactionLoader} = useTransactionsStore();
+
+  useEffect(()=>{
+    (async () => {
+      await fetchIndexedTransactions({
+        ethAddress: address,
+        availAddress: selected?.address,
+        setTransactionLoader
+      });
+
+      const interval = setInterval(async () => {
+        console.log("rerun")
+        await fetchIndexedTransactions({
+          ethAddress: address,
+          availAddress: selected?.address,
+          setTransactionLoader
+        });
+      }, 30000);
+      return () => clearInterval(interval);
+      
+    })()
+  },[selected?.address, address])
 
   return (
     <div className="text-white w-full my-4 flex flex-col space-y-3 items-center justify-center">

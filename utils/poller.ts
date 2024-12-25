@@ -22,7 +22,6 @@ export async function pollWithDelay<T>(
         try {
             result = await asyncFn(...args);
         } catch (error: any) {
-            // Handle errors here (optional)
             Logger.error(`Error during polling: ${error}`);
         }
         await new Promise(resolve => setTimeout(resolve, delayInMs));

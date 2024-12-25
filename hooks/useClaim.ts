@@ -195,6 +195,8 @@ export default function useClaim() {
           amount: atomicAmount,
           status: TransactionStatus.CLAIM_PENDING,
           sourceTimestamp: sourceTimestamp,
+          depositorAddress: senderAddress,
+          receiverAddress: receiverAddress
         });
       }
       return receive;
@@ -281,6 +283,8 @@ export default function useClaim() {
         destinationTransactionHash: execute.txHash,
         sourceChain: Chain.ETH,
         destinationChain: Chain.AVAIL,
+        depositorAddress: executeParams.from,
+        receiverAddress: executeParams.to    
       });
 
       Logger.info(

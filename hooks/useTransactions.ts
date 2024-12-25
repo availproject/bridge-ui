@@ -1,12 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { getTransactionsFromIndexer } from "@/services/transactions";
-import { BasicTransaction, useTransactionsStore } from "@/stores/transactionsStore";
+import { useTransactionsStore } from "@/stores/transactions";
 import { Chain, TransactionStatus } from "@/types/common";
 import { Transaction } from "@/types/transaction";
 import { useEffect, useMemo } from "react";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
-import { pollWithDelay } from "@/utils/poller";
 
 /**
  * @description All the functionalities related managing transactions
@@ -87,8 +86,8 @@ export default function useTransactions() {
               );
             } else if (indexedTxn?.sourceChain === Chain.AVAIL) {
               return (
-                indexedTxn.sourceBlockHash.toLowerCase() ===
-                localTxn.sourceBlockHash.toLowerCase()
+                indexedTxn.sourceTransactionHash.toLowerCase() ===
+                localTxn.sourceTransactionHash.toLowerCase()
               );
             }
           });
@@ -150,7 +149,7 @@ export default function useTransactions() {
 
 
 
-  const addToLocalTransaction = (transaction: Partial<Transaction> & BasicTransaction) => {
+  const addToLocalTransaction = (transaction: Transaction) => {
     const localTransactionsKey = `localTransactions:${selected?.address}`;
     const existingTransactions = JSON.parse(localStorage.getItem(localTransactionsKey) || '[]');
    

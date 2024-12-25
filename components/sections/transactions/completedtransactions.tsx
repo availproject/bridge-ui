@@ -52,7 +52,7 @@ function CompletedTransactions({
                     <span className="flex flex-row space-x-2">
                       <p className="text-white !text-md lg:text-lg font-thicccboisemibold">
                         {
-                          parseAvailAmount(txn.amount)
+                          parseAvailAmount(txn.amount, 18)
                         }{" "}
                         AVAIL
                       </p>

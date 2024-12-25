@@ -1,16 +1,15 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider } from "wagmi";
+import { useAccount, WagmiProvider } from "wagmi";
 import { ConnectKitProvider } from "connectkit";
 import { MetaMaskProvider } from "@/hooks/Metamask";
 import { config } from "@/config/walletConfig";
-import { useEffect } from "react";
+import { use, useEffect } from "react";
 import { useApi } from "@/stores/api";
 import { useCommonStore } from "@/stores/common";
 import { SuccessDialog } from "@/components/common/successdialog";
 import ErrorDialog from "@/components/common/errordialog";
-
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {

@@ -7,13 +7,12 @@ import BigNumber from "bignumber.js";
 import { useMemo } from "react";
 import { useAccount } from "wagmi";
 
-export default function useTransactionButtonState(
+export default function useSubmitTxnState(
   transactionInProgress: boolean
 ) {
   const account = useAccount();
   const { selected } = useAvailAccount();
-  const { fromChain, toChain, fromAmount, toAddress } =
-    useCommonStore();
+  const { fromChain, toChain, fromAmount, toAddress } = useCommonStore();
   const { balances } = useBalanceStore();
 
   const isWalletConnected = useMemo(() => {
