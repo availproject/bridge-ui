@@ -3,6 +3,7 @@ import { base, baseSepolia, mainnet, sepolia } from '@wagmi/core/chains'
 
 type AppConfig = {
     assetId: string,
+    config: string,
     networks: {
         ethereum: Chain,
         base: Chain,
@@ -35,6 +36,7 @@ type AppConfig = {
 
 export const appConfig: AppConfig = {
     assetId: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    config: process.env.NEXT_PUBLIC_ETH_NETWORK || 'testnet',
     networks: {
         ethereum: process.env.NEXT_PUBLIC_ETH_NETWORK === 'mainnet' ? mainnet : sepolia,
         base: process.env.NEXT_PUBLIC_ETH_NETWORK === 'mainnet' ? base : baseSepolia,

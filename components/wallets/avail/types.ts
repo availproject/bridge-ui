@@ -1,4 +1,4 @@
-import { Snap } from "@/hooks/Metamask/types";
+import { Snap } from "@/hooks/metamask/types";
 import { Wallet, WalletAccount } from "@talismn/connect-wallets";
 
 export interface WalletSelectionProps {

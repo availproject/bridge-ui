@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useAccount, WagmiProvider } from "wagmi";
 import { ConnectKitProvider } from "connectkit";
-import { MetaMaskProvider } from "@/hooks/Metamask";
+import { MetaMaskProvider } from "@/hooks/metamask";
 import { config } from "@/config/walletConfig";
 import { use, useEffect } from "react";
 import { useApi } from "@/stores/api";

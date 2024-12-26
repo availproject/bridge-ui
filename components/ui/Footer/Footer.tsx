@@ -6,7 +6,7 @@ import footerStyle from './Footer.module.css'
 import { ROUTES } from '../../../utils/routes'
 import Image from 'next/image'
 import { useMemo } from 'react'
-import { useMobileView } from '@/hooks/useMobileView'
+import { useMobileView } from '@/hooks/common/useMobileView'
 
 interface SubLinkTypes {
     id:number

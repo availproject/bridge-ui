@@ -22,22 +22,27 @@ export default function useEthWallet() {
     return address;
   }, [address, isConnected]);
 
-  const activeNetworkId = async () => {
+  const activeNetworkId = useMemo(() => {
     return chainId;
-  };
+  }, [chainId]);
 
   const validateandSwitchChain = async (targetChain: Chain) => {
     switch (targetChain) {
       case Chain.ETH: {
-        if ((await activeNetworkId()) !== appConfig.networks.ethereum.id) {
-          await switchNetwork?.(appConfig.networks.ethereum.id);
+        if ((activeNetworkId) !== appConfig.networks.ethereum.id) {
+          console.log("switching to eth");
+          await switchNetwork(appConfig.networks.ethereum.id);
         }
         break;
       }
       case Chain.BASE: {
-        if ((await activeNetworkId()) !== appConfig.networks.base.id) {
-          await switchNetwork?.(appConfig.networks.base.id);
+        if ((activeNetworkId) !== appConfig.networks.base.id) {
+          console.log("switching to base");
+          await switchNetwork(appConfig.networks.base.id);
         }
+        break;
+      }
+      case Chain.AVAIL: {
         break;
       }
       default:

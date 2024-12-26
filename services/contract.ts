@@ -23,12 +23,12 @@ export async function getTokenBalance(chain: Chain, address: string, api?: ApiPr
 
   if (chain === Chain.AVAIL) {
     if (api) {
-        const balance: any= await api.query.system.account(address)
+        const balance: any = await api.query.system.account(address)
         return parseAvailAmount(balance["data"]["free"].toHuman(), 18)
       } 
       throw new Error("API not connected")  
   }
-
+  
   return readContract(config, {
     address: contractAddresses[chain] as `0x${string}`,
     abi: availTokenAbi,

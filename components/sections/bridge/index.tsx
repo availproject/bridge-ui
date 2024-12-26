@@ -4,6 +4,7 @@ import SubmitTransaction from "./submittransaction";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import FromField from "./fromfield";
 import ToField from "./tofield";
+import useEthWallet from "@/hooks/common/useEthWallet";
 
 export default function BridgeSection() {
   const {
@@ -13,13 +14,16 @@ export default function BridgeSection() {
     setToChain,
   } = useCommonStore();
 
+  const { validateandSwitchChain } = useEthWallet();
+
   return (
     <div className="lg:p-4 p-2">
       <div className="md:space-y-4 w-full">
         <FromField/>
         <div className="relative flex items-center justify-center">
           <HiOutlineSwitchVertical
-            onClick={() => {
+            onClick={async () => {
+              await validateandSwitchChain(toChain);
               setFromChain(toChain);
               setToChain(fromChain);
             }}

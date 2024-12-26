@@ -4,24 +4,21 @@ import BigNumber from "bignumber.js";
 import { useAccount, useWriteContract } from "wagmi";
 import { estimateGas, readContract } from "@wagmi/core";
 
-
 import { Transaction } from "@/types/transaction";
 import { Chain, TransactionStatus } from "@/types/common";
 import { appConfig } from "@/config/default";
 
-import useEthWallet from "@/hooks/useEthWallet";
+import useEthWallet from "@/hooks/common/useEthWallet";
 import useTransactions from "@/hooks/useTransactions";
 import { useAvailAccount } from "@/stores/availwallet";
 import { sendMessage } from "@/services/pallet";
-import { initApi, substrateAddressToPublicKey } from "@/utils/common";
+import { substrateAddressToPublicKey } from "@/utils/common";
 import { Logger } from "@/utils/logger";
 import { ONE_POWER_EIGHTEEN } from "@/constants/bigNumber";
-import { useCommonStore } from "@/stores/common";
-import { ApiPromise } from "avail-js-sdk";
 import { showSuccessMessage } from "@/utils/toasts";
 import { encodeFunctionData, formatUnits } from "viem";
-import { useInvokeSnap } from "./Metamask";
-import { checkTransactionStatus } from "./Metamask/utils";
+import { useInvokeSnap } from "./metamask";
+import { checkTransactionStatus } from "./metamask/utils";
 
 import bridgeImplAbi from "@/constants/abis/bridgeImplAbi.json";
 import availTokenAbi from "@/constants/abis/availTokenAbi.json";
@@ -189,9 +186,6 @@ export default function useBridge() {
         throw new Error("No account selected");
 
       await validateandSwitchChain(Chain.ETH);
-      if((await activeNetworkId()) !== appConfig.networks.ethereum.id) {
-        throw new Error("Wrong network selected");
-      }
 
       const currentAllowance = await getCurrentAllowanceOnEth();
       if (new BigNumber(atomicAmount).gt(currentAllowance)) {

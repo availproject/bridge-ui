@@ -28,11 +28,16 @@ export function validAddress(address: string, chain: Chain) {
   return isAddress(address);
 }
 
-export function getHref(destinationChain: Chain, txnHash: string) {
-  if(destinationChain === Chain.AVAIL) {
-     return `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txnHash}`
-  } else {
-     return  `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txnHash}`
+export function getHref(chain: Chain, txnHash: string) {
+  switch (chain) {
+    case Chain.AVAIL:
+      return `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txnHash}`
+    case Chain.ETH:
+      return `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txnHash}`
+    case Chain.BASE:
+      return `${process.env.NEXT_PUBLIC_BASE_EXPLORER_URL}/tx/${txnHash}`
+    default:
+      throw new Error(`Unsupported chain: ${chain}`)
   }
 }
 
@@ -93,7 +98,6 @@ export const initApi = async (retries = 3): Promise<ApiPromise> => {
   try {
     console.log(`Initializing API. Retries left: ${retries}`);
     const initializedApi = await initialize(substrateConfig.endpoint);
-    console.log("API initialized", initializedApi);
     return initializedApi;
   } catch (error) {
     disconnect();

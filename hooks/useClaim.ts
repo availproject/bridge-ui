@@ -22,15 +22,15 @@ import { executeTransaction } from "@/services/pallet";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useApi } from "@/stores/api";
 import useTransactions from "./useTransactions";
-import useEthWallet from "./useEthWallet";
-import { useInvokeSnap } from "./Metamask/useInvokeSnap";
+import useEthWallet from "./common/useEthWallet";
+import { useInvokeSnap } from "./metamask/useInvokeSnap";
 
 import { appConfig } from "@/config/default";
 import { config } from "@/config/walletConfig";
 import bridgeImplAbi from "@/constants/abis/bridgeImplAbi.json";
 
 import { Logger } from "@/utils/logger";
-import { checkTransactionStatus } from "./Metamask/utils";
+import { checkTransactionStatus } from "./metamask/utils";
 
 export default function useClaim() {
   

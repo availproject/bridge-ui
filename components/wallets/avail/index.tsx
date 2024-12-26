@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { getWallets, Wallet, WalletAccount } from "@talismn/connect-wallets";
 import { useCookies } from "react-cookie";
-import { useInvokeSnap, useMetaMask, useRequestSnap } from "@/hooks/Metamask";
+import { useInvokeSnap, useMetaMask, useRequestSnap } from "@/hooks/metamask";
 import { DisconnectWallet } from './disconnectWallet';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';

@@ -68,7 +68,12 @@ export interface Account {
     fromAmount?: string;
     toAddress?: string;
   }
-
-
+  
+  export const ChainPairs = {
+    ETH_TO_AVAIL: `${Chain.ETH}-${Chain.AVAIL}`,
+    AVAIL_TO_ETH: `${Chain.AVAIL}-${Chain.ETH}`,
+    BASE_TO_ETH: `${Chain.BASE}-${Chain.ETH}`,
+    ETH_TO_BASE: `${Chain.ETH}-${Chain.BASE}`
+  } as const;
   
   
