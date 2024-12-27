@@ -7,6 +7,7 @@ import { ArrowUpRight, MoveRight } from "lucide-react";
 import { Chain } from "@/types/common";
 import { Badge } from "@/components/ui/badge";
 import { parseAvailAmount } from "@/utils/parsers";
+import { getHref } from "@/utils/common";
 
 function CompletedTransactions({
     completedTransactions,
@@ -40,7 +41,7 @@ function CompletedTransactions({
                       <p className="md:px-4 px-2">
                         <MoveRight />
                       </p>{" "}
-                      <ChainLabel chain={txn.sourceChain === Chain.AVAIL ? Chain.ETH : Chain.AVAIL} />
+                      <ChainLabel chain={txn.destinationChain} />
                       <div className="md:hidden flex">
                         <ParsedDate
                           sourceTimestamp={
@@ -59,9 +60,7 @@ function CompletedTransactions({
                       <a
                         target="_blank"
                         href={
-                          txn.sourceChain === Chain.ETH
-                            ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txn.sourceTransactionHash}`
-                            : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.sourceBlockNumber}-${txn.sourceTransactionIndex}`
+                          getHref(txn.sourceChain, txn.sourceTransactionHash)
                         }
                       >
                         <ArrowUpRight className="w-4 h-4" />
@@ -97,9 +96,12 @@ function CompletedTransactions({
                       <a
                         target="_blank"
                         href={
-                          txn.sourceChain === Chain.AVAIL
-                            ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txn.destinationTransactionHash}`
-                            : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.destinationTransactionHash}`
+                          txn.destinationTransactionHash
+                            ? getHref(
+                                txn.destinationChain,
+                                txn.destinationTransactionHash
+                              )
+                            : ""
                         }
                         className="flex flex-row !text-xs justify-end text-white text-opacity-75 underline"
                       >

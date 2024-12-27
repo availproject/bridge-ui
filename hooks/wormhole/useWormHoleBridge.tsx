@@ -14,12 +14,11 @@ import { appConfig } from "@/config/default";
 import { Logger } from "@/utils/logger";
 import useEthWallet from "../common/useEthWallet";
 import { Chain } from "@/types/common";
-import { chain } from "avail-js-sdk";
 
 export default function useWormHoleBridge() {
   const { data: walletClient } = useWalletClient();
   const { address } = useAccount();
-  const { validateandSwitchChain, activeNetworkId } = useEthWallet();
+  const { validateandSwitchChain } = useEthWallet();
 
   /**
    * @desc
@@ -61,7 +60,6 @@ export default function useWormHoleBridge() {
       await validateandSwitchChain(switcher);
       const signer = await WagmiWormholeSigner.create(walletClient, sendChain.chain);
 
-      /** ideally they are the same address */
       const add = Wormhole.chainAddress(sendChain.chain, signer.address())
       const destAdd = Wormhole.chainAddress(rcvChain.chain, destinationAddress)
       
@@ -69,13 +67,13 @@ export default function useWormHoleBridge() {
         srcNtt.transfer(add.address, amt, destAdd, {
           queue: false,
           automatic: true,
-          gasDropoff: BigInt(1),
         });
 
         const txids: TransactionId[] = await signSendWait(sendChain, xfer(), signer);
-        Logger.info(`WORMHOLE_BRIDGE_INITITATE_SUCCESS ${JSON.stringify(txids)} txids: ${txids.toString()} amount: ${amt} sendChain: ${whfrom} rcvChain: ${whto} address: ${signer.address()}`);
-        return txids;
+        Logger.info(`WORMHOLE_BRIDGE_INITITATE_SUCCESS txids: ${txids &&JSON.stringify(txids)} amount: ${amt} sendChain: ${whfrom} rcvChain: ${whto} address: ${signer.address()}`);
 
+
+        return txids;
       } else {
         console.error(`CONNECT ETHEREUM WALLET TO BRIDGE`);
       }

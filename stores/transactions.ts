@@ -1,4 +1,5 @@
-import { getTransactionsFromIndexer } from "@/services/transactions";
+
+import { getAllTransactions } from "@/services/transactions";
 import { Transaction } from "@/types/transaction";
 import { create } from "zustand";
 type ClickHandler<T> = (value: T) => void;
@@ -8,7 +9,7 @@ interface TransactionsStore {
   setTransactionLoader: (transactionLoader: boolean) => void;
   indexedTransactions: Transaction[];
   setIndexedTransactions: (transactions: Transaction[]) => void;
-  fetchIndexedTransactions: ({
+  fetchAllTransactions: ({
     ethAddress,
     availAddress,
     setTransactionLoader,
@@ -33,7 +34,7 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
   setTransactionLoader: (transactionLoader) => set({ transactionLoader }),
   indexedTransactions: [],
   setIndexedTransactions: (indexedTransactions) => set({ indexedTransactions }),
-  fetchIndexedTransactions: async ({
+  fetchAllTransactions: async ({
     ethAddress,
     availAddress,
     setTransactionLoader,
@@ -43,11 +44,12 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
     }
 
     setTransactionLoader(true);
-    const indexedTxns = await getTransactionsFromIndexer({
+    const indexedTxns = await getAllTransactions({
       availAddress,
       ethAddress,
     });
-    set({ indexedTransactions: indexedTxns });
+
+    set({ indexedTransactions: [...indexedTxns] });
     setTransactionLoader(false);
   },
   localTransactions: [],

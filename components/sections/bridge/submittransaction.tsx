@@ -85,8 +85,10 @@ export default function SubmitTransaction() {
             switcher: Chain.BASE,
           });
           if (init) {
-            console.log(init);
-            bridgeResult = { chain: Chain.BASE, hash: init[1].txid ?? init[0].txid};
+            bridgeResult = {
+              chain: Chain.BASE,
+              hash: init[1] ? init[1].txid : init[0].txid,
+            };
           }
           break;
         }
@@ -99,7 +101,10 @@ export default function SubmitTransaction() {
             switcher: Chain.ETH,
           });
           if (init) {
-            bridgeResult = { chain: Chain.ETH, hash: init[1].txid ?? init[0].txid};
+            bridgeResult = {
+              chain: Chain.ETH,
+              hash: init[1] ? init[1].txid : init[0].txid,
+            };
           }
           break;
         }
@@ -112,6 +117,7 @@ export default function SubmitTransaction() {
         setOpenDialog(true);
       }
     } catch (error: any) {
+      console.error(error);
       setError(error);
       setErrorOpenDialog(true);
     } finally {
@@ -122,25 +128,26 @@ export default function SubmitTransaction() {
         api
       );
     }
+  }
+
+    return (
+      <>
+        <LoadingButton
+          variant="primary"
+          loading={transactionInProgress}
+          onClick={handleSubmit}
+          className="!rounded-xl w-full !text-[15px] !py-8 max-md:mb-4 font-ppmori"
+          disabled={isDisabled}
+        >
+          {buttonStatus}
+        </LoadingButton>
+        {isWormholeBridge(`${fromChain}-${toChain}`) && (
+          <p className="w-full  text-white text-opacity-70 text-center text-xs">
+            Using Third Party Wormhole Bridge{" "}
+            <RxArrowTopRight className="inline-block h-4 w-3" />
+          </p>
+        )}
+      </>
+    );
   };
 
-  return (
-    <>
-      <LoadingButton
-        variant="primary"
-        loading={transactionInProgress}
-        onClick={handleSubmit}
-        className="!rounded-xl w-full !text-[15px] !py-8 max-md:mb-4 font-ppmori"
-        disabled={isDisabled}
-      >
-        {buttonStatus}
-      </LoadingButton>
-      {isWormholeBridge(`${fromChain}-${toChain}`) && (
-        <p className="w-full  text-white text-opacity-70 text-center text-xs">
-          Using Third Party Wormhole Bridge{" "}
-          <RxArrowTopRight className="inline-block h-4 w-3" />
-        </p>
-      )}
-    </>
-  );
-}

@@ -33,6 +33,7 @@ export default function TransactionSection() {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pendingTab, setPendingTab] = useState<boolean>(true);
 
+
   useEffect(() => {
     setCurrentPage(0);
   }, [pendingTab]);
@@ -52,6 +53,7 @@ export default function TransactionSection() {
     ? currentPage === paginatedPendingTransactions.length - 1
     : currentPage === paginatedCompletedTransactions.length - 1;
 
+
   return (
     <div className=" relative flex flex-col mx-auto w-[95%] h-[100%] ">
       {transactionLoader ? (<Loading/>) :(<>
@@ -59,7 +61,6 @@ export default function TransactionSection() {
         <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2  ">
           <TabsTrigger
             value="pending"
-            className=""
             onClick={() => {
               setPendingTab(true);
             }}

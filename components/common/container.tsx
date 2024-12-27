@@ -14,23 +14,23 @@ export default function Container() {
 
   const { selected } = useAvailAccount();
   const { address } = useAccount();
-  const {fetchIndexedTransactions, setTransactionLoader} = useTransactionsStore();
+  const { fetchAllTransactions, setTransactionLoader} = useTransactionsStore();
 
   useEffect(()=>{
     (async () => {
-      await fetchIndexedTransactions({
+      await fetchAllTransactions({
         ethAddress: address,
         availAddress: selected?.address,
         setTransactionLoader
       });
-
       const interval = setInterval(async () => {
-        console.log("rerun")
-        await fetchIndexedTransactions({
-          ethAddress: address,
+
+        await fetchAllTransactions({
+          ethAddress: address,  
           availAddress: selected?.address,
           setTransactionLoader
         });
+
       }, 30000);
       return () => clearInterval(interval);
       

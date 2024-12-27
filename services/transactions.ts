@@ -3,6 +3,7 @@ import { appConfig } from "@/config/default";
 import { Transaction } from "@/types/transaction";
 import { Chain } from "@/types/common";
 import { Logger } from "@/utils/logger";
+import { fetchWormholeTransactions } from "@/hooks/wormhole/helper";
 
 const indexerInstance = axios.create({
     baseURL: appConfig.bridgeIndexerBaseUrl,
@@ -44,7 +45,15 @@ async function fetchTransactions(userAddress: string, sourceChain?: string, dest
                 page: 0,
             },
         });
-        return response.data.data.result;
+        const transactions = response.data.data.result;
+        if (destinationChain) {
+            return transactions.map((transaction: Transaction) => ({
+                ...transaction,
+                destinationChain,
+            }));
+        }
+
+        return transactions;
     } catch (e: any) {
         Logger.error(`ERROR_FETCHING_TRANSACTIONS: ${e}`);
         return [];
@@ -66,7 +75,7 @@ const fetchWithErrorHandling = async (address: string, source: Chain, dest?: Cha
  * @param {TransactionQueryParams} 
  * @returns Transaction[]
  */
-export const getTransactionsFromIndexer = async (
+export const getAllTransactions = async (
     { availAddress, ethAddress, sourceChain, destinationChain }: TransactionQueryParams
 ): Promise<Transaction[]> => {
     validateParams({ availAddress, ethAddress });
@@ -87,15 +96,16 @@ export const getTransactionsFromIndexer = async (
     
     if (ethAddress) {
         fetchPromises.push(
-            fetchWithErrorHandling(ethAddress, Chain.ETH),
-            fetchWithErrorHandling(ethAddress, Chain.AVAIL)
+            fetchWithErrorHandling(ethAddress, Chain.ETH, Chain.AVAIL),
+            fetchWithErrorHandling(ethAddress, Chain.AVAIL, Chain.ETH),
+            fetchWormholeTransactions(false, ethAddress)
         );
     }
 
     if (availAddress) {
         fetchPromises.push(
-            fetchWithErrorHandling(availAddress, Chain.AVAIL),
-            fetchWithErrorHandling(availAddress, Chain.ETH)
+            fetchWithErrorHandling(availAddress, Chain.AVAIL, Chain.ETH),
+            fetchWithErrorHandling(availAddress, Chain.ETH, Chain.AVAIL)
         );
     }
 

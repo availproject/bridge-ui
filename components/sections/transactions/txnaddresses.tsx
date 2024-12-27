@@ -8,8 +8,8 @@ import {
 import { Copy, ExternalLink } from "lucide-react";
 import { IoIosArrowDown } from "react-icons/io";
 import { Transaction } from "@/types/transaction";
-import { Chain } from "@/types/common";
 import { Logger } from "@/utils/logger";
+import { getHref } from "@/utils/common";
 
 export default function TxnAddresses({ txn }: { txn: Transaction }) {
   const [isHoverCardOpen, setIsHoverCardOpen] = useState(false);
@@ -136,22 +136,14 @@ export default function TxnAddresses({ txn }: { txn: Transaction }) {
               label="Source Hash"
               hash={txn.sourceTransactionHash}
               stateKey="sourceHash"
-              explorerUrl={
-                txn.sourceChain === Chain.ETH
-                  ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txn.sourceTransactionHash}`
-                  : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.sourceTransactionHash}`
-              }
+              explorerUrl={getHref(txn.sourceChain, txn.sourceTransactionHash)}
             />
             {txn.destinationTransactionHash && (
               <HashRow
                 label="Destination Hash"
                 hash={txn.destinationTransactionHash}
                 stateKey="destHash"
-                explorerUrl={
-                  txn.sourceChain === Chain.AVAIL
-                    ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txn.destinationTransactionHash}`
-                    : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.destinationTransactionHash}`
-                }
+                explorerUrl={getHref(txn.destinationChain, txn.destinationTransactionHash)}
               />
             )}
           </div>

@@ -9,6 +9,7 @@ import TxnAddresses from "./txnaddresses";
 import { useState } from "react";
 import { SubmitClaim } from "./submitclaim";
 import { Badge } from "@/components/ui/badge";
+import { getHref } from "@/utils/common";
 
 export const PendingTransactions = ({
   pendingTransactions,
@@ -50,13 +51,7 @@ export const PendingTransactions = ({
                     <p className="md:px-4 px-2">
                       <MoveRight />
                     </p>
-                    <ChainLabel
-                      chain={
-                        txn.sourceChain === Chain.AVAIL
-                          ? Chain.ETH
-                          : Chain.AVAIL
-                      }
-                    />
+                    <ChainLabel chain={txn.destinationChain} />
                     <div className="md:hidden flex">
                       <ParsedDate sourceTimestamp={txn.sourceTimestamp} />
                     </div>
@@ -68,11 +63,7 @@ export const PendingTransactions = ({
                     <a
                       target="_blank"
                       rel="noreferrer"
-                      href={
-                        txn.sourceChain === Chain.ETH
-                          ? `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txn.sourceTransactionHash}`
-                          : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txn.sourceTransactionHash}`
-                      }
+                      href={getHref(txn.sourceChain, txn.sourceTransactionHash)}
                     >
                       <ArrowUpRight className="w-4 h-4" />
                     </a>

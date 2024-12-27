@@ -31,8 +31,7 @@ export default function BridgeSection() {
           />
         </div>
         <ToField />
-        <SubmitTransaction
-        />
+        <SubmitTransaction />
       </div>
     </div>
   );
