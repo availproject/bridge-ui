@@ -9,7 +9,7 @@ import { use, useEffect } from "react";
 import { useApi } from "@/stores/api";
 import { useCommonStore } from "@/stores/common";
 import { SuccessDialog } from "@/components/common/successdialog";
-import ErrorDialog from "@/components/common/errordialog";
+import ErrorDialog from "@/components/common/error";
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
