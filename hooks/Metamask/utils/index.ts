@@ -24,10 +24,11 @@ type TransactionStatus = {
 export async function checkTransactionStatus(
   api: ApiPromise,
   txHash: string,
+  type: "subscribeNewHeads" | "subscribeFinalizedHeads" = "subscribeNewHeads",
 ): Promise<Result<TransactionStatus, Error>> {
   return new Promise((resolve, reject) => {
     api.rpc.chain
-      .subscribeNewHeads(async (header) => {
+    [type](async (header) => {
         const blockHash = header.hash;
         const signedBlock = await api.rpc.chain.getBlock(blockHash);
         const allEvents = await api.query.system?.events?.at(blockHash);

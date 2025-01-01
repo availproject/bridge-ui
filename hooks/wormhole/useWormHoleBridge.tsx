@@ -72,7 +72,21 @@ export default function useWormHoleBridge() {
         const txids: TransactionId[] = await signSendWait(sendChain, xfer(), signer);
         Logger.info(`WORMHOLE_BRIDGE_INITITATE_SUCCESS txids: ${txids &&JSON.stringify(txids)} amount: ${amt} sendChain: ${whfrom} rcvChain: ${whto} address: ${signer.address()}`);
 
-
+        /**
+         * 
+         *   addToLocalTransaction({
+          sourceChain: switcher,
+          // this hardcoding works as of now, since we only have BASE -> ETH and ETH -> BASE, need to switch this with a more robust conditional later, prolly an extra prop?
+          destinationChain: switcher === Chain.ETH ? Chain.BASE : Chain.ETH,
+          sourceTransactionHash: (txids[1] ? txids[1].txid : txids[0].txid) as `0x${string}`,
+          depositorAddress: signer.address(),
+          receiverAddress: destinationAddress,
+          amount: amt.toString(),
+          status: TransactionStatus.INITIATED,
+          sourceTimestamp: new Date().toISOString(),
+        });
+         */
+      
         return txids;
       } else {
         console.error(`CONNECT ETHEREUM WALLET TO BRIDGE`);

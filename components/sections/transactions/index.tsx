@@ -55,7 +55,7 @@ export default function TransactionSection() {
 
 
   return (
-    <div className=" relative flex flex-col mx-auto w-[95%] h-[100%] ">
+    <div className="relative flex flex-col mx-auto w-[95%] h-[100%] ">
       {transactionLoader ? (<Loading/>) :(<>
         <Tabs defaultValue="pending" className="flex flex-col h-full">
         <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2  ">
@@ -103,8 +103,9 @@ export default function TransactionSection() {
           </div>
         </TabsContent>
       </Tabs>
-      {/* Pagination */}
-      {showPagination && (
+      </>) }
+        {/* Pagination */}
+        {showPagination && (
         <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
           <p className="font-thicccboisemibold text-sm text-white mr-2">
             <HoverCard>
@@ -112,8 +113,7 @@ export default function TransactionSection() {
                 <CiCircleQuestion className="w-6 h-6" />
               </HoverCardTrigger>
               <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
-                Transactions take around ~2 hours to bridge, thank you for your
-                patience.
+                After transactions are completed they will be moved to the history section.
               </HoverCardContent>
             </HoverCard>
           </p>
@@ -140,8 +140,7 @@ export default function TransactionSection() {
             <ArrowRight />
           </button>
         </div>
-      )}
-      </>) }      
+      )}      
     </div>
   );
 }

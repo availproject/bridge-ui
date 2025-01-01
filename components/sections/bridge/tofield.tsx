@@ -1,12 +1,12 @@
 import { Chain } from "@/types/common";
 import AddressDialog from "./pasteaddress";
-import ChainSwitcherDropDown from "./chainswitchdropdown";
 import { ClipboardCopyIcon, InfoIcon, Wallet } from "lucide-react";
 import RenderWalletConnect from "@/components/common/renderwalletconnect";
 import { useEffect } from "react";
 import { useAccount } from "wagmi";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useCommonStore } from "@/stores/common";
+import ChainSelectorButton from "../../chainselector";
 
 export default function ToField() {
   const { fromChain, toChain, toAddress, setToAddress } = useCommonStore();
@@ -27,7 +27,7 @@ export default function ToField() {
       <div className="font-thicccboiregular !text-lg flex flex-row justify-between items-end mb-1">
         <span className="font-ppmori flex flex-row items-center space-x-2">
           <p className="text-opacity-80 text-white">To</p>
-          <ChainSwitcherDropDown selectedChain={toChain} type="to" />
+          <ChainSelectorButton selectedChain={toChain} type="to" />
         </span>
         <RenderWalletConnect
           fromChain={fromChain}

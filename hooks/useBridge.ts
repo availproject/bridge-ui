@@ -32,7 +32,7 @@ import { useApi } from "@/stores/api";
 import { getTokenBalance } from "@/services/contract";
 
 export default function useBridge() {
-  const {  activeNetworkId, activeUserAddress, validateandSwitchChain } = useEthWallet();
+  const { activeUserAddress, validateandSwitchChain } = useEthWallet();
   const { addToLocalTransaction } = useTransactions();
   const { writeContractAsync } = useWriteContract();
   const { selected } = useAvailAccount();
@@ -340,7 +340,6 @@ export default function useBridge() {
           depositorAddress: selected?.address,
           receiverAddress: destinationAddress,
           sourceBlockHash: send.blockhash,
-          sourceBlockNumber: 0,
           sourceTransactionHash: send.txHash as `0x${string}`,
           sourceTransactionIndex: 0,
           sourceTimestamp: new Date().toISOString(),

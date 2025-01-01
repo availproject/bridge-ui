@@ -5,6 +5,9 @@ import { create } from "zustand";
 type ClickHandler<T> = (value: T) => void;
 
 interface TransactionsStore {
+  /** inProcess -> added so we can stop refetching transactions if any claim is already in process (causes dep issues otherwise) */
+  inProcess: boolean
+  setInProcess: ClickHandler<boolean>
   transactionLoader: boolean;
   setTransactionLoader: (transactionLoader: boolean) => void;
   indexedTransactions: Transaction[];
@@ -30,6 +33,8 @@ type FetchTxnParams = {
 };
 
 export const useTransactionsStore = create<TransactionsStore>((set) => ({
+  inProcess: false,
+  setInProcess: (inProcess) => set({inProcess}),
   transactionLoader: false,
   setTransactionLoader: (transactionLoader) => set({ transactionLoader }),
   indexedTransactions: [],

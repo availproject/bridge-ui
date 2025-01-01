@@ -60,7 +60,7 @@ import { WormholeTransaction } from "./types";
     address: ChainAddress<C>;
   }
   
-  export type IAddress = `0x${string}` | string;
+  export type IAddress = `0x${string}`
   
   export async function tokenTransfer<N extends Network>(
     wh: Wormhole<N>,

@@ -5,7 +5,6 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { InfoIcon } from "lucide-react";
-import ChainSwitcherDropDown from "./chainswitchdropdown";
 import { Balance } from "@/components/balance";
 import RenderWalletConnect from "@/components/common/renderwalletconnect";
 import { decimal_points } from "@/utils/common";
@@ -15,6 +14,7 @@ import { useCommonStore } from "@/stores/common";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
 import { useMemo } from "react";
+import ChainSelectorButton from "../../chainselector";
 
 export default function FromField() {
     
@@ -36,7 +36,7 @@ export default function FromField() {
       <div className="font-thicccboiregular !text-lg flex flex-row justify-between items-end">
         <span className="font-ppmori flex flex-row items-center space-x-2">
           <p className="text-opacity-80 text-white">From</p>
-          <ChainSwitcherDropDown selectedChain={fromChain} type="from" />
+          <ChainSelectorButton selectedChain={fromChain} type="from" />
         </span>
         <div className="flex flex-row items-center justify-center">
           <RenderWalletConnect

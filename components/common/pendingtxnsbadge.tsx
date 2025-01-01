@@ -1,28 +1,26 @@
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { badgeVariants } from "../ui/badge";
-import { useTransactionsStore } from "@/stores/transactions";
+import useTransactions from "@/hooks/useTransactions";
 
 export default function PendingTxnsBadge() {
-  const { pendingTransactionsNumber, readyToClaimTransactionsNumber } =
-    useTransactionsStore();
+
+  const { pendingTransactions } = useTransactions()
 
   return (
     <div className="hidden md:flex">
       <div className={badgeVariants({ variant: "avail" })}>
-        {pendingTransactionsNumber > 0 ? (
+        {pendingTransactions.length > 0 ? (
           <>
-            <Loader2 className={`h-4 w-4 animate-spin`} />
+            <AlertTriangle className={`h-4 w-4`} />
             <p className="!text-left">
               {" "}
-              {pendingTransactionsNumber} Pending{" "}
-              <span className="mx-2">|</span> {readyToClaimTransactionsNumber}{" "}
-              Claim Ready
+              {pendingTransactions.filter((txn) => txn.status === "READY_TO_CLAIM").length} Ready to Claim{" "}
             </p>
           </>
         ) : (
           <>
             <CheckCircle2 className={`h-4 w-4`} />
-            <p className="!text-left"> No Pending Claims</p>
+            <p className="!text-left">No Pending Claims</p>
           </>
         )}
       </div>

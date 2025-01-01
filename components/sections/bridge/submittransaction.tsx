@@ -1,7 +1,7 @@
 import { LoadingButton } from "@/components/ui/loadingbutton";
 import useBridge from "@/hooks/useBridge";
 import useSubmitTxnState from "@/hooks/common/useSubmitTxnState";
-import { useCommonStore } from "@/stores/common";
+import { SuccessDialog, useCommonStore } from "@/stores/common";
 import { Chain } from "@/types/common";
 import { validAddress } from "@/utils/common";
 import BigNumber from "bignumber.js";
@@ -14,6 +14,7 @@ import { useBalanceStore } from "@/stores/balances";
 import { useApi } from "@/stores/api";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
+import { isWormholeBridge } from "./utils";
 
 export default function SubmitTransaction() {
   const [transactionInProgress, setTransactionInProgress] =
@@ -24,7 +25,7 @@ export default function SubmitTransaction() {
     toChain,
     fromAmount,
     toAddress,
-    successDialog: { onOpenChange: setOpenDialog, setDetails },
+    successDialog: { onOpenChange: setOpenDialog, setDetails, setClaimDialog },
     errorDialog: { onOpenChange: setErrorOpenDialog, setError },
   } = useCommonStore();
 
@@ -36,15 +37,12 @@ export default function SubmitTransaction() {
   const { initWormholeBridge } = useWormHoleBridge();
   const { buttonStatus, isDisabled } = useSubmitTxnState(transactionInProgress);
 
-  const isWormholeBridge = (chainPair: string) =>
-    chainPair === ChainPairs.BASE_TO_ETH ||
-    chainPair === ChainPairs.ETH_TO_BASE;
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setClaimDialog(false)
+    
     try {
-      let bridgeResult;
+      let bridgeResult: SuccessDialog["details"] | null = null;
       const chainPair = `${fromChain}-${toChain}` as const;
 
       const fromAmountAtomic = new BigNumber(fromAmount)
@@ -88,6 +86,7 @@ export default function SubmitTransaction() {
             bridgeResult = {
               chain: Chain.BASE,
               hash: init[1] ? init[1].txid : init[0].txid,
+              isWormhole: true,
             };
           }
           break;
@@ -104,6 +103,7 @@ export default function SubmitTransaction() {
             bridgeResult = {
               chain: Chain.ETH,
               hash: init[1] ? init[1].txid : init[0].txid,
+              isWormhole: true,
             };
           }
           break;

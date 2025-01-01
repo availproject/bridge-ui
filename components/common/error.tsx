@@ -14,8 +14,9 @@ import { useCommonStore } from "@/stores/common";
 
 export const ErrorDialog = () => {
 
-  const { errorDialog } = useCommonStore();
-  const { isOpen, onOpenChange, error, claimDialog } = errorDialog;
+  const { errorDialog, successDialog } = useCommonStore();
+  const { isOpen, onOpenChange, error } = errorDialog;
+  const { claimDialog } = successDialog
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;

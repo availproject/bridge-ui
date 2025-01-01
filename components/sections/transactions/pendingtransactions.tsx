@@ -10,6 +10,7 @@ import { useState } from "react";
 import { SubmitClaim } from "./submitclaim";
 import { Badge } from "@/components/ui/badge";
 import { getHref } from "@/utils/common";
+import { StatusBadge } from "./statusbadge";
 
 export const PendingTransactions = ({
   pendingTransactions,
@@ -81,38 +82,7 @@ export const PendingTransactions = ({
                         setTxnLoading={setTxnLoading}
                       />
                     ) : (
-                      <Badge className="flex-row items-center justify-center space-x-2 bg-[#24262f]">
-                        <p className="font-thicccboisemibold whitespace-nowrap">
-                          {txn.status === "BRIDGED"
-                            ? `In Progress`
-                            : txn.status.charAt(0) +
-                              txn.status.toLocaleLowerCase().slice(1)}
-                        </p>
-                        <span className="relative flex h-2 w-2">
-                          <span
-                            className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
-                              txn.status === "INITIATED"
-                                ? "bg-yellow-600"
-                                : `${
-                                    txn.status === "PENDING"
-                                      ? "bg-blue-600"
-                                      : "bg-orange-500"
-                                  }`
-                            } opacity-75`}
-                          ></span>
-                          <span
-                            className={`relative inline-flex rounded-full h-2 w-2  ${
-                              txn.status === "INITIATED"
-                                ? "bg-yellow-600"
-                                : `${
-                                    txn.status === "PENDING"
-                                      ? "bg-blue-600"
-                                      : "bg-orange-500"
-                                  }`
-                            }`}
-                          ></span>
-                        </span>
-                      </Badge>
+                      <StatusBadge txnStatus={txn.status} />
                     )}
                   </span>
                   <p className="text-xs flex flex-row items-end justify-end text-right text-white text-opacity-70 space-x-1">

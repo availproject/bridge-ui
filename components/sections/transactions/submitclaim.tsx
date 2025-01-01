@@ -1,33 +1,43 @@
 import { LoadingButton } from "@/components/ui/loadingbutton";
 import useClaim from "@/hooks/useClaim";
 import { useCommonStore } from "@/stores/common";
+import { useTransactionsStore } from "@/stores/transactions";
 import { Chain } from "@/types/common";
 import { Transaction } from "@/types/transaction";
 import { Logger } from "@/utils/logger";
 import { showFailedMessage } from "@/utils/toasts";
 
+interface SubmitClaimProps {
+  txn: Transaction;
+  loadingTxns?: Set<unknown>;
+  setTxnLoading?: (txnHash: `0x${string}`, loading: boolean) => void; // Make setter optional
+  isLoading?: boolean;
+  setIsLoading?: (loading: boolean) => void;
+}
+
 export const SubmitClaim = ({
   txn,
   loadingTxns,
   setTxnLoading,
-}: {
-  txn: Transaction;
-  loadingTxns: Set<unknown>;
-  setTxnLoading: (txnHash: `0x${string}`, loading: boolean) => void;
-}) => {
-    const { initClaimAvailToEth, initClaimEthtoAvail } = useClaim();
-    const {
-        successDialog: {
-          onOpenChange: setOpenDialog,
-          setDetails,
-        },
-        errorDialog: {
-          onOpenChange: setErrorOpenDialog,
-          setError,
-        },
-      } = useCommonStore();
+  isLoading: directLoading,
+  setIsLoading: setDirectLoading,
+}: SubmitClaimProps) => {
+  const { initClaimAvailToEth, initClaimEthtoAvail } = useClaim();
+  const {
+    successDialog: { onOpenChange: setOpenDialog, setDetails, setClaimDialog },
+    errorDialog: { onOpenChange: setErrorOpenDialog, setError },
+  } = useCommonStore();
+  const { setInProcess } = useTransactionsStore();
 
-  const isLoading = loadingTxns.has(txn.sourceTransactionHash);
+  const isLoading =
+    directLoading ?? loadingTxns?.has(txn.sourceTransactionHash) ?? false;
+
+  const updateLoadingState = (txnHash: `0x${string}`, loading: boolean) => {
+    if (setTxnLoading) {
+      setTxnLoading(txnHash, loading);
+    }
+    setDirectLoading && setDirectLoading(loading);
+  };
 
   const onSubmit = async (
     chainFrom: Chain,
@@ -45,7 +55,10 @@ export const SubmitClaim = ({
       destinationDomain: number;
     }
   ) => {
-    setTxnLoading(txnHash, true);
+    updateLoadingState(txnHash, true);
+    setClaimDialog(true);
+    setInProcess(true);
+
     try {
       if (
         chainFrom === Chain.AVAIL &&
@@ -62,7 +75,7 @@ export const SubmitClaim = ({
           senderAddress: executeParams.from,
           receiverAddress: executeParams.to,
         });
-  
+
         if (successBlockhash) {
           setDetails({
             chain: Chain.ETH,
@@ -77,12 +90,13 @@ export const SubmitClaim = ({
           atomicAmount,
           executeParams,
         });
-  
+
         if (successBlockhash.txHash) {
           setDetails({
             chain: Chain.AVAIL,
             hash: successBlockhash.txHash,
           });
+
           setOpenDialog(true);
         }
       } else {
@@ -92,18 +106,18 @@ export const SubmitClaim = ({
       Logger.error(e);
       setError(e.message);
       setErrorOpenDialog(true);
-
     } finally {
-      setTxnLoading(txnHash, false);
+      updateLoadingState(txnHash, false);
+      setInProcess(false);
     }
   };
-  
 
   return (
     <LoadingButton
       variant="primary"
       loading={isLoading}
       disabled={isLoading}
+      loadingMessage="Please Sign"
       className="!px-4 !py-0 rounded-xl whitespace-nowrap"
       onClick={async () => {
         await onSubmit(

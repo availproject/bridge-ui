@@ -65,7 +65,18 @@ export default function AddressDialog({ setToAddress, toChain }: AddressDialogPr
                 <input
                   className="!bg-inherit w-full  text-white placeholder:text-md p-2 !h-8 border-none !outline-none !bg-none"
                   type="text"
-                  placeholder="Ex. 0xabhk.eth"
+                  placeholder={(() => {
+                    switch(toChain) {
+                      case Chain.AVAIL:
+                        return "Ex 5H6Y7...";
+                      case Chain.BASE:
+                        return "Ex 0x206Y7...";
+                      case Chain.ETH:
+                        return "Ex 0x206Y7...";
+                      default:
+                        return "Ex 0x206Y7...";
+                    }
+                  })()}
                   value={address}
                   onChange={handleAddressChange}
                   spellCheck={false}
@@ -100,13 +111,13 @@ export default function AddressDialog({ setToAddress, toChain }: AddressDialogPr
               onClick={() => {
                 setOpen(false);
               }}
-              className="!bg-inherit !border-0 text-red-500 hover:text-red-800 "
+              className="!bg-inherit !border-0 text-[#fa6a65] hover:text-red-800 "
             >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={!isChecked || error || address.length === 0}
-              className="rounded-xl bg-[#464A5B] flex flex-row  items-center space-x-2 p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer"
+              className="rounded-xl bg-[#464A5B] flex flex-row  items-center p-1 px-4 font-ppmoribsemibold text-2xl  justify-center cursor-pointer"
               onClick={handleAddAddress}
             >
               

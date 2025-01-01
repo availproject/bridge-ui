@@ -1,6 +1,7 @@
 import { Chain } from "@/types/common";
 import { decimal_points } from "@/utils/common";
 import BigNumber from "bignumber.js";
+import { ChainPairs } from "./types";
 
 export const getMaxAmount = (amount: string, fromChain: Chain) => {
     if (fromChain === Chain.AVAIL) {
@@ -16,3 +17,7 @@ export const validInputAmount = (amount: string) => {
     }
     return true;
 }
+
+export const isWormholeBridge = (chainPair: string) =>
+    chainPair === ChainPairs.BASE_TO_ETH ||
+    chainPair === ChainPairs.ETH_TO_BASE;

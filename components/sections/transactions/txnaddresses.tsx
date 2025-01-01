@@ -138,7 +138,7 @@ export default function TxnAddresses({ txn }: { txn: Transaction }) {
               stateKey="sourceHash"
               explorerUrl={getHref(txn.sourceChain, txn.sourceTransactionHash)}
             />
-            {txn.destinationTransactionHash && (
+            {!(txn.destinationTransactionHash === "0xundefined") && txn.destinationTransactionHash && (
               <HashRow
                 label="Destination Hash"
                 hash={txn.destinationTransactionHash}

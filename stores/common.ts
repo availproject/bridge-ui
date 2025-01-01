@@ -7,12 +7,13 @@ const EMPTY_AMOUNT = '' as const
 interface DialogBase {
     isOpen: boolean
     onOpenChange: (open: boolean) => void
-    claimDialog: boolean
 }
 
-interface SuccessDialog extends DialogBase {
-    details: { chain: Chain; hash: string } | null
-    setDetails: (details: { chain: Chain; hash: string }) => void
+export interface SuccessDialog extends DialogBase {
+    details: { chain: Chain; hash: string, isWormhole?: boolean, } | null
+    setDetails: (details: { chain: Chain; hash: string, isWormhole?: boolean }) => void
+    claimDialog: boolean
+    setClaimDialog: (claimDialog: boolean) => void
 }
 
 interface ErrorDialog extends DialogBase {
@@ -61,6 +62,10 @@ export const useCommonStore = create<CommonStore>((set) => ({
                 successDialog: { ...state.successDialog, isOpen: open } 
             })),
         claimDialog: false,
+        setClaimDialog: (claimDialog: boolean) => 
+            set((state) => ({ 
+                successDialog: { ...state.successDialog, claimDialog } 
+            })),
         details: null, 
         setDetails: (details: { chain: Chain; hash: string }) => 
             set((state) => ({ 
@@ -73,7 +78,6 @@ export const useCommonStore = create<CommonStore>((set) => ({
             set((state) => ({ 
                 errorDialog: { ...state.errorDialog, isOpen: open } 
             })),
-        claimDialog: false,
         error: null,
         setError: (error: Error | string | null) => 
             set((state) => ({ 

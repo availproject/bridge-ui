@@ -14,16 +14,24 @@ export default function Container() {
 
   const { selected } = useAvailAccount();
   const { address } = useAccount();
-  const { fetchAllTransactions, setTransactionLoader} = useTransactionsStore();
+  const { fetchAllTransactions, setTransactionLoader, inProcess} = useTransactionsStore();
 
   useEffect(()=>{
     (async () => {
+      /** means some claim is already in process so wait for that to end */
+      if(inProcess) {
+        return
+      }
+
       await fetchAllTransactions({
         ethAddress: address,
         availAddress: selected?.address,
         setTransactionLoader
       });
       const interval = setInterval(async () => {
+        if(inProcess) {
+          return
+        }
 
         await fetchAllTransactions({
           ethAddress: address,  
@@ -44,7 +52,7 @@ export default function Container() {
         value={activeTab}
         onValueChange={setActiveTab}
         id="container"
-        className="section_bg p-2 w-screen max-sm:rounded-none max-sm:border-x-0 sm:w-[70vw] lg:w-[50vw] xl:w-[40vw]"
+        className="section_bg p-2 w-screen max-sm:rounded-none max-sm:border-x-0 !max-w-xl "
       >
         <TabsList className="flex flex-row items-start justify-start bg-transparent !border-0 p-2 mb-6 mx-2 mt-1">
           <div className="flex flex-row pb-[2vh] items-center justify-between">

@@ -33,14 +33,15 @@ export default function useSubmitTxnState(
   }, [fromAmount]);
 
   const isValidToAddress = useMemo(() => {
-    if (fromChain === Chain.AVAIL) {
-      return Boolean(
-        account?.address || (toAddress && validAddress(toAddress, Chain.ETH))
-      );
-    } else {
-      return Boolean(
-        selected?.address || (toAddress && validAddress(toAddress, Chain.AVAIL))
-      );
+    switch (fromChain) {
+      case Chain.AVAIL:
+        return Boolean(toAddress && validAddress(toAddress, Chain.ETH));
+      case Chain.BASE:
+        return Boolean(toAddress && validAddress(toAddress, Chain.ETH));
+      case Chain.ETH:
+        return Boolean(toAddress && (validAddress(toAddress, Chain.BASE) || validAddress(toAddress, Chain.AVAIL)));
+      default:
+        return false;
     }
   }, [toAddress, fromChain, selected?.address, account?.address]);
 
@@ -66,10 +67,10 @@ export default function useSubmitTxnState(
       return "Transaction in progress";
     }
     if (isInvalidAmount) {
-      return "Enter Amount";
+      return "Enter Amount to Bridge";
     }
     if (!isValidToAddress) {
-      return "Invalid Receiver Details";
+      return "Oops, that receiver address looks wrong";
     }
 
     if (hasInsufficientBalance) {
