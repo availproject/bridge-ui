@@ -41,6 +41,14 @@ Avail welcomes contributors from anywhere and from any kind of education or skil
 
 ### Create a pull request
 
-Please create pull requests only for the branch `develop`. That code will be pushed to master only on a new release.
+Please create pull requests only for the branch `staging`. That code will be pushed to master only on a new release.
 
-Also remember to pull the most recent changes available in the develop branch before submitting your PR. If your PR has merge conflicts caused by this behavior, it won’t be accepted.
+#### Deployment Flow
+
+```
+test -> name/feat branch -> vercel preview domains
+staging -> staging branch -> turing.bridge.avail.so
+prod -> main -> bridge.availproject.org
+```
+
+Also remember to pull the most recent changes available in the `staging` branch before submitting your PR. If your PR has merge conflicts caused by this behavior, it won’t be accepted.
