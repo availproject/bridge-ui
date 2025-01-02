@@ -16,17 +16,16 @@ const DestinationStatus = () => {
   const { details } = successDialog;
   const { pendingTransactions } = useTransactions();
   const [directLoading, setDirectLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const matchingTxn = pendingTransactions.find(
     (txn) => txn.sourceTransactionHash === details?.hash
   );
 
   if (details?.isWormhole) {
-    const [isOpen, setIsOpen] = useState(false);
-
     return (
       <TooltipProvider>
-        <Tooltip delayDuration={300}>
+        <Tooltip open={isOpen} onOpenChange={setIsOpen}>
           <TooltipTrigger onClick={(e) => {
           e.stopPropagation();
           setIsOpen(true);
