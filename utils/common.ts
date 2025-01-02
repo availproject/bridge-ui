@@ -3,74 +3,41 @@ import {
   disconnect,
   initialize,
   isValidAddress,
+  Keyring,
 } from "avail-js-sdk";
-import { config, substrateConfig } from "@/config/walletConfig";
-import { readContract } from "@wagmi/core";
+import { substrateConfig } from "@/config/walletConfig";
 import { Chain, TransactionStatus } from "@/types/common";
-import { appConfig } from "@/config/default";
-import availTokenAbi from "@/constants/abis/availTokenAbi.json";
 import { isAddress } from "viem";
-import { Logger } from "./logger";
 import { parseMinutes } from "./parsers";
-import { LatestBlockInfo } from "@/stores/lastestBlockInfo";
+import { ethers } from "ethers";
+import { LatestBlockInfo } from "@/stores/blockinfo";
 
-const networks = appConfig.networks;
+ //In milliseconds - 20 minutes.
+export const TELEPATHY_INTERVAL = 1200000;
+ //In milliseconds - 120 minutes.
+export const VECTORX_INTERVAL = 7200000;
+export const decimal_points = 2
 
-export async function _getBalance(
-  chain: Chain,
-  api: ApiPromise,
-  availAddress?: string,
-  ethAddress?: `0x${string}`
-): Promise<string | undefined> {
-  try {
-    switch (chain) {
-      case Chain.AVAIL:
-        if (availAddress) {
-          const oldBalance: any = await api.query.system.account(availAddress);
-          const atomicBalance =
-            oldBalance.data.free.toHuman().replace(/,/g, "") -
-            oldBalance.data.frozen.toHuman().replace(/,/g, "");
-          return atomicBalance.toString();
-        }
-        break;
+export const nini = (sec: number) =>
+  new Promise((resolve) => setTimeout(resolve, sec * 1000));
 
-      case Chain.ETH:
-        if (ethAddress) {
-          const balance = await readContract(config, {
-            address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-            abi: availTokenAbi,
-            functionName: "balanceOf",
-            args: [ethAddress],
-            chainId: networks.ethereum.id,
-          });
-          if (balance === undefined) return undefined;
-          return balance as string;
-        }
-        break;
-
-      default:
-        throw new Error("INVALID_CHAIN");
-    }
-  } catch (error) {
-    Logger.error(`ERROR_FETCHING_BALANCE: ${error}`);
-  }
-}
 
 export function validAddress(address: string, chain: Chain) {
   if (chain === Chain.AVAIL) {
-    return isValidAddress(address);
-  }
-  if (chain === Chain.ETH) {
-    return isAddress(address);
-  }
-  return false;
+    return isValidAddress(address);}
+  return isAddress(address);
 }
 
-export function getHref(destinationChain: Chain, txnHash: string) {
-  if(destinationChain === Chain.AVAIL) {
-     return `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txnHash}`
-  } else {
-     return  `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txnHash}`
+export function getHref(chain: Chain, txnHash: string) {
+  switch (chain) {
+    case Chain.AVAIL:
+      return `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txnHash}`
+    case Chain.ETH:
+      return `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txnHash}`
+    case Chain.BASE:
+      return `${process.env.NEXT_PUBLIC_BASE_EXPLORER_URL}/tx/${txnHash}`
+    default:
+      throw new Error(`Unsupported chain: ${chain}`)
   }
 }
 
@@ -127,18 +94,16 @@ export const getStatusTime = ({
   }
 };
 
-export const nini = (sec: number) =>
-  new Promise((resolve) => setTimeout(resolve, sec * 1000));
-
 export const initApi = async (retries = 3): Promise<ApiPromise> => {
   try {
+    console.log(`Initializing API. Retries left: ${retries}`);
     const initializedApi = await initialize(substrateConfig.endpoint);
     return initializedApi;
   } catch (error) {
     disconnect();
     if (retries > 0) {
       await nini(2);
-      Logger.debug(`Retrying to initialize API. Retries left: ${retries}`);
+      console.debug(`Retrying to initialize API. Retries left: ${retries}`);
       return initApi(retries - 1);
     } else {
       throw new Error(`RPC_INITIALIZE_ERROR: ${error}`);
@@ -146,8 +111,31 @@ export const initApi = async (retries = 3): Promise<ApiPromise> => {
   }
 };
 
+export const stringToByte32 = (str: string) => {
+    return ethers.utils.keccak256(str);
+}
 
-  //In milliseconds - 20 minutes.
-  export const TELEPATHY_INTERVAL = 1200000;
-  //In milliseconds - 120 minutes.
-  export const VECTORX_INTERVAL = 7200000;
+function uint8ArrayToByte32String(uint8Array: Uint8Array) {
+    if (!(uint8Array instanceof Uint8Array)) {
+        throw new Error('Input must be a Uint8Array');
+    }
+    let hexString = '';
+    for (const byte of uint8Array as any) {
+        hexString += byte.toString(16).padStart(2, '0');
+    }
+    if (hexString.length !== 64) {
+        throw new Error('Input must be 32 bytes long');
+    }
+    return '0x' + hexString;
+}
+
+export const substrateAddressToPublicKey = (address: string) => {
+    const accountId = address;
+    const keyring = new Keyring({ type: 'sr25519' });
+
+    const pair = keyring.addFromAddress(accountId);
+    const publicKeyByte8Array = pair.publicKey
+    const publicKeyByte32String = uint8ArrayToByte32String(publicKeyByte8Array);
+
+    return publicKeyByte32String;
+}

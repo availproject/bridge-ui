@@ -1,33 +1,39 @@
-
+import { fetchTokenPrice } from "@/services/bridgeapi";
 import { Chain } from "@/types/common";
-import { ApiPromise } from "avail-js-sdk";
 import { create } from "zustand";
 
+const EMPTY_AMOUNT = '' as const
+
+interface DialogBase {
+    isOpen: boolean
+    onOpenChange: (open: boolean) => void
+}
+
+export interface SuccessDialog extends DialogBase {
+    details: { chain: Chain; hash: string, isWormhole?: boolean, } | null
+    setDetails: (details: { chain: Chain; hash: string, isWormhole?: boolean }) => void
+    claimDialog: boolean
+    setClaimDialog: (claimDialog: boolean) => void
+}
+
+interface ErrorDialog extends DialogBase {
+    error: Error | string | null
+    setError: (error: Error | string | null) => void
+}
 interface CommonStore {
     fromChain: Chain
     setFromChain: (fromChain: Chain) => void
     dollarAmount: number
     setDollarAmount: (dollarAmount: number) => void
+    fetchDollarAmount: () => Promise<number>
     toChain: Chain
     setToChain: (toChain: Chain) => void
-    fromChainBalance: number | undefined
-    setFromChainBalance: (fromChainBalance: number | undefined) => void
-    toChainBalance: number | undefined
-    setToChainBalance: (toChainBalance: number | undefined) => void
-    api: ApiPromise | undefined
-    setApi: (api: ApiPromise) => void
-    pendingTransactionsNumber: number
-    setPendingTransactionsNumber: (pendingTransactions: number) => void
-    readyToClaimTransactionsNumber: number
-    setReadyToClaimTransactionsNumber: (readyToClaimTransactions: number) => void
-    fromAmount: number
-    setFromAmount: (fromAmount: number) => void
+    fromAmount: string
+    setFromAmount: (fromAmount: string) => void
     toAddress: string | undefined
     setToAddress: (toAddress: string) => void
-    ethBalance: string | undefined | null
-    setEthBalance: (ethBalance: string | undefined | null) => void
-    availBalance: string | undefined | null
-    setAvailBalance: (availBalance: string | undefined | null) => void
+    successDialog: SuccessDialog
+    errorDialog: ErrorDialog
 }
 
 export const useCommonStore = create<CommonStore>((set) => ({
@@ -35,26 +41,47 @@ export const useCommonStore = create<CommonStore>((set) => ({
     setFromChain: (fromChain) => set({ fromChain }),
     dollarAmount: 0,
     setDollarAmount: (dollarAmount) => set({ dollarAmount }),
+    fetchDollarAmount: async () => {
+        const price = await fetchTokenPrice({
+            coin: "avail",
+            fiat: "usd",
+        });
+        set({ dollarAmount: price });
+        return price;
+      },
     toChain: Chain.ETH,
     setToChain: (toChain) => set({ toChain }),
-    fromChainBalance: undefined,
-    setFromChainBalance: (fromChainBalance) => set({ fromChainBalance }),
-    toChainBalance: undefined,
-    setToChainBalance: (toChainBalance) => set({ toChainBalance }),
-    api: undefined,
-    setApi: (api) => set({ api }),
-    pendingTransactionsNumber: 0,
-    setPendingTransactionsNumber: (pendingTransactionsNumber) => set({ pendingTransactionsNumber }),
-    readyToClaimTransactionsNumber: 0,
-    setReadyToClaimTransactionsNumber: (readyToClaimTransactionsNumber) => set({ readyToClaimTransactionsNumber }),
-    fromAmount: 0,
+    fromAmount: EMPTY_AMOUNT,
     setFromAmount: (fromAmount) => set({ fromAmount }),
     toAddress: undefined,
     setToAddress: (toAddress) => set({ toAddress }),
-    ethBalance: null,
-    setEthBalance: (ethBalance) => set({ ethBalance }),
-    availBalance: null,
-    setAvailBalance: (availBalance) => set({ availBalance }),
-}));
-
- 
+    successDialog: {
+        isOpen: false,
+        onOpenChange: (open: boolean) => 
+            set((state) => ({ 
+                successDialog: { ...state.successDialog, isOpen: open } 
+            })),
+        claimDialog: false,
+        setClaimDialog: (claimDialog: boolean) => 
+            set((state) => ({ 
+                successDialog: { ...state.successDialog, claimDialog } 
+            })),
+        details: null, 
+        setDetails: (details: { chain: Chain; hash: string }) => 
+            set((state) => ({ 
+                successDialog: { ...state.successDialog, details } 
+            }))
+    },
+    errorDialog: {
+        isOpen: false,
+        onOpenChange: (open: boolean) => 
+            set((state) => ({ 
+                errorDialog: { ...state.errorDialog, isOpen: open } 
+            })),
+        error: null,
+        setError: (error: Error | string | null) => 
+            set((state) => ({ 
+                errorDialog: { ...state.errorDialog, error } 
+            }))
+    },
+}))

@@ -5,7 +5,7 @@ import { cn } from "@/utils/tailwind"
 import { Loader2 } from 'lucide-react';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex !outline-none !focus:outline-none !focus:ring-0 !ring-0 !outline-none !focus:outline-none !focus:ring-0 !ring-0 items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 relative',
   {
     variants: {
       variant: {
@@ -15,7 +15,8 @@ const buttonVariants = cva(
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
-        primary: "rounded-full h-14 !text-md font-ppmori font-bold bg-gradient-to-r to-[#439FE7] from-[#2778E9] transform transition-transform hover:scale-[1.03] text-white"
+        primary: "rounded-full h-14 !text-md font-ppmori font-bold bg-gradient-to-r to-[#439FE7] from-[#2778E9] transform transition-transform hover:scale-[1.03] text-white",
+        wormhole: "rounded-full h-14 !text-md font-ppmori font-bold bg-gradient-to-r from-purple-600 to-purple-400 transform transition-transform hover:scale-[1.03] text-white"
       },
       size: {
         default: 'h-10 px-4 py-2',
@@ -36,23 +37,34 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   loading?: boolean;
+  loadingMessage?: string;
+  subMessage?: string;
 }
 
 const LoadingButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, loading, children, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, loading, loadingMessage, subMessage, children, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button';
     return (
-      <Comp
+      <>
+       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         disabled={loading}
         ref={ref}
         {...props}
       >
         <>
-          {loading && <Loader2 className={cn('h-4 w-4 animate-spin', children && 'mr-2')} />}
           {children}
+          {loading && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 rounded-xl backdrop-blur-sm">
+              <div className="flex items-center gap-2 text-white">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="font-medium">{loadingMessage || 'Please sign transaction on your wallet'}</span>
+              </div>
+            </div>
+          )}
         </>
-      </Comp>
+      </Comp></>
+     
     );
   },
 );

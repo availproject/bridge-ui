@@ -3,6 +3,7 @@ import { appConfig } from "@/config/default";
 import { Transaction } from "@/types/transaction";
 import { Chain } from "@/types/common";
 import { Logger } from "@/utils/logger";
+import { fetchWormholeTransactions } from "@/hooks/wormhole/helper";
 
 const indexerInstance = axios.create({
     baseURL: appConfig.bridgeIndexerBaseUrl,
@@ -44,13 +45,29 @@ async function fetchTransactions(userAddress: string, sourceChain?: string, dest
                 page: 0,
             },
         });
-        return response.data.data.result;
+        const transactions = response.data.data.result;
+        if (destinationChain) {
+            return transactions.map((transaction: Transaction) => ({
+                ...transaction,
+                destinationChain,
+            }));
+        }
+
+        return transactions;
     } catch (e: any) {
         Logger.error(`ERROR_FETCHING_TRANSACTIONS: ${e}`);
         return [];
     }
 }
 
+const fetchWithErrorHandling = async (address: string, source: Chain, dest?: Chain) => {
+    try {
+        return await fetchTransactions(address, source, dest);
+    } catch (error) {
+        Logger.error(`Failed to fetch transactions for ${address} from ${source} to ${dest}: ${error}`);
+        return [];
+    }
+};
 
 /**
  * @description Fetches transactions and adds to store, based on wallet logged in
@@ -58,7 +75,7 @@ async function fetchTransactions(userAddress: string, sourceChain?: string, dest
  * @param {TransactionQueryParams} 
  * @returns Transaction[]
  */
-export const getTransactionsFromIndexer = async (
+export const getAllTransactions = async (
     { availAddress, ethAddress, sourceChain, destinationChain }: TransactionQueryParams
 ): Promise<Transaction[]> => {
     validateParams({ availAddress, ethAddress });
@@ -74,19 +91,26 @@ export const getTransactionsFromIndexer = async (
             }
         });
     };
+
+    const fetchPromises: Promise<Transaction[]>[] = [];
+    
     if (ethAddress) {
-        const ethTransactions = await fetchTransactions(ethAddress, Chain.ETH, destinationChain);
-        addUniqueTransactions(ethTransactions);
-        const receiverEthTransactions = await fetchTransactions(ethAddress, Chain.AVAIL, destinationChain);
-        addUniqueTransactions(receiverEthTransactions);
+        fetchPromises.push(
+            fetchWithErrorHandling(ethAddress, Chain.ETH, Chain.AVAIL),
+            fetchWithErrorHandling(ethAddress, Chain.AVAIL, Chain.ETH),
+            fetchWormholeTransactions(false, ethAddress as `0x${string}`)
+        );
     }
 
     if (availAddress) {
-        const availTransactions = await fetchTransactions(availAddress, Chain.AVAIL, destinationChain);
-        addUniqueTransactions(availTransactions);
-        const receiverAvailTransactions = await fetchTransactions(availAddress, Chain.ETH, destinationChain);
-        addUniqueTransactions(receiverAvailTransactions);
+        fetchPromises.push(
+            fetchWithErrorHandling(availAddress, Chain.AVAIL, Chain.ETH),
+            fetchWithErrorHandling(availAddress, Chain.ETH, Chain.AVAIL)
+        );
     }
+
+    const results = await Promise.all(fetchPromises);
+    results.forEach(addUniqueTransactions);
 
     return allTransactions;
 };

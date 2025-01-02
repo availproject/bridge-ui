@@ -1,11 +1,7 @@
 export enum Chain {
   AVAIL = "AVAIL",
   ETH = "ETHEREUM",
-}
-
-export enum TransactionFlow {
-  ETH_TO_AVAIL = "ETH_TO_AVAIL",
-  AVAIL_TO_ETH = "AVAIL_TO_ETH",
+  BASE = "BASE",
 }
 
 export enum TransactionStatus {

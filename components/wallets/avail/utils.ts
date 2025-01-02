@@ -1,5 +1,5 @@
-import { Snap } from "@/hooks/Metamask/types";
-import { getInjectorMetadata } from "@/services/vectorpallet";
+import { Snap } from "@/hooks/metamask/types";
+import { getInjectorMetadata } from "@/services/pallet";
 import { initApi } from "@/utils/common";
 import { Logger } from "@/utils/logger";
 import { showFailedMessage } from "@/utils/toasts";

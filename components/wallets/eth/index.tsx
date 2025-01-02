@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { badgeVariants } from "../../ui/badge";
@@ -9,6 +7,7 @@ import { useEffect } from "react";
 import { useAccount } from "wagmi";
 import { ConnectKitButton } from "connectkit";
 import { Logger } from "@/utils/logger";
+import { Wallet } from "lucide-react";
 
 export default function Eth() {
   const { address, isConnected, connector } = useAccount();
@@ -33,7 +32,7 @@ export default function Eth() {
           if (isConnected) {
             return (
               <div className={badgeVariants({ variant: "avail" })}>
-                <img src="/images/Wallet.png" className="pr-1" alt="a"></img>
+                 <Wallet className='pr-1 h-5 w-5'/>
                 {ensName ?? truncatedAddress}
                 <button onClick={(e) => handleClick(e, show)} className="ml-2">
                   {" "}
