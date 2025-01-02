@@ -158,6 +158,9 @@ dependencies:
   json-bigint:
     specifier: ^1.0.0
     version: 1.0.0
+  lodash:
+    specifier: ^4.17.21
+    version: 4.17.21
   lucide-react:
     specifier: ^0.344.0
     version: 0.344.0(react@18.3.1)
@@ -226,6 +229,9 @@ devDependencies:
   '@types/json-bigint':
     specifier: ^1.0.4
     version: 1.0.4
+  '@types/lodash':
+    specifier: ^4.17.13
+    version: 4.17.13
   '@types/node':
     specifier: ^20.17.6
     version: 20.17.6
@@ -9290,6 +9296,10 @@ packages:
     dependencies:
       '@types/node': 20.17.6
     dev: false
+
+  /@types/lodash@4.17.13:
+    resolution: {integrity: sha512-lfx+dftrEZcdBPczf9d0Qv0x+j/rfNCMuC6OcfXmO8gkfeNAY88PgKUbvG56whcN23gc27yenwF6oJZXGFpYxg==}
+    dev: true
 
   /@types/long@4.0.2:
     resolution: {integrity: sha512-MqTGEo5bj5t157U6fA/BiDynNkn0YknVdh48CMPkTSpFTVmvao5UQmm7uEF6xBEo7qIMAlY/JSleYaE6VOdpaA==}

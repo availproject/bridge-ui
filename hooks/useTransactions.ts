@@ -5,6 +5,7 @@ import { Transaction } from "@/types/transaction";
 import { useEffect, useMemo } from "react";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
+import { uniqBy } from 'lodash';
 
 /**
  * @description All the functionalities related managing transactions
@@ -81,7 +82,7 @@ export default function useTransactions() {
   }, [localTransactions, indexedTransactions]);
 
   const pendingTransactions: Transaction[] = useMemo(() => {
-    return allTransactions.filter((txn) => txn.status !== "CLAIMED");
+    return allTransactions && uniqBy(allTransactions, 'sourceTransactionHash').filter((txn) => txn.status !== "CLAIMED");
   }, [allTransactions]);
 
   const CHUNK_SIZE = 4;
