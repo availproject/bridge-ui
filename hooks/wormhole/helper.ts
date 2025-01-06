@@ -97,7 +97,7 @@ import { WormholeTransaction } from "./types";
     );
   
     if (xfer.transfer.automatic && quote.destinationToken.amount < 0)
-      throw "The amount requested is too low to cover the fee and any native gas requested.";
+      throw new Error("The amount requested is too low to cover the fee and any native gas requested.");
   
     console.log("Starting transfer ------ ");
   

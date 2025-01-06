@@ -4,7 +4,6 @@ import {
  DialogContent,
  DialogHeader,
  DialogTitle,
- DialogTrigger,
 } from "@/components/ui/dialog";
 import { Chain } from "@/types/common";
 import { useCommonStore } from "@/stores/common";
@@ -122,7 +121,7 @@ const ChainSelectorModal = ({ isOpen, onClose, type }: ChainSelectorModalProps) 
        </div>
 
        <div className="flex items-center justify-center p-4 text-[#8B8EA3] text-sm border-t bg-[#1D2230] rounded-b-xl border-[#252A3C]">
-         looking for the testnet bridge, <a href="https://turing.bridge.avail.so/" className="italic cursor-pointer ml-1">click here</a>
+         looking for the testnet bridge, <a href="https://turing.bridge.avail.so/" className="italic cursor-pointer ml-1 underline">click here</a>
        </div>
      </DialogContent>
    </Dialog>
