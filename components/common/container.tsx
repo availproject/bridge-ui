@@ -14,29 +14,22 @@ export default function Container() {
 
   const { selected } = useAvailAccount();
   const { address } = useAccount();
-  const { fetchAllTransactions, setTransactionLoader, inProcess} = useTransactionsStore();
+  const { fetchAllTransactions, setTransactionLoader} = useTransactionsStore();
 
   useEffect(()=>{
     (async () => {
       /** means some claim is already in process so wait for that to end */
-      if(inProcess) {
-        return
-      }
-
       await fetchAllTransactions({
         ethAddress: address,
         availAddress: selected?.address,
-        setTransactionLoader
+        setTransactionLoader,
       });
       const interval = setInterval(async () => {
-        if(inProcess) {
-          return
-        }
 
         await fetchAllTransactions({
           ethAddress: address,  
           availAddress: selected?.address,
-          setTransactionLoader
+          setTransactionLoader,
         });
 
       }, 30000);
