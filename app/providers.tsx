@@ -10,11 +10,13 @@ import { useApi } from "@/stores/api";
 import { useCommonStore } from "@/stores/common";
 import { SuccessDialog } from "@/components/common/successdialog";
 import ErrorDialog from "@/components/common/error";
+import { useLatestBlockInfo } from "@/stores/blockinfo";
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const { ensureConnection, isReady } = useApi();
   const { fetchDollarAmount } = useCommonStore();
+  const { fetchAllHeads } = useLatestBlockInfo();
 
   /** FETCH AND POLL AVAIL API */
   useEffect(() => {
@@ -41,6 +43,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
       return () => clearInterval(interval);
     })();
   }, []);
+
+  /** FETCH LATEST HEADS */
+  useEffect(() => {
+    if (isReady) {
+      fetchAllHeads();
+      const interval = setInterval(fetchAllHeads, 5 * 60 * 1000);
+      return () => clearInterval(interval);
+    }
+  }, [isReady]);
 
   return (
     <WagmiProvider config={config}>

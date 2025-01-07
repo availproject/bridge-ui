@@ -43,28 +43,39 @@ export function getHref(chain: Chain, txnHash: string) {
 
 export const getStatusTime = ({
   from,
+  to,
   status,
   heads: { eth: ethHead, avl: avlHead },
+  SourceTimestamp,
 }: {
   from: Chain;
+  to: Chain
   status: TransactionStatus;
   heads: { eth: LatestBlockInfo["ethHead"]; avl: LatestBlockInfo["avlHead"] };
+  SourceTimestamp: string
 }) => {
+
   if (status === "READY_TO_CLAIM") {
     return "~";
   }
   if (status === "INITIATED") {
     return "Waiting for finalisation";
   }
-
-  //TODO: Change below to more accurate time
-  if (status === "PENDING" && from === Chain.ETH) {
-    return "~15 minutes";
-  }
-
-  //TODO: Change below to more accurate time
-  if (status === "PENDING" && from === Chain.AVAIL) {
+  if (status === "PENDING") {
     return "~5 minutes";
+  }
+  
+  if(from === Chain.BASE || to === Chain.BASE) {
+    const timeNow = Date.now();
+    const txnTimestamp = new Date(SourceTimestamp).getTime();
+    const BASE_TIME_CONSTANT = 20 * 60 * 1000
+    const timeLeft = (txnTimestamp + BASE_TIME_CONSTANT)  - timeNow;
+
+    if (timeLeft < 0) {
+      return `—`
+    }
+
+    return `~${parseMinutes(timeLeft / 1000 / 60)}`;
   }
 
   if (from === Chain.ETH) {

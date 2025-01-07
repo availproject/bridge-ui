@@ -9,6 +9,7 @@ import { useState } from "react";
 import { SubmitClaim } from "./submitclaim";
 import { getHref } from "@/utils/common";
 import { StatusBadge } from "./statusbadge";
+import { StatusTimeComponent } from "./statustime";
 
 export const PendingTransactions = ({
   pendingTransactions,
@@ -87,13 +88,8 @@ export const PendingTransactions = ({
                     </span>
                     <p className="text-xs flex flex-row items-end justify-end text-right text-white text-opacity-70 space-x-1">
                       <span>
-                        {/* {getStatusTime({
-                          from: txn.sourceChain,
-                          status: txn.status,
-                          heads: { eth: ethHead, avl: avlHead },
-                        })} */}
+                      <StatusTimeComponent txn={txn} />
                       </span>{" "}
-                      <Clock className="w-4 h-4" />
                     </p>
                   </div>
                 </TableCell>

@@ -41,7 +41,7 @@ export const ErrorDialog = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-[#252831] !border-0 !overflow-hidden">
+      <DialogContent aria-describedby={undefined} className="sm:max-w-md bg-[#252831] !border-0 !overflow-hidden">
         <DialogHeader>
           <DialogTitle className="font-thicccboisemibold text-white text-2xl mb-2">
             Transaction Failed

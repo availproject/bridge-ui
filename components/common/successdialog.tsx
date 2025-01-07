@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -65,6 +64,7 @@ export const SuccessDialog = () => {
         className="sm:max-w-md bg-[#252831] !border-0"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
+        aria-describedby={undefined}
       >
         {/* Header */}
         <DialogHeader>

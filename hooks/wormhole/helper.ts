@@ -158,7 +158,7 @@ export const fetchWormholeTransactions = async (isPolling = false, address: IAdd
         .map((tx: WormholeTransaction) => ({
           status: tx.targetChain?.status === 'completed' 
             ? TransactionStatus.CLAIMED 
-            : TransactionStatus.CLAIM_PENDING,
+            : TransactionStatus.BRIDGED,
           sourceChain: mapChainIdToEnum(tx.sourceChain.chainId),
           destinationChain: mapChainIdToEnum(tx.content.standarizedProperties.toChain),
           amount: (new BigNumber(tx.content.payload.parsedPayload.nttMessage.trimmedAmount.amount).dividedBy(new BigNumber(10).pow(tx.content.payload.parsedPayload.nttMessage.trimmedAmount.decimals))).multipliedBy(new BigNumber(10).pow(18)).toFixed(0),
