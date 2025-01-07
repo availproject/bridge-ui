@@ -14,8 +14,8 @@ import { CiCircleQuestion } from "react-icons/ci";
 import CompletedTransactions from "./completedtransactions";
 import NoTransactions from "./notransactions";
 import { useTransactionsStore } from "@/stores/transactions";
-import Loading from "./loading";
 import { PendingTransactions } from "./pendingtransactions";
+import TxnLoading from "./loading";
 
 export default function TransactionSection() {
   const {
@@ -77,7 +77,7 @@ export default function TransactionSection() {
             </TabsTrigger>
           </TabsList>
           {transactionLoader ? (
-            <Loading />
+            <TxnLoading />
           ) : (
             <>
               <TabsContent value="pending" className="h-[520px]">
