@@ -4,7 +4,6 @@ import ParsedDate from "./parseddate";
 import TxnAddresses from "./txnaddresses";
 import { ChainLabel } from "@/components/ui/chainLabel";
 import { ArrowUpRight, MoveRight } from "lucide-react";
-import { Chain } from "@/types/common";
 import { Badge } from "@/components/ui/badge";
 import { parseAvailAmount } from "@/utils/parsers";
 import { getHref } from "@/utils/common";
@@ -18,7 +17,7 @@ function CompletedTransactions({
       <div className="flex h-[85%]">
         <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
           {completedTransactions &&
-            completedTransactions.map((txn, index) => (
+            completedTransactions.map((txn) => (
               <TableRow
                 className="flex overflow-x-scroll flex-row justify-between w-[100%] bg-[#363b4f] rounded-xl "
                 key={txn.sourceTransactionHash}
@@ -67,7 +66,6 @@ function CompletedTransactions({
                       </a>
                     </span>
                   </span>
-
                   <br />
                 </TableCell>
                 <TableCell className="flex text-right items-center ">

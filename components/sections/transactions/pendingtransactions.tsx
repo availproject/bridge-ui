@@ -2,7 +2,7 @@ import { ChainLabel } from "@/components/ui/chainLabel";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Transaction } from "@/types/transaction";
 import { parseAvailAmount } from "@/utils/parsers";
-import { MoveRight, ArrowUpRight, Clock } from "lucide-react";
+import { MoveRight, ArrowUpRight, Clock } from 'lucide-react';
 import ParsedDate from "./parseddate";
 import TxnAddresses from "./txnaddresses";
 import { useState } from "react";
@@ -28,7 +28,6 @@ export const PendingTransactions = ({
       return newSet;
     });
   };
-
   return (
     <Table className="flex h-[85%]">
       <TableBody className="overflow-y-scroll min-w-[99%] mx-auto space-y-2.5">
@@ -99,9 +98,10 @@ export const PendingTransactions = ({
                   </div>
                 </TableCell>
               </TableRow>
-            )
-          )}
+          )
+        )}
       </TableBody>
     </Table>
   );
 };
+
