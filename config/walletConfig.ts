@@ -14,8 +14,8 @@ export const config = createConfig(
   getDefaultConfig({
     chains: [appConfig.networks.ethereum, appConfig.networks.base],
     transports: {
-   [appConfig.networks.ethereum.id]: http(process.env.NEXT_PUBLIC_ETH_RPC || "" ),
-   [appConfig.networks.base.id]: http(process.env.NEXT_PUBLIC_BASE_RPC || "" ),
+   [appConfig.networks.ethereum.id]: http(process.env.NEXT_PUBLIC_ETH_RPC_URL || "" ),
+   [appConfig.networks.base.id]: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || "" ),
     },
     walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "e77cdade22390c135f6dfb134f075abe",
     appName: "Bridge UI",
