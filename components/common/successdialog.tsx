@@ -121,7 +121,7 @@ export const SuccessDialog = () => {
         </div>
 
         {/* Destination Chain Details */}
-     {!claimDialog && <div className="flex flex-row items-center justify-between">
+       {!claimDialog && <div className="flex flex-row items-center justify-between">
           <h1 className="font-thicccboisemibold text-white text-lg">
             Destination Chain
           </h1>
@@ -129,18 +129,18 @@ export const SuccessDialog = () => {
         </div>}   
         <div className="flex flex-col items-center justify-center !space-x-3">
           <div className="flex flex-col space-y-2">
-            <p className="font-ppmori text-white text-sm text-opacity-60 space-y-3 -mt-1 ">
+            <div className="font-ppmori text-white text-sm text-opacity-60 space-y-3 -mt-1 ">
               {getMessage()}
               <p>
                 You can close this tab in the meantime, or initiate another
                 transfer.
               </p>
-            </p>
+            </div>
           </div>
         </div>
+
         {/* Footer */}
-        <DialogFooter className="sm:justify-start mt-1">
-          <DialogClose asChild>
+        <DialogFooter className="sm:justify-start mt-1">       
             <div className="w-full flex flex-col items-center justify-center space-y-2">
               {details?.isWormhole ? (
                 <Link
@@ -190,7 +190,6 @@ export const SuccessDialog = () => {
                 Submit feedback?
               </a>
             </div>
-          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -10,7 +10,7 @@ import { showFailedMessage } from "@/utils/toasts";
 interface SubmitClaimProps {
   txn: Transaction;
   loadingTxns?: Set<unknown>;
-  setTxnLoading?: (txnHash: `0x${string}`, loading: boolean) => void; // Make setter optional
+  setTxnLoading?: (txnHash: `0x${string}`, loading: boolean) => void;
   isLoading?: boolean;
   setIsLoading?: (loading: boolean) => void;
 }

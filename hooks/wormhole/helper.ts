@@ -11,10 +11,36 @@ import {
     ChainAddress,
     Signer,
   } from "@wormhole-foundation/sdk";
-  import { Ntt } from "@wormhole-foundation/sdk-definitions-ntt";
-  import "@wormhole-foundation/sdk-evm-ntt";
+import { Ntt } from "@wormhole-foundation/sdk-definitions-ntt";
+import "@wormhole-foundation/sdk-evm-ntt";
+import { appConfig } from "@/config/default";
 import BigNumber from "bignumber.js";
 import { WormholeTransaction } from "./types";
+
+export type NttContracts = {
+  [key in Chain]?: Ntt.Contracts;
+};
+
+const removeSpaces = (str: String) => str.replace(/\s+/g, '');
+
+export const NTT_CONTRACTS: NttContracts = {
+  [removeSpaces(appConfig.networks.ethereum.name)]: {
+    manager: appConfig.contracts.ethereum.manager,
+    token:  appConfig.contracts.ethereum.availToken,
+    transceiver: {
+      wormhole: appConfig.contracts.ethereum.transceiver.wormhole,
+      pauser: appConfig.contracts.ethereum.transceiver.pauser,
+    },
+  },
+  [removeSpaces(appConfig.networks.base.name)]: {
+    manager: appConfig.contracts.base.manager,
+    token: appConfig.contracts.base.availToken,
+    transceiver: {
+      wormhole: appConfig.contracts.base.transceiver.wormhole,
+      pauser: appConfig.contracts.base.transceiver.pauser,
+    },
+  },
+};
   
   export async function getTokenDecimals<
     N extends "Mainnet" | "Testnet" | "Devnet"
@@ -27,32 +53,11 @@ import { WormholeTransaction } from "./types";
       ? Number(await wh.getDecimals(token.chain, token.address))
       : sendChain.config.nativeTokenDecimals;
   }
-  export type NttContracts = {
-    [key in Chain]?: Ntt.Contracts;
-  };
 
  export function capitalizeFirstLetter(val: string) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 }
   
-  export const NTT_CONTRACTS: NttContracts = {
-    Sepolia: {
-      manager: "0x40E856FD3eCBeE56c33388738f0B1C3aad573353",
-      token: "0xb1C3Cb9b5e598d4E95a85870e7812B99f350982d",
-      transceiver: {
-        wormhole: "0x988140794D960fD962329751278Ef0DD2438a64C",
-        pauser: "0x0f62A884eDAbD338e92302274e7cE7Cc1D467B74",
-      },
-    },
-    BaseSepolia: {
-      manager: "0xf4B55457fCD2b6eF6ffd41E5F5b0D65fbE370EA3",
-      token: "0xf50F2B4D58ce2A24b62e480d795A974eD0f77A58",
-      transceiver: {
-        wormhole: "0xAb9C68eD462f61Fd5fd34e6c21588513d89F603c",
-        pauser: "0x0f62A884eDAbD338e92302274e7cE7Cc1D467B74",
-      },
-    },
-  };
   
   export interface SignerStuff<N extends Network, C extends Chain> {
     chain: ChainContext<N, C>;
@@ -97,7 +102,7 @@ import { WormholeTransaction } from "./types";
     );
   
     if (xfer.transfer.automatic && quote.destinationToken.amount < 0)
-      throw "The amount requested is too low to cover the fee and any native gas requested.";
+      throw new Error("The amount requested is too low to cover the fee and any native gas requested.");
   
     console.log("Starting transfer ------ ");
   
@@ -133,6 +138,7 @@ export const fetchWormholeTransactions = async (isPolling = false, address: IAdd
 
     try {
       const response = await fetch(
+        appConfig.config === 'mainnet' ? `https://api.wormholescan.io/api/v1/operations?address=${address}&page=0&pageSize=50&sortOrder=DESC` :
         `https://api.testnet.wormholescan.io/api/v1/operations?address=${address}&page=0&pageSize=50&sortOrder=DESC`
       );
       

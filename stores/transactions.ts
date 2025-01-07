@@ -32,7 +32,7 @@ type FetchTxnParams = {
   setTransactionLoader: ClickHandler<boolean>;
 };
 
-export const useTransactionsStore = create<TransactionsStore>((set) => ({
+export const useTransactionsStore = create<TransactionsStore>((set, get) => ({
   inProcess: false,
   setInProcess: (inProcess) => set({inProcess}),
   transactionLoader: false,
@@ -44,6 +44,11 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
     availAddress,
     setTransactionLoader,
   }: FetchTxnParams) => {
+    const { inProcess } = get();
+    
+    if(inProcess) {
+      return;
+    }
     if (!ethAddress && !availAddress) {
       return;
     }
