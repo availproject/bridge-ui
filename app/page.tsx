@@ -4,6 +4,9 @@ import Container from "@/components/common/container";
 import { InfoIcon } from "lucide-react";
 
 export default function Home() {
+
+  console.log(process.env.NEXT_PUBLIC_ETH_RPC_URL, "rpc on a silver platter")
+  
   return (
     <main className="">
       <div className="relative !mt-12 w-screen items-center justify-center flex flex-col">
