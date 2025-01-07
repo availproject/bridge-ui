@@ -45,7 +45,7 @@ export default function Container() {
         value={activeTab}
         onValueChange={setActiveTab}
         id="container"
-        className="section_bg p-2 w-screen max-sm:rounded-none max-sm:border-x-0 !max-w-xl "
+        className="section_bg p-2 w-screen max-sm:rounded-none max-sm:!border-x-0 !max-w-xl "
       >
         <TabsList className="flex flex-row items-start justify-start bg-transparent !border-0 p-2 mb-6 mx-2 mt-1">
           <div className="flex flex-row pb-[2vh] items-center justify-between">

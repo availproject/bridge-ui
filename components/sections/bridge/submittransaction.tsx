@@ -136,7 +136,7 @@ export default function SubmitTransaction() {
           variant="primary"
           loading={transactionInProgress}
           onClick={handleSubmit}
-          className="!rounded-xl w-full !text-[15px] !py-8 max-md:mb-4 font-ppmori"
+          className="!rounded-xl w-full !text-[15px] !py-8 max-md:mb-4 font-ppmori max-md:mt-4"
           disabled={isDisabled}
         >
           {buttonStatus}

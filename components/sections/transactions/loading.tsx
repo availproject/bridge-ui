@@ -14,27 +14,27 @@ export default function TxnLoading() {
             <TableCell className="font-medium flex flex-row items-start gap-4 rounded-xl">
               {/* Date */}
               <div className="flex flex-col items-center">
-                <Skeleton className="h-4 w-6 mb-1" />
-                <Skeleton className="h-4 w-8" />
+                <Skeleton className="h-2 w-3 md:h-4 md:w-6 mb-1" />
+                <Skeleton className="h-2 w-3 md:h-4 md:w-8" />
               </div>
 
               <div className="flex flex-col gap-2">
                 {/* Amount */}
                 <div className="flex items-center gap-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="md:h-4 md:w-24" />
+                  <Skeleton className="md:h-4 md:w-4" />
                 </div>
 
                 {/* Chain flow */}
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1">
-                    <Skeleton className="h-4 w-6 rounded-full" />
-                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="md:h-4 md:w-6 rounded-full" />
+                    <Skeleton className="md:h-4 md:w-20" />
                   </div>
                   <MoveRight className="text-gray-500" />
                   <div className="flex items-center gap-1">
-                    <Skeleton className="h-4 w-6 rounded-full" />
-                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="md:h-4 md:w-6 rounded-full" />
+                    <Skeleton className="md:h-4 md:w-16" />
                   </div>
                 </div>
 

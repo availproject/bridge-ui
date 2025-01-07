@@ -68,7 +68,7 @@ export const getStatusTime = ({
   if(from === Chain.BASE || to === Chain.BASE) {
     const timeNow = Date.now();
     const txnTimestamp = new Date(SourceTimestamp).getTime();
-    const BASE_TIME_CONSTANT = 20 * 60 * 1000
+    const BASE_TIME_CONSTANT = 30 * 60 * 1000 // 30 minutes
     const timeLeft = (txnTimestamp + BASE_TIME_CONSTANT)  - timeNow;
 
     if (timeLeft < 0) {
