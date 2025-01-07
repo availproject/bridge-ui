@@ -138,10 +138,9 @@ export const SuccessDialog = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Footer */}
-        <DialogFooter className="sm:justify-start mt-1">
-          <DialogClose asChild>
+        <DialogFooter className="sm:justify-start mt-1">       
             <div className="w-full flex flex-col items-center justify-center space-y-2">
               {details?.isWormhole ? (
                 <Link
@@ -191,7 +190,6 @@ export const SuccessDialog = () => {
                 Submit feedback?
               </a>
             </div>
-          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>
