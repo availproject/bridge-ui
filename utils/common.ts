@@ -71,7 +71,7 @@ export const getStatusTime = ({
     const BASE_TIME_CONSTANT = 30 * 60 * 1000 // 30 minutes
     const timeLeft = (txnTimestamp + BASE_TIME_CONSTANT)  - timeNow;
 
-    if (timeLeft < 0) {
+    if (timeLeft <= 0) {
       return `—`
     }
 
@@ -84,7 +84,7 @@ export const getStatusTime = ({
     const timeNow = Date.now();
     const timeLeft = nextProofTimestamp - timeNow;
 
-    if (timeLeft < 0) {
+    if (timeLeft <= 0) {
       return `—`
     }
 
@@ -97,7 +97,7 @@ export const getStatusTime = ({
     const timeNow = Date.now();
     const timeLeft = nextProofTimestamp - timeNow;
 
-    if (timeLeft < 0) {
+    if (timeLeft <= 0) {
       return `—`
     }
 
