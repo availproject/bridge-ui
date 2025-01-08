@@ -34,8 +34,8 @@ const DestinationStatus = () => {
               <CheckCircle className="h-5 w-5 text-[#0BDA51]" />
             </div>
           </TooltipTrigger>
-          <TooltipContent side="top" className="mb-2 bg-[#2B3042] text-white !border-0 flex items-center justify-center space-x-1">
-           <InfoIcon className="w-4 h-4"/> <p>No claim needed for Wormhole transfers</p>
+          <TooltipContent side="top" className="mb-2 p-2 text-opacity-75 bg-[#2B3042] text-white !border-0 flex items-center justify-center space-x-1">
+          <p>No manual claim needed for Wormhole transfers</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

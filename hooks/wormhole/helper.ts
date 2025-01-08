@@ -156,7 +156,7 @@ export const fetchWormholeTransactions = async (isPolling = false, address: IAdd
           );
         })
         .map((tx: WormholeTransaction) => ({
-          status: tx.targetChain?.status === 'completed' 
+          status: tx.targetChain?.transaction?.txHash 
             ? TransactionStatus.CLAIMED 
             : TransactionStatus.BRIDGED,
           sourceChain: mapChainIdToEnum(tx.sourceChain.chainId),
