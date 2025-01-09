@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -8,11 +7,8 @@ import NavBar from "@/components/ui/header";
 import { FooterSection } from "@/components/ui/FooterSection/FooterSection";
 import { Footer } from "@/components/ui/Footer/Footer";
 import DatadogInit from "./datadog-init";
-import { Analytics } from "@vercel/analytics/react"
-import AppInit from "./appInit";
+import { Analytics } from "@vercel/analytics/react";
 
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Avail | Bridge",
@@ -25,10 +21,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
 
-
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body>
       <Analytics/>
       <img
           src="/images/bg.png"
@@ -38,7 +33,6 @@ export default async function RootLayout({
         <Providers>  
           <NavBar/>
           <DatadogInit />
-          <AppInit />
             {children}
            <Toaster />
           <FooterSection title={"Accelerating the unification of web3"} description={"DA Mainnet is now live!"}/>

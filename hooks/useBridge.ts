@@ -2,66 +2,50 @@
 import { useCallback, useEffect } from "react";
 import BigNumber from "bignumber.js";
 import { useAccount, useWriteContract } from "wagmi";
-import { readContract } from "@wagmi/core";
+import { estimateGas, readContract } from "@wagmi/core";
 
-import ethereumAvailTokenTuring from "@/constants/abis/ethereumAvailTokenTuring.json";
-import ethereumBridgeTuring from "@/constants/abis/ethereumBridgeTuring.json";
-import ethereumAvailTokenMainnet from "@/constants/abis/ethereumAvailTokenMainnet.json";
-import ethereumBridgeMainnet from "@/constants/abis/ethereumBridgeMainnet.json";
-
-
-import { Transaction, TRANSACTION_TYPES } from "@/types/transaction";
+import { Transaction } from "@/types/transaction";
 import { Chain, TransactionStatus } from "@/types/common";
 import { appConfig } from "@/config/default";
 
-import useEthWallet from "@/hooks/useEthWallet";
+import useEthWallet from "@/hooks/common/useEthWallet";
 import useTransactions from "@/hooks/useTransactions";
-import { useAvailAccount } from "@/stores/availWalletHook";
-import { substrateAddressToPublicKey } from "@/utils/addressFormatting";
-import { sendMessage } from "@/services/vectorpallet";
-import { _getBalance, initApi } from "@/utils/common";
+import { useAvailAccount } from "@/stores/availwallet";
+import { sendMessage } from "@/services/pallet";
+import { substrateAddressToPublicKey } from "@/utils/common";
 import { Logger } from "@/utils/logger";
 import { ONE_POWER_EIGHTEEN } from "@/constants/bigNumber";
-import { useCommonStore } from "@/stores/common";
-import { ApiPromise } from "avail-js-sdk";
 import { showSuccessMessage } from "@/utils/toasts";
-import { formatUnits } from "viem";
-import { useInvokeSnap } from "./Metamask";
-import { checkTransactionStatus } from "./Metamask/utils";
+import { encodeFunctionData, formatUnits } from "viem";
+import { useInvokeSnap } from "./metamask";
+import { checkTransactionStatus } from "./metamask/utils";
+
+import bridgeImplAbi from "@/constants/abis/bridgeImplAbi.json";
+import availTokenAbi from "@/constants/abis/availTokenAbi.json";
 
 import type {
   Transaction as MetamaskTransaction,
   TxPayload,
 } from "@avail-project/metamask-avail-types";
 import { config } from "@/config/walletConfig";
+import { useApi } from "@/stores/api";
+import { getTokenBalance } from "@/services/contract";
 
 export default function useBridge() {
-  const { switchNetwork, activeNetworkId, activeUserAddress } = useEthWallet();
+  const { activeUserAddress, validateandSwitchChain } = useEthWallet();
   const { addToLocalTransaction } = useTransactions();
   const { writeContractAsync } = useWriteContract();
   const { selected } = useAvailAccount();
   const { address } = useAccount();
-  const { api, setApi } = useCommonStore();
+  const {api, ensureConnection} = useApi();
   const invokeSnap = useInvokeSnap();
-
   const networks = appConfig.networks;
 
-  const validateChain = async (txType: TRANSACTION_TYPES) => {
-    if (txType === TRANSACTION_TYPES.BRIDGE_ETH_TO_AVAIL) {
-      if (networks.ethereum.id !== (await activeNetworkId())) {
-        await switchNetwork(networks.ethereum.id);
-      }
-    }
-  };
-
+  /** HELPER FUNCTIONS */
   const getAvailBalanceOnEth = useCallback(async () => {
-    // Get AVAIL balance on Ethereum chain
     const balance = await readContract(config, {
       address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-      abi:
-        process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-          ? ethereumAvailTokenMainnet
-          : ethereumAvailTokenTuring,
+      abi: availTokenAbi,
       functionName: "balanceOf",
       args: [activeUserAddress],
       chainId: networks.ethereum.id,
@@ -75,36 +59,27 @@ export default function useBridge() {
 
   const getCurrentAllowanceOnEth = useCallback(async () => {
     try {
-      // Get current allowance on Ethereum chain
       const allowance = await readContract(config, {
         address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-        abi:
-          process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-            ? ethereumAvailTokenMainnet
-            : ethereumAvailTokenTuring,
+        abi: availTokenAbi,
         functionName: "allowance",
         args: [activeUserAddress, appConfig.contracts.ethereum.bridge],
         chainId: networks.ethereum.id,
       });
 
       if (!allowance) return new BigNumber(0);
-      //@ts-ignore TODO: P2
-      return new BigNumber(allowance);
+
+      return new BigNumber(allowance.toString());
     } catch (error) {
       throw new Error("error fetching allowance");
     }
   }, [activeUserAddress, networks.ethereum.id]);
 
   const approveOnEth = useCallback(async (atomicAmount: string) => {
-    // approve on ethereum chain
     const txHash = await writeContractAsync({
       address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-      abi:
-        process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-          ? ethereumAvailTokenMainnet
-          : ethereumAvailTokenTuring,
+      abi: availTokenAbi,
       functionName: "approve",
-      // args: [spender, amount]
       args: [appConfig.contracts.ethereum.bridge, atomicAmount],
       chainId: networks.ethereum.id,
     });
@@ -123,16 +98,25 @@ export default function useBridge() {
       const byte32DestinationAddress =
         substrateAddressToPublicKey(destinationAddress);
 
+        const estimatedGas = await estimateGas(config, {
+          to: appConfig.contracts.ethereum.bridge as `0x${string}`,
+          data: encodeFunctionData({
+            abi: bridgeImplAbi,
+            functionName: "sendAVAIL",
+            args: [byte32DestinationAddress, atomicAmount],
+          })
+        })
+
+      const gasWithBuffer = (estimatedGas * BigInt(120)) / BigInt(100);
+      
       const txHash = await writeContractAsync({
         address: appConfig.contracts.ethereum.bridge as `0x${string}`,
-        abi:
-          process.env.NEXT_PUBLIC_ETHEREUM_NETWORK === "mainnet"
-            ? ethereumBridgeMainnet
-            : ethereumBridgeTuring,
+        abi: bridgeImplAbi,
         functionName: "sendAVAIL",
         // args: [recipient, amount]
         args: [byte32DestinationAddress, atomicAmount],
         chainId: networks.ethereum.id,
+        gas: gasWithBuffer,
       });
 
       return txHash;
@@ -156,7 +140,7 @@ export default function useBridge() {
           {
             FungibleToken: {
               assetId:
-                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                appConfig.assetId,
               amount: atomicAmount,
             },
           },
@@ -185,9 +169,10 @@ export default function useBridge() {
     return (txHash as MetamaskTransaction).hash;
   };
 
+  /** BRIDGING FLOWS */
+
   /**
-   * @description Initiates bridging from Ethereum to AVAIL,
-   * @steps Validates chain, Checks approval, Checks balance, Initiates bridging(sendAvail() on Eth)
+   * @desc Initiates bridging from Ethereum to AVAIL,
    */
   const initEthToAvailBridging = async ({
     atomicAmount,
@@ -197,18 +182,11 @@ export default function useBridge() {
     destinationAddress: string;
   }) => {
     try {
-      console.log("activeUserAddress", activeUserAddress);
-      if (!activeUserAddress) {
+      if (!activeUserAddress) 
         throw new Error("No account selected");
-      }
 
-      await validateChain(TRANSACTION_TYPES.BRIDGE_ETH_TO_AVAIL);
+      await validateandSwitchChain(Chain.ETH);
 
-      if ((await activeNetworkId()) !== networks.ethereum.id) {
-       switchNetwork(networks.ethereum.id);
-      }
-
-      // check approval
       const currentAllowance = await getCurrentAllowanceOnEth();
       if (new BigNumber(atomicAmount).gt(currentAllowance)) {
         await approveOnEth(atomicAmount);
@@ -234,13 +212,8 @@ export default function useBridge() {
         sourceTransactionHash: burnTxHash,
         amount: atomicAmount,
         status: TransactionStatus.INITIATED,
-        messageId: 0,
-        dataType: "ERC20",
         depositorAddress: activeUserAddress,
         receiverAddress: destinationAddress,
-        sourceBlockHash: "0x",
-        sourceBlockNumber: 0,
-        sourceTransactionIndex: 0,
         sourceTimestamp: new Date().toISOString(),
       });
 
@@ -277,24 +250,14 @@ export default function useBridge() {
         throw new Error("No account selected");
       }
 
-      let retriedApiConn: ApiPromise | null = null;
+     if (!api || !api.isConnected || !api.isReady) await ensureConnection();
+    if (!api?.isReady)
+        throw new Error("Uh oh! Failed to connect to Avail Api");
 
-      if (!api || !api.isConnected) {
-        Logger.debug("Retrying API Conn");
-        retriedApiConn = await initApi();
-        setApi(retriedApiConn);
-        if (!retriedApiConn || !retriedApiConn.isConnected) {
-          throw new Error(
-            "Uh Oh! RPC under a lot of stress, error intialising api"
-          );
-        }
+    const availBalance = await getTokenBalance(Chain.AVAIL, selected.address, api);
+      if (!availBalance) {
+        throw new Error("Failed to fetch balance");
       }
-
-      const availBalance = await _getBalance(
-        Chain.AVAIL,
-        api ? api : retriedApiConn!,
-        selected?.address
-      );
 
       if (
         availBalance &&
@@ -302,7 +265,7 @@ export default function useBridge() {
           new BigNumber(availBalance).times(ONE_POWER_EIGHTEEN)
         )
       ) {
-        throw new Error("insufficient balance");
+        throw new Error("insufficient avail balance");
       }
 
       if (selected.source === "MetamaskSnap") {
@@ -311,7 +274,7 @@ export default function useBridge() {
           destinationAddress,
         });
         const result = await checkTransactionStatus(
-          api ? api : retriedApiConn!,
+          api!,
           send
         );
 
@@ -356,7 +319,7 @@ export default function useBridge() {
           message: {
             FungibleToken: {
               assetId:
-                "0x0000000000000000000000000000000000000000000000000000000000000000",
+                appConfig.assetId,
               amount: BigInt(atomicAmount),
             },
           },
@@ -364,7 +327,7 @@ export default function useBridge() {
           domain: 2,
         },
         selected!,
-        api ? api : retriedApiConn!
+        api
       );
       if (send.blockhash !== undefined && send.txHash !== undefined) {
         const tempLocalTransaction: Transaction = {
@@ -377,7 +340,6 @@ export default function useBridge() {
           depositorAddress: selected?.address,
           receiverAddress: destinationAddress,
           sourceBlockHash: send.blockhash,
-          sourceBlockNumber: 0,
           sourceTransactionHash: send.txHash as `0x${string}`,
           sourceTransactionIndex: 0,
           sourceTimestamp: new Date().toISOString(),
