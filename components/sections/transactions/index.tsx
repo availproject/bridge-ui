@@ -110,7 +110,6 @@ export default function TransactionSection() {
           )}
         </Tabs>
         {/* Pagination */}
-        {showPagination && (
           <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
             <p className="font-thicccboisemibold text-sm text-white mr-2">
               <HoverCard>
@@ -124,7 +123,7 @@ export default function TransactionSection() {
               </HoverCard>
             </p>
             <button
-              disabled={currentPage === 0}
+              disabled={currentPage === 0 || !showPagination}
               onClick={() => setCurrentPage((prev) => prev - 1)}
               className={`rounded-lg bg-[#484C5D] ${
                 currentPage === 0
@@ -135,7 +134,7 @@ export default function TransactionSection() {
               <ArrowLeft />
             </button>
             <button
-              disabled={isEndPage}
+              disabled={isEndPage || !showPagination}
               onClick={() => setCurrentPage((prev) => prev + 1)}
               className={`rounded-lg bg-[#484C5D] ${
                 isEndPage
@@ -146,7 +145,6 @@ export default function TransactionSection() {
               <ArrowRight />
             </button>
           </div>
-        )}
       </>
     </div>
   );

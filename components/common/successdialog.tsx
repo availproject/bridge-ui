@@ -82,7 +82,7 @@ export const SuccessDialog = () => {
             Transaction Status
           </DialogTitle>
         </DialogHeader>
-        <div className="w-[100%] h-20 mx-auto rounded-xl bg-black flex flex-col items-center justify-center">
+        <div className="w-[100%] h-20 mx-auto rounded-xl bg-[#21242d] flex flex-col items-center justify-center">
           {!isLoading ? (
             <FaCheckCircle className="mr-4 h-8 w-8" color="0BDA51" />
           ) : (
@@ -91,7 +91,7 @@ export const SuccessDialog = () => {
         </div>
 
         {/* Source Chain Details / STEPS */}
-        <div className="flex flex-col space-y-4 py-4">
+        <div className="flex flex-col space-y-4 py-3">
           <div className="space-y-1">
             {!claimDialog && (
               <h1 className="font-thicccboisemibold text-white text-lg pb-2">

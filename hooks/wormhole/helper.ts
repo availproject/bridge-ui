@@ -28,16 +28,14 @@ export const NTT_CONTRACTS: NttContracts = {
     manager: appConfig.contracts.ethereum.manager,
     token:  appConfig.contracts.ethereum.availToken,
     transceiver: {
-      wormhole: appConfig.contracts.ethereum.transceiver.wormhole,
-      pauser: appConfig.contracts.ethereum.transceiver.pauser,
+      wormhole: appConfig.contracts.ethereum.transceiver.wormhole
     },
   },
   [removeSpaces(appConfig.networks.base.name)]: {
     manager: appConfig.contracts.base.manager,
     token: appConfig.contracts.base.availToken,
     transceiver: {
-      wormhole: appConfig.contracts.base.transceiver.wormhole,
-      pauser: appConfig.contracts.base.transceiver.pauser,
+      wormhole: appConfig.contracts.base.transceiver.wormhole
     },
   },
 };

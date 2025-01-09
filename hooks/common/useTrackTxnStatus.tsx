@@ -94,7 +94,6 @@ export function useTransactionStatus(
           });
           const initialReceipt = await waitForTransactionReceipt(config, {
             hash,
-            timeout: 30_000,
             confirmations: 1,
             onReplaced: (response) => {
               const { reason, transaction } = response;
