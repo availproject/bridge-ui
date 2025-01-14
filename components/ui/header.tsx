@@ -10,7 +10,7 @@ export default function NavBar() {
       >
         <InfoIcon className="w-10 h-10 md:h-3 md:w-3 mr-2 text-white text-opacity-60" />{" "}
         <span className="text-white text-xs text-opacity-60 max-md:text-left">
-        Ledger wallets are currently not supported on avail. Please do not send to a Ledger address on avail otherwise funds may be lost.
+        Ledger wallets are currently not supported on Avail DA. Please do not send to a Ledger address on Avail otherwise funds may be lost.
         </span>
       </div>
       <div className="pt-4 space-x-4 w-screen flex flex-row items-center justify-center">
