@@ -128,7 +128,7 @@ export async function executeTransaction(
 ): Promise<{
   status: string;
   message: string;
-  blockhash?: string;
+  blockHash?: string;
   txHash?: string;
 }> {
   const injector = getWalletBySource(account.source);
@@ -201,7 +201,7 @@ export async function executeTransaction(
   return {
     status: "success",
     message: "Transaction successful",
-    blockhash: result.blockhash,
+    blockHash: result.blockhash,
     txHash: result.txHash
   };
 }

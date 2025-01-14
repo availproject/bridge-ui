@@ -24,7 +24,7 @@ export const SuccessDialog = () => {
   const { successDialog } = useCommonStore();
   const { isOpen, onOpenChange, details, claimDialog } = successDialog;
   const { status, isLoading, timeEstimate } = useTransactionStatus(
-    details?.hash as IAddress,
+    details?.txnHash as IAddress,
     details?.chain,
     details?.isWormhole
   );

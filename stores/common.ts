@@ -10,8 +10,8 @@ interface DialogBase {
 }
 
 export interface SuccessDialog extends DialogBase {
-    details: { chain: Chain; hash: string, isWormhole?: boolean, } | null
-    setDetails: (details: { chain: Chain; hash: string, isWormhole?: boolean }) => void
+    details: { chain: Chain; hash: string, isWormhole?: boolean, txnHash?: string  } | null
+    setDetails: (details: { chain: Chain; hash: string, isWormhole?: boolean, txnHash?: string }) => void
     claimDialog: boolean
     setClaimDialog: (claimDialog: boolean) => void
 }
@@ -67,7 +67,7 @@ export const useCommonStore = create<CommonStore>((set) => ({
                 successDialog: { ...state.successDialog, claimDialog } 
             })),
         details: null, 
-        setDetails: (details: { chain: Chain; hash: string }) => 
+        setDetails: (details: { chain: Chain; hash: string, txnHash?: string  }) => 
             set((state) => ({ 
                 successDialog: { ...state.successDialog, details } 
             }))

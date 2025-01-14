@@ -69,8 +69,8 @@ export default function SubmitTransaction() {
             atomicAmount: fromAmountAtomic,
             destinationAddress: toAddress!,
           });
-          if (init.txHash) {
-            bridgeResult = { chain: Chain.AVAIL, hash: init.txHash };
+          if (init.blockhash && init.txHash) {
+            bridgeResult = { chain: Chain.AVAIL, hash: init.blockhash, txnHash: init.txHash };
           }
           break;
         }

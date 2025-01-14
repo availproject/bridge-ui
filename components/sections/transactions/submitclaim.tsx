@@ -91,10 +91,11 @@ export const SubmitClaim = ({
           executeParams,
         });
 
-        if (successBlockhash.txHash) {
+        if (successBlockhash.blockHash && successBlockhash.txHash) {
           setDetails({
             chain: Chain.AVAIL,
-            hash: successBlockhash.txHash,
+            hash: successBlockhash.blockHash,
+            txnHash: successBlockhash.txHash
           });
 
           setOpenDialog(true);

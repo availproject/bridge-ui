@@ -31,7 +31,7 @@ export function validAddress(address: string, chain: Chain) {
 export function getHref(chain: Chain, txnHash: string) {
   switch (chain) {
     case Chain.AVAIL:
-      return `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txnHash}`
+      return `https://explorer.availproject.org/?rpc=wss://rpc-hex-devnet.avail.tools/ws#/explorer/query/${txnHash}`
     case Chain.ETH:
       return `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txnHash}`
     case Chain.BASE:
