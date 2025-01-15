@@ -5,10 +5,9 @@ import { ChainPairs } from "./types";
 
 export const getMaxAmount = (amount: string, fromChain: Chain) => {
     if (fromChain === Chain.AVAIL) {
-        console.log(BigNumber(amount).minus(new BigNumber(0.25)).toFixed(decimal_points), amount, "ll   ");
        return BigNumber(amount).minus(new BigNumber(0.25)).toFixed(decimal_points);
     }
-    return amount;
+    return BigNumber(amount).minus(new BigNumber(0.01)).toFixed(decimal_points);
 }
 
 export const validInputAmount = (amount: string) => {
