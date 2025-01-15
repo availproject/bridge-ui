@@ -197,7 +197,7 @@ export default function useBridge() {
       }
 
       const availBalance = await getAvailBalanceOnEth();
-      if (new BigNumber(atomicAmount).gt(new BigNumber(availBalance))) {
+      if (new BigNumber(atomicAmount).gte(new BigNumber(availBalance))) {
         throw new Error("insufficient balance");
       }
 
