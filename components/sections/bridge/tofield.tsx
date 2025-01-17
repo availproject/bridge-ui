@@ -1,6 +1,6 @@
 import { Chain } from "@/types/common";
 import AddressDialog from "./pasteaddress";
-import { ClipboardCopyIcon, InfoIcon, Wallet } from "lucide-react";
+import { ClipboardCopyIcon, Wallet } from "lucide-react";
 import RenderWalletConnect from "@/components/common/renderwalletconnect";
 import { useEffect } from "react";
 import { useAccount } from "wagmi";

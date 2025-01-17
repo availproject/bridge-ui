@@ -1,12 +1,8 @@
 import { LoadingButton } from "@/components/ui/loadingbutton";
-import useBridge from "@/hooks/useBridge";
-import useSubmitTxnState from "@/hooks/common/useSubmitTxnState";
 import { SuccessDialog, useCommonStore } from "@/stores/common";
 import { Chain } from "@/types/common";
 import { validAddress } from "@/utils/common";
-import BigNumber from "bignumber.js";
-import { use, useState } from "react";
-import useWormHoleBridge from "@/hooks/wormhole/useWormHoleBridge";
+import { useState } from "react";
 import { ChainPairs } from "./types";
 import { appConfig } from "@/config/default";
 import { RxArrowTopRight } from "react-icons/rx";
@@ -15,6 +11,11 @@ import { useApi } from "@/stores/api";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
 import { isWormholeBridge } from "./utils";
+
+import useSubmitTxnState from "@/hooks/common/useSubmitTxnState";
+import useWormHoleBridge from "@/hooks/wormhole/useWormHoleBridge";
+import useZkBridge from "@/hooks/useZkBridge";
+import BigNumber from "bignumber.js";
 
 export default function SubmitTransaction() {
   const [transactionInProgress, setTransactionInProgress] =
@@ -33,7 +34,7 @@ export default function SubmitTransaction() {
   const { selected } = useAvailAccount();
   const { address: ethAddress } = useAccount();
   const { api } = useApi();
-  const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
+  const { initEthToAvailBridging, initAvailToEthBridging } = useZkBridge();
   const { initWormholeBridge } = useWormHoleBridge();
   const { buttonStatus, isDisabled } = useSubmitTxnState(transactionInProgress);
 
@@ -54,7 +55,6 @@ export default function SubmitTransaction() {
       }
 
       setTransactionInProgress(true);
-
       switch (chainPair) {
         case ChainPairs.ETH_TO_AVAIL: {
           const blockhash = await initEthToAvailBridging({

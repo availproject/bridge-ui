@@ -31,7 +31,7 @@ import { config } from "@/config/walletConfig";
 import { useApi } from "@/stores/api";
 import { getTokenBalance } from "@/services/contract";
 
-export default function useBridge() {
+export default function useZkBridge() {
   const { activeUserAddress, validateandSwitchChain } = useEthWallet();
   const { addToLocalTransaction } = useTransactions();
   const { writeContractAsync } = useWriteContract();
