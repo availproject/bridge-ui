@@ -1,5 +1,5 @@
 import { LoadingButton } from "@/components/ui/loadingbutton";
-import useBridge from "@/hooks/useBridge";
+import useZkBridge from "@/hooks/useZkBridge";
 import useSubmitTxnState from "@/hooks/common/useSubmitTxnState";
 import { SuccessDialog, useCommonStore } from "@/stores/common";
 import { Chain } from "@/types/common";
@@ -33,7 +33,7 @@ export default function SubmitTransaction() {
   const { selected } = useAvailAccount();
   const { address: ethAddress } = useAccount();
   const { api } = useApi();
-  const { initEthToAvailBridging, initAvailToEthBridging } = useBridge();
+  const { initEthToAvailBridging, initAvailToEthBridging } = useZkBridge();
   const { initWormholeBridge } = useWormHoleBridge();
   const { buttonStatus, isDisabled } = useSubmitTxnState(transactionInProgress);
 

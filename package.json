@@ -80,7 +80,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
-    "@polkadot/types": "^11.3.1",
+    "@polkadot/types": "^10.13.1",
     "@simbathesailor/babel-plugin-use-what-changed": "^2.1.0",
     "@simbathesailor/use-what-changed": "^2.0.0",
     "@talismn/connect-wallets": "^1.2.5",
