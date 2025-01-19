@@ -31,6 +31,9 @@ import bridgeImplAbi from "@/constants/abis/bridgeImplAbi.json";
 
 import { Logger } from "@/utils/logger";
 import { checkTransactionStatus } from "./metamask/utils";
+import { getTokenBalance } from "@/services/contract";
+import BigNumber from "bignumber.js";
+import { ONE_POWER_EIGHTEEN } from "@/constants/bigNumber";
 
 export default function useClaim() {
   
@@ -238,6 +241,20 @@ export default function useClaim() {
       if (!api || !api.isConnected || !api.isReady) await ensureConnection();
       if (!api?.isReady)
         throw new Error("Uh oh! Failed to connect to Avail Api");
+
+      const availBalance = await getTokenBalance(Chain.AVAIL, selected.address, api);
+      if (!availBalance) {
+        throw new Error("Failed to fetch balance");
+      }
+      if (
+        availBalance &&
+        new BigNumber(.250).times(ONE_POWER_EIGHTEEN).gt(
+          new BigNumber(availBalance).times(ONE_POWER_EIGHTEEN)
+        )
+      ) {
+        throw new Error("insufficient avail balance");
+      }
+
 
       const ethhead = await fetchEthHead();
       if (!ethhead.data || ethhead.data.slot === 0)
