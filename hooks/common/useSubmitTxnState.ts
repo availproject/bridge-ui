@@ -33,13 +33,13 @@ export default function useSubmitTxnState(
   }, [fromAmount]);
 
   const isValidToAddress = useMemo(() => {
-    switch (fromChain) {
+    switch (toChain) {
       case Chain.AVAIL:
-        return Boolean(toAddress && validAddress(toAddress, Chain.ETH));
+        return Boolean(toAddress && validAddress(toAddress, Chain.AVAIL));
       case Chain.BASE:
-        return Boolean(toAddress && validAddress(toAddress, Chain.ETH));
+        return Boolean(toAddress && validAddress(toAddress, Chain.BASE));
       case Chain.ETH:
-        return Boolean(toAddress && (validAddress(toAddress, Chain.BASE) || validAddress(toAddress, Chain.AVAIL)));
+        return Boolean(toAddress && (validAddress(toAddress, Chain.ETH)));
       default:
         return false;
     }

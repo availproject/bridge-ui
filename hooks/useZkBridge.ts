@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import BigNumber from "bignumber.js";
 import { useAccount, useWriteContract } from "wagmi";
 import { estimateGas, readContract } from "@wagmi/core";
@@ -32,30 +32,16 @@ import { useApi } from "@/stores/api";
 import { getTokenBalance } from "@/services/contract";
 
 export default function useZkBridge() {
-  const { activeUserAddress, validateandSwitchChain } = useEthWallet();
+  const { activeUserAddress, validateandSwitchChain, getERC20AvailBalance } = useEthWallet();
   const { addToLocalTransaction } = useTransactions();
   const { writeContractAsync } = useWriteContract();
   const { selected } = useAvailAccount();
   const { address } = useAccount();
-  const {api, ensureConnection} = useApi();
+  const { api, ensureConnection } = useApi();
   const invokeSnap = useInvokeSnap();
   const networks = appConfig.networks;
 
   /** HELPER FUNCTIONS */
-  const getAvailBalanceOnEth = useCallback(async () => {
-    const balance = await readContract(config, {
-      address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-      abi: availTokenAbi,
-      functionName: "balanceOf",
-      args: [activeUserAddress],
-      chainId: networks.ethereum.id,
-    });
-
-    if (!balance) return new BigNumber(0);
-
-    //@ts-ignore TODO: P2
-    return new BigNumber(balance);
-  }, [activeUserAddress, networks.ethereum.id]);
 
   const getCurrentAllowanceOnEth = useCallback(async () => {
     try {
@@ -186,7 +172,6 @@ export default function useZkBridge() {
         throw new Error("No account selected");
 
       await validateandSwitchChain(Chain.ETH);
-
       const currentAllowance = await getCurrentAllowanceOnEth();
       if (new BigNumber(atomicAmount).gt(currentAllowance)) {
         await approveOnEth(atomicAmount);
@@ -196,7 +181,7 @@ export default function useZkBridge() {
         });
       }
 
-      const availBalance = await getAvailBalanceOnEth();
+      const availBalance = await getERC20AvailBalance(appConfig.networks.ethereum.id);
       if (new BigNumber(atomicAmount).gte(new BigNumber(availBalance))) {
         throw new Error("insufficient balance");
       }

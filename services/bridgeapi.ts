@@ -1,10 +1,12 @@
 import { appConfig } from "@/config/default";
 import { LatestBlockInfo } from "@/stores/blockinfo";
+import { LiquidityBridgeTransactionBody, PayloadResponse } from "@/types/common";
 import { AccountStorageProof, merkleProof } from "@/types/transaction";
 import { Logger } from "@/utils/logger";
 import { ApiPromise } from "avail-js-sdk";
 import axios from "axios";
 import jsonbigint from "json-bigint";
+import { ResultAsync } from "neverthrow";
 const JSONBigInt = jsonbigint({ useNativeBigInt: true });
 
 export const getMerkleProof = async (blockhash: string, index: number) => {
@@ -71,3 +73,19 @@ export async function fetchTokenPrice({
   return Number(data.price[coin][fiat]);
 };
 
+export const sendPayload = (
+    body: LiquidityBridgeTransactionBody,
+    sig: string
+  ): ResultAsync<PayloadResponse, Error> =>
+    ResultAsync.fromPromise(
+      axios.post(
+        `${appConfig.liquidityBridgeApiBaseUrl}/v1/avail_to_eth`,
+        body,
+        {
+          headers: {
+            "X-Payload-Signature": sig,
+          },
+        }
+      ),
+      (error) => new Error(`Failed to send payload: ${error}`)
+    ).map((response) => response.data);

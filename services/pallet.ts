@@ -3,8 +3,10 @@ import { ApiPromise, types, signedExtensions } from "avail-js-sdk";
 import { getWalletBySource, WalletAccount } from "@talismn/connect-wallets";
 import { executeParams, sendMessageParams } from "@/types/transaction";
 import { Logger } from "@/utils/logger";
-import { Err, Result, err, ok } from "neverthrow";
+import { Result, err, ok } from "neverthrow";
 import { ISubmittableResult, Signer } from "@polkadot/types/types";
+import { chainToAddresses } from "@/components/common/utils";
+import { Chain } from "@/types/common";
 
 export interface LegacySignerOptions {
   app_id: number;
@@ -241,7 +243,7 @@ export async function transfer(
     const txResult = await new Promise<ISubmittableResult>((resolve) => {
       api.tx.balances
         .transferKeepAlive(
-          "LIQUIDITY_BRIDGE_ADDRESS",
+          chainToAddresses(Chain.AVAIL).liquidityBridgeAddress,
           atomicAmount
         )
         .signAndSend(account.address, options, (result: ISubmittableResult) => {
@@ -285,7 +287,7 @@ export async function signMessage(
   try {
     const injector = getWalletBySource(account.source);
     console.log(injector);
-    if (!injector?.signer.signRaw) {
+    if (!injector?.signer.signPayload) {
       throw new Error(
         "Signer not available. Please ensure your wallet extension is installed and accessible."
       );
