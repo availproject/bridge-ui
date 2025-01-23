@@ -181,7 +181,7 @@ export default function useZkBridge() {
         });
       }
 
-      const availBalance = await getERC20AvailBalance(appConfig.networks.ethereum.id);
+      const availBalance = await getERC20AvailBalance(Chain.ETH);
       if (new BigNumber(atomicAmount).gte(new BigNumber(availBalance))) {
         throw new Error("insufficient balance");
       }

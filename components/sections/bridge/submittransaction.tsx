@@ -15,6 +15,7 @@ import { useApi } from "@/stores/api";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
 import { isWormholeBridge } from "./utils";
+import useLiquidityBridge from "@/hooks/useLiquidityBridge";
 
 export default function SubmitTransaction() {
   const [transactionInProgress, setTransactionInProgress] =
@@ -34,6 +35,7 @@ export default function SubmitTransaction() {
   const { address: ethAddress } = useAccount();
   const { api } = useApi();
   const { initEthToAvailBridging, initAvailToEthBridging } = useZkBridge();
+  const { initAvailToERC20AutomaticBridging, initERC20toAvailAutomaticBridging } = useLiquidityBridge();
   const { initWormholeBridge } = useWormHoleBridge();
   const { buttonStatus, isDisabled } = useSubmitTxnState(transactionInProgress);
 
@@ -108,14 +110,43 @@ export default function SubmitTransaction() {
           }
           break;
         }
-        default:
-          throw new Error("Unsupported chain combination");
-      }
+        case ChainPairs.AVAIL_TO_BASE: {
+          console.log("AVAIL TO BASE");
+          const init = await initAvailToERC20AutomaticBridging({
+            ERC20Chain: Chain.BASE,
+            atomicAmount: fromAmountAtomic,
+            destinationAddress: toAddress!,
+          });
 
+          if (init.hash) {
+            bridgeResult = {
+              chain: Chain.AVAIL,
+              hash: init.hash,
+            };
+          }
+        }
+        case ChainPairs.BASE_TO_AVAIL: {
+          console.log("BASE TO AVAIL", fromAmountAtomic, toAddress);
+          
+          const init = await initERC20toAvailAutomaticBridging({
+            ERC20Chain: Chain.BASE,
+            atomicAmount: fromAmountAtomic,
+            destinationAddress: toAddress!,
+          });
+
+          if (init.hash) {
+            bridgeResult = {
+              chain: Chain.BASE,
+              hash: init.hash,
+            };
+          }
+        }
+      }
       if (bridgeResult) {
         setDetails(bridgeResult);
         setOpenDialog(true);
       }
+      
     } catch (error: any) {
       console.error(error);
       setError(error);
