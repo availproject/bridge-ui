@@ -1,4 +1,4 @@
-import { isNumber, stringToU8a, u8aToHex } from "@polkadot/util";
+import { isNumber, stringToHex, stringToU8a, u8aToHex } from "@polkadot/util";
 import { ApiPromise, types, signedExtensions } from "avail-js-sdk";
 import { getWalletBySource, WalletAccount } from "@talismn/connect-wallets";
 import { executeParams, sendMessageParams } from "@/types/transaction";
@@ -7,6 +7,7 @@ import { Result, err, ok } from "neverthrow";
 import { ISubmittableResult, Signer } from "@polkadot/types/types";
 import { chainToAddresses } from "@/components/common/utils";
 import { Chain } from "@/types/common";
+import { cryptoWaitReady, signatureVerify } from '@polkadot/util-crypto';
 
 export interface LegacySignerOptions {
   app_id: number;
@@ -285,25 +286,31 @@ export async function signMessage(
   account: WalletAccount
 ): Promise<Result<string, Error>> {
   try {
-    const injector = getWalletBySource(account.source);
-    console.log(injector);
-    if (!injector?.signer.signPayload) {
-      throw new Error(
-        "Signer not available. Please ensure your wallet extension is installed and accessible."
-      );
+    const messageBytes = stringToU8a(message);
+    const signer = account?.wallet?.signer;
+
+    if (!signer) {
+      throw new Error("Signer does not support signing raw messages");
     }
 
-    const messageBytes = stringToU8a(message);
-    const sign = await injector.signer.signRaw({
-      address: account.address,
+    const { signature } = await signer.signRaw({
+      type: 'payload',
       data: u8aToHex(messageBytes),
-      type: "bytes",
+      address: account.address,
     });
 
-    return ok(sign.signature as string);
+    const verification = signatureVerify(u8aToHex(messageBytes), signature, account.address);
+
+    if (!verification.isValid) {
+      throw new Error("Invalid signature generated");
+    }
+
+    return ok(signature as string);
   } catch (error) {
+    console.error("Error during signing process:", error);
     return err(
       error instanceof Error ? error : new Error("Failed to sign the message")
     );
   }
 }
+
