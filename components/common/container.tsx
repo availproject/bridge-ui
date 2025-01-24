@@ -8,6 +8,8 @@ import BridgeSection from "../sections/bridge";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
 import { useTransactionsStore } from "@/stores/transactions";
+import TransactionModal from "../sections/bridge/review-section";
+import { useCommonStore } from "@/stores/common";
 
 export default function Container() {
   const [activeTab, setActiveTab] = useState("bridge");
@@ -15,6 +17,7 @@ export default function Container() {
   const { selected } = useAvailAccount();
   const { address } = useAccount();
   const { fetchAllTransactions, setTransactionLoader} = useTransactionsStore();
+  const { reviewDialog: { isOpen: isModalOpen, onOpenChange: setIsModalOpen } } = useCommonStore();
 
   useEffect(()=>{
     (async () => {
@@ -92,6 +95,7 @@ export default function Container() {
           <TransactionSection />
         </TabsContent>
       </Tabs>
+      <TransactionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }

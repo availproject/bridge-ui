@@ -1,3 +1,5 @@
+import { Badge } from "@/components/ui/badge";
+import React from "react";
 import { LoadingButton } from "@/components/ui/loadingbutton";
 import useZkBridge from "@/hooks/useZkBridge";
 import useSubmitTxnState from "@/hooks/common/useSubmitTxnState";
@@ -5,19 +7,27 @@ import { SuccessDialog, useCommonStore } from "@/stores/common";
 import { Chain } from "@/types/common";
 import { validAddress } from "@/utils/common";
 import BigNumber from "bignumber.js";
-import { use, useState } from "react";
+import { useState } from "react";
 import useWormHoleBridge from "@/hooks/wormhole/useWormHoleBridge";
 import { ChainPairs } from "./types";
 import { appConfig } from "@/config/default";
-import { RxArrowTopRight } from "react-icons/rx";
 import { useBalanceStore } from "@/stores/balances";
 import { useApi } from "@/stores/api";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
-import { isWormholeBridge } from "./utils";
 import useLiquidityBridge from "@/hooks/useLiquidityBridge";
 
-export default function SubmitTransaction() {
+interface TransactionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const TransactionModal: React.FC<TransactionModalProps> = ({
+  isOpen,
+  onClose,
+}) => {
+  if (!isOpen) return null;
+
   const [transactionInProgress, setTransactionInProgress] =
     useState<boolean>(false);
 
@@ -26,7 +36,7 @@ export default function SubmitTransaction() {
     toChain,
     fromAmount,
     toAddress,
-    successDialog: { onOpenChange: setOpenDialog, setDetails, setClaimDialog },
+    successDialog,
     errorDialog: { onOpenChange: setErrorOpenDialog, setError },
   } = useCommonStore();
 
@@ -35,14 +45,17 @@ export default function SubmitTransaction() {
   const { address: ethAddress } = useAccount();
   const { api } = useApi();
   const { initEthToAvailBridging, initAvailToEthBridging } = useZkBridge();
-  const { initAvailToERC20AutomaticBridging, initERC20toAvailAutomaticBridging } = useLiquidityBridge();
+  const {
+    initAvailToERC20AutomaticBridging,
+    initERC20toAvailAutomaticBridging,
+  } = useLiquidityBridge();
   const { initWormholeBridge } = useWormHoleBridge();
   const { buttonStatus, isDisabled } = useSubmitTxnState(transactionInProgress);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setClaimDialog(false)
-    
+    successDialog.setClaimDialog(false);
+
     try {
       let bridgeResult: SuccessDialog["details"] | null = null;
       const chainPair = `${fromChain}-${toChain}` as const;
@@ -127,7 +140,7 @@ export default function SubmitTransaction() {
         }
         case ChainPairs.BASE_TO_AVAIL: {
           console.log("BASE TO AVAIL", fromAmountAtomic, toAddress);
-          
+
           const init = await initERC20toAvailAutomaticBridging({
             ERC20Chain: Chain.BASE,
             atomicAmount: fromAmountAtomic,
@@ -143,42 +156,92 @@ export default function SubmitTransaction() {
         }
       }
       if (bridgeResult) {
-        setDetails(bridgeResult);
-        setOpenDialog(true);
+        successDialog.setDetails(bridgeResult);
+        successDialog.onOpenChange(true);
       }
-      
     } catch (error: any) {
       console.error(error);
       setError(error);
       setErrorOpenDialog(true);
     } finally {
       setTransactionInProgress(false);
+      onClose();
       await fetchBalance(
         fromChain === Chain.AVAIL ? selected?.address! : ethAddress!,
         fromChain,
         api
       );
     }
-  }
-
-    return (
-      <>
-        <LoadingButton
-          variant="primary"
-          loading={transactionInProgress}
-          onClick={handleSubmit}
-          className="!rounded-xl w-full !text-[15px] !py-8 max-md:mb-4 font-ppmori max-md:mt-4"
-          disabled={isDisabled}
-        >
-          {buttonStatus}
-        </LoadingButton>
-        {isWormholeBridge(`${fromChain}-${toChain}`) && (
-          <p className="w-full  text-white text-opacity-70 text-center text-xs">
-            Using Third Party Wormhole Bridge{" "}
-            <RxArrowTopRight className="inline-block h-4 w-3" />
-          </p>
-        )}
-      </>
-    );
   };
 
+  return (
+    <div className="absolute inset-0 z-20 mx-auto w-screen max-sm:rounded-none max-sm:!border-x-0 !max-w-xl ">
+      <div className="absolute inset-0 backdrop-blur-sm" />
+      <div className="absolute  bottom-2 left-0 right-0 flex justify-center">
+        <div className="bg-[#2B3042] !rounded-b-xl w-full p-6 space-y-6 border-t-2 border-white border-opacity-15">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl text-white font-medium font-ppmori">
+              Review Transaction Details
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+          <div className="space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Destination Gas Fee ($)</span>
+              <span className="text-white">1.66 Avail ($1.2)</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Estimated Time</span>
+              <span className="text-white">~5 minutes</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Claim Type</span>
+              <Badge variant={"avail"} className="text-white">
+                Auto
+              </Badge>
+            </div>
+
+            <div className="flex justify-between items-center pt-4">
+              <span className="text-gray-400">User will recieve</span>
+              <div className="text-right">
+                <span className="text-2xl font-semibold text-white">11.34</span>
+                <span className="text-gray-400 ml-2">Avail</span>
+              </div>
+            </div>
+          </div>
+          {/** SUBMIT TRANSACTION FLOW */}
+          <LoadingButton
+            variant="primary"
+            loading={transactionInProgress}
+            onClick={handleSubmit}
+            className="!rounded-xl w-full !text-[15px] !py-8 max-md:mb-4 font-ppmori max-md:mt-4"
+            disabled={isDisabled}
+          >
+            {buttonStatus}
+          </LoadingButton>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TransactionModal;

@@ -12,7 +12,7 @@ export default function useSubmitTxnState(
 ) {
   const account = useAccount();
   const { selected } = useAvailAccount();
-  const { fromChain, toChain, fromAmount, toAddress } = useCommonStore();
+  const { fromChain, toChain, fromAmount, toAddress, reviewDialog } = useCommonStore();
   const { balances } = useBalanceStore();
 
   const isWalletConnected = useMemo(() => {
@@ -76,9 +76,14 @@ export default function useSubmitTxnState(
     if (hasInsufficientBalance) {
       return "Insufficient Balance";
     }
-    return `Initiate bridge from ${
-      fromChain.charAt(0).toUpperCase() + fromChain.slice(1).toLowerCase()
-    } to ${toChain.charAt(0).toUpperCase() + toChain.slice(1).toLowerCase()}`;
+    if(reviewDialog.isOpen) {
+      return `Initiate bridge from ${
+        fromChain.charAt(0).toUpperCase() + fromChain.slice(1).toLowerCase()
+      } to ${toChain.charAt(0).toUpperCase() + toChain.slice(1).toLowerCase()}`;
+    }
+
+    return "Review and Confirm Transaction";
+   
   }, [
     isWalletConnected,
     isValidToAddress,
