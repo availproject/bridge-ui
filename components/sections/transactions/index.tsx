@@ -117,7 +117,7 @@ export default function TransactionSection() {
         </Tabs>
         {/* Pagination */}
         <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
-          <p className="font-thicccboisemibold text-sm text-white mr-2">
+          <span className="font-thicccboisemibold text-sm text-white mr-2">
             <HoverCard>
               <HoverCardTrigger className="cursor-pointer underline underline-offset-2 font-ppmori text-white text-opacity-80 ">
                 Can&apos;t find your transaction?
@@ -152,7 +152,7 @@ export default function TransactionSection() {
                 </div>
               </HoverCardContent>
             </HoverCard>
-          </p>
+          </span>
           <button
             disabled={currentPage === 0 || !showPagination}
             onClick={() => setCurrentPage((prev) => prev - 1)}
