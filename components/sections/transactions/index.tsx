@@ -120,10 +120,10 @@ export default function TransactionSection() {
           <p className="font-thicccboisemibold text-sm text-white mr-2">
             <HoverCard>
               <HoverCardTrigger className="cursor-pointer underline underline-offset-2 font-ppmori text-white text-opacity-80 ">
-                Can't find your transaction?
+                Can&apos;t find your transaction?
               </HoverCardTrigger>
               <HoverCardContent className="font-ppmori bg-[#282B34] text-white text-opacity-70 w-2/3">
-              <h2 className="font-ppmori text-white text-lg pb-2">Can't find your transaction?</h2>
+              <h2 className="font-ppmori text-white text-lg pb-2">Can&apos;t find your transaction?</h2>
                 <div className="font-ppmori text-white text-opacity-70 space-y-4">
                   <p className="pb-1">
                     1. After transactions are completed they will be moved to
@@ -131,8 +131,8 @@ export default function TransactionSection() {
                   </p>
                   <span className="pt-2">
                     <span>
-                      2. For all third party transactions, you'll have to track
-                      status on wormhole's explorer, sorry for the
+                      2. For all third party wormhole transactions, you&apos;ll have to track
+                      status on thier explorer, sorry for the
                       inconvenience.
                     </span>
                     <Link
