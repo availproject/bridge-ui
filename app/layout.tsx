@@ -12,7 +12,7 @@ import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: "Avail | Bridge",
-  description: "Official Avail Bridge between AVAIL and ETHEREUM",
+  description: "Official Avail Bridge between Avail and other chains",
 };
 
 export default async function RootLayout({
