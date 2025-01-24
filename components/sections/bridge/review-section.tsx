@@ -27,153 +27,153 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  if (!isOpen) return null;
-
   const [transactionInProgress, setTransactionInProgress] =
-    useState<boolean>(false);
+  useState<boolean>(false);
 
-  const {
-    fromChain,
-    toChain,
-    fromAmount,
-    toAddress,
-    successDialog,
-    errorDialog: { onOpenChange: setErrorOpenDialog, setError },
-  } = useCommonStore();
+const {
+  fromChain,
+  toChain,
+  fromAmount,
+  toAddress,
+  successDialog,
+  errorDialog: { onOpenChange: setErrorOpenDialog, setError },
+} = useCommonStore();
 
-  const { fetchBalance } = useBalanceStore();
-  const { selected } = useAvailAccount();
-  const { address: ethAddress } = useAccount();
-  const { api } = useApi();
-  const { initEthToAvailBridging, initAvailToEthBridging } = useZkBridge();
-  const {
-    initAvailToERC20AutomaticBridging,
-    initERC20toAvailAutomaticBridging,
-  } = useLiquidityBridge();
-  const { initWormholeBridge } = useWormHoleBridge();
-  const { buttonStatus, isDisabled } = useSubmitTxnState(transactionInProgress);
+const { fetchBalance } = useBalanceStore();
+const { selected } = useAvailAccount();
+const { address: ethAddress } = useAccount();
+const { api } = useApi();
+const { initEthToAvailBridging, initAvailToEthBridging } = useZkBridge();
+const {
+  initAvailToERC20AutomaticBridging,
+  initERC20toAvailAutomaticBridging,
+} = useLiquidityBridge();
+const { initWormholeBridge } = useWormHoleBridge();
+const { buttonStatus, isDisabled } = useSubmitTxnState(transactionInProgress);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    successDialog.setClaimDialog(false);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  successDialog.setClaimDialog(false);
 
-    try {
-      let bridgeResult: SuccessDialog["details"] | null = null;
-      const chainPair = `${fromChain}-${toChain}` as const;
+  try {
+    let bridgeResult: SuccessDialog["details"] | null = null;
+    const chainPair = `${fromChain}-${toChain}` as const;
 
-      const fromAmountAtomic = new BigNumber(fromAmount)
-        .multipliedBy(new BigNumber(10).pow(18))
-        .toString(10);
+    const fromAmountAtomic = new BigNumber(fromAmount)
+      .multipliedBy(new BigNumber(10).pow(18))
+      .toString(10);
 
-      if (toAddress === undefined || !validAddress(toAddress, toChain)) {
-        throw new Error("Please enter a valid address");
-      }
-
-      setTransactionInProgress(true);
-
-      switch (chainPair) {
-        case ChainPairs.ETH_TO_AVAIL: {
-          const blockhash = await initEthToAvailBridging({
-            atomicAmount: fromAmountAtomic,
-            destinationAddress: toAddress!,
-          });
-          bridgeResult = { chain: Chain.ETH, hash: blockhash };
-          break;
-        }
-        case ChainPairs.AVAIL_TO_ETH: {
-          const init = await initAvailToEthBridging({
-            atomicAmount: fromAmountAtomic,
-            destinationAddress: toAddress!,
-          });
-          if (init.txHash) {
-            bridgeResult = { chain: Chain.AVAIL, hash: init.txHash };
-          }
-          break;
-        }
-        case ChainPairs.BASE_TO_ETH: {
-          const init = await initWormholeBridge({
-            whfrom: appConfig.config === "mainnet" ? "Base" : "BaseSepolia",
-            whto: appConfig.config === "mainnet" ? "Ethereum" : "Sepolia",
-            sendAmount: fromAmount,
-            destinationAddress: toAddress!,
-            switcher: Chain.BASE,
-          });
-          if (init) {
-            bridgeResult = {
-              chain: Chain.BASE,
-              hash: init[1] ? init[1].txid : init[0].txid,
-              isWormhole: true,
-            };
-          }
-          break;
-        }
-        case ChainPairs.ETH_TO_BASE: {
-          const init = await initWormholeBridge({
-            whfrom: appConfig.config === "mainnet" ? "Ethereum" : "Sepolia",
-            whto: appConfig.config === "mainnet" ? "Base" : "BaseSepolia",
-            sendAmount: fromAmount,
-            destinationAddress: toAddress!,
-            switcher: Chain.ETH,
-          });
-          if (init) {
-            bridgeResult = {
-              chain: Chain.ETH,
-              hash: init[1] ? init[1].txid : init[0].txid,
-              isWormhole: true,
-            };
-          }
-          break;
-        }
-        case ChainPairs.AVAIL_TO_BASE: {
-          console.log("AVAIL TO BASE");
-          const init = await initAvailToERC20AutomaticBridging({
-            ERC20Chain: Chain.BASE,
-            atomicAmount: fromAmountAtomic,
-            destinationAddress: toAddress!,
-          });
-
-          if (init.hash) {
-            bridgeResult = {
-              chain: Chain.AVAIL,
-              hash: init.hash,
-            };
-          }
-        }
-        case ChainPairs.BASE_TO_AVAIL: {
-          console.log("BASE TO AVAIL", fromAmountAtomic, toAddress);
-
-          const init = await initERC20toAvailAutomaticBridging({
-            ERC20Chain: Chain.BASE,
-            atomicAmount: fromAmountAtomic,
-            destinationAddress: toAddress!,
-          });
-
-          if (init.hash) {
-            bridgeResult = {
-              chain: Chain.BASE,
-              hash: init.hash,
-            };
-          }
-        }
-      }
-      if (bridgeResult) {
-        successDialog.setDetails(bridgeResult);
-        successDialog.onOpenChange(true);
-      }
-    } catch (error: any) {
-      console.error(error);
-      setError(error);
-      setErrorOpenDialog(true);
-    } finally {
-      setTransactionInProgress(false);
-      onClose();
-      await fetchBalance(
-        fromChain === Chain.AVAIL ? selected?.address! : ethAddress!,
-        fromChain,
-        api
-      );
+    if (toAddress === undefined || !validAddress(toAddress, toChain)) {
+      throw new Error("Please enter a valid address");
     }
-  };
+
+    setTransactionInProgress(true);
+
+    switch (chainPair) {
+      case ChainPairs.ETH_TO_AVAIL: {
+        const blockhash = await initEthToAvailBridging({
+          atomicAmount: fromAmountAtomic,
+          destinationAddress: toAddress!,
+        });
+        bridgeResult = { chain: Chain.ETH, hash: blockhash };
+        break;
+      }
+      case ChainPairs.AVAIL_TO_ETH: {
+        const init = await initAvailToEthBridging({
+          atomicAmount: fromAmountAtomic,
+          destinationAddress: toAddress!,
+        });
+        if (init.txHash) {
+          bridgeResult = { chain: Chain.AVAIL, hash: init.txHash };
+        }
+        break;
+      }
+      case ChainPairs.BASE_TO_ETH: {
+        const init = await initWormholeBridge({
+          whfrom: appConfig.config === "mainnet" ? "Base" : "BaseSepolia",
+          whto: appConfig.config === "mainnet" ? "Ethereum" : "Sepolia",
+          sendAmount: fromAmount,
+          destinationAddress: toAddress!,
+          switcher: Chain.BASE,
+        });
+        if (init) {
+          bridgeResult = {
+            chain: Chain.BASE,
+            hash: init[1] ? init[1].txid : init[0].txid,
+            isWormhole: true,
+          };
+        }
+        break;
+      }
+      case ChainPairs.ETH_TO_BASE: {
+        const init = await initWormholeBridge({
+          whfrom: appConfig.config === "mainnet" ? "Ethereum" : "Sepolia",
+          whto: appConfig.config === "mainnet" ? "Base" : "BaseSepolia",
+          sendAmount: fromAmount,
+          destinationAddress: toAddress!,
+          switcher: Chain.ETH,
+        });
+        if (init) {
+          bridgeResult = {
+            chain: Chain.ETH,
+            hash: init[1] ? init[1].txid : init[0].txid,
+            isWormhole: true,
+          };
+        }
+        break;
+      }
+      case ChainPairs.AVAIL_TO_BASE: {
+        console.log("AVAIL TO BASE");
+        const init = await initAvailToERC20AutomaticBridging({
+          ERC20Chain: Chain.BASE,
+          atomicAmount: fromAmountAtomic,
+          destinationAddress: toAddress!,
+        });
+
+        if (init.hash) {
+          bridgeResult = {
+            chain: Chain.AVAIL,
+            hash: init.hash,
+          };
+        }
+      }
+      case ChainPairs.BASE_TO_AVAIL: {
+        console.log("BASE TO AVAIL", fromAmountAtomic, toAddress);
+
+        const init = await initERC20toAvailAutomaticBridging({
+          ERC20Chain: Chain.BASE,
+          atomicAmount: fromAmountAtomic,
+          destinationAddress: toAddress!,
+        });
+
+        if (init.hash) {
+          bridgeResult = {
+            chain: Chain.BASE,
+            hash: init.hash,
+          };
+        }
+      }
+    }
+    if (bridgeResult) {
+      successDialog.setDetails(bridgeResult);
+      successDialog.onOpenChange(true);
+    }
+  } catch (error: any) {
+    console.error(error);
+    setError(error);
+    setErrorOpenDialog(true);
+  } finally {
+    setTransactionInProgress(false);
+    onClose();
+    await fetchBalance(
+      fromChain === Chain.AVAIL ? selected?.address! : ethAddress!,
+      fromChain,
+      api
+    );
+  }
+};
+
+  if (!isOpen) return null;
 
   return (
     <AnimatePresence>
