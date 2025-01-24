@@ -16,6 +16,11 @@ import NoTransactions from "./notransactions";
 import { useTransactionsStore } from "@/stores/transactions";
 import { PendingTransactions } from "./pendingtransactions";
 import TxnLoading from "./loading";
+import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
+import { useAccount } from "wagmi";
+import { capitalizeFirstLetter } from "@/hooks/wormhole/helper";
+import { appConfig } from "@/config/default";
 
 export default function TransactionSection() {
   const {
@@ -25,6 +30,7 @@ export default function TransactionSection() {
     paginatedPendingTransactions,
   } = useTransactions();
   const { transactionLoader } = useTransactionsStore();
+  const { address } = useAccount();
   const [showPagination, setShowPagination] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pendingTab, setPendingTab] = useState<boolean>(true);
@@ -110,41 +116,66 @@ export default function TransactionSection() {
           )}
         </Tabs>
         {/* Pagination */}
-          <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
-            <p className="font-thicccboisemibold text-sm text-white mr-2">
-              <HoverCard>
-                <HoverCardTrigger className="cursor-pointer">
-                  <CiCircleQuestion className="w-6 h-6" />
-                </HoverCardTrigger>
-                <HoverCardContent className="font-thicccboisemibold text-white text-opacity-70">
-                  After transactions are completed they will be moved to the
-                  history section.
-                </HoverCardContent>
-              </HoverCard>
-            </p>
-            <button
-              disabled={currentPage === 0 || !showPagination}
-              onClick={() => setCurrentPage((prev) => prev - 1)}
-              className={`rounded-lg bg-[#484C5D] ${
-                currentPage === 0
-                  ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
-                  : " text-white"
-              } p-2`}
-            >
-              <ArrowLeft />
-            </button>
-            <button
-              disabled={isEndPage || !showPagination}
-              onClick={() => setCurrentPage((prev) => prev + 1)}
-              className={`rounded-lg bg-[#484C5D] ${
-                isEndPage
-                  ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
-                  : " text-white"
-              } p-2`}
-            >
-              <ArrowRight />
-            </button>
-          </div>
+        <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
+          <p className="font-thicccboisemibold text-sm text-white mr-2">
+            <HoverCard>
+              <HoverCardTrigger className="cursor-pointer underline underline-offset-2 font-ppmori text-white text-opacity-80 ">
+                Can't see your transaction?
+              </HoverCardTrigger>
+              <HoverCardContent className="font-ppmori bg-[#282B34] text-white text-opacity-70 w-2/3">
+              <h2 className="font-ppmori text-white text-lg pb-2">Can't see your transaction?</h2>
+                <div className="font-ppmori text-white text-opacity-70 space-y-4">
+                  <p className="pb-1">
+                    1. After transactions are completed they will be moved to
+                    the history section.
+                  </p>
+                  <span className="pt-2">
+                    <span>
+                      2. For all third party transactions, you'll have to track
+                      status on wormhole's explorer, sorry for the
+                      inconvenience.
+                    </span>
+                    <Link
+                      href={address ? `https://wormholescan.io/#/txs?address=${address}&network=${
+                        capitalizeFirstLetter(appConfig.config) as
+                          | "Mainnet"
+                          | "Testnet"
+                      }` : "https://wormholescan.io/"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center text-blue-400 pt-1"  
+                    >
+                      Wormhole Scan Explorer
+                      <ArrowUpRight size={16} />
+                    </Link>
+                  </span>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          </p>
+          <button
+            disabled={currentPage === 0 || !showPagination}
+            onClick={() => setCurrentPage((prev) => prev - 1)}
+            className={`rounded-lg bg-[#484C5D] ${
+              currentPage === 0
+                ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
+                : " text-white"
+            } p-2`}
+          >
+            <ArrowLeft />
+          </button>
+          <button
+            disabled={isEndPage || !showPagination}
+            onClick={() => setCurrentPage((prev) => prev + 1)}
+            className={`rounded-lg bg-[#484C5D] ${
+              isEndPage
+                ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
+                : " text-white"
+            } p-2`}
+          >
+            <ArrowRight />
+          </button>
+        </div>
       </>
     </div>
   );
