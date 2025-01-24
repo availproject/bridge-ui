@@ -120,10 +120,10 @@ export default function TransactionSection() {
           <p className="font-thicccboisemibold text-sm text-white mr-2">
             <HoverCard>
               <HoverCardTrigger className="cursor-pointer underline underline-offset-2 font-ppmori text-white text-opacity-80 ">
-                Can't see your transaction?
+                Can't find your transaction?
               </HoverCardTrigger>
               <HoverCardContent className="font-ppmori bg-[#282B34] text-white text-opacity-70 w-2/3">
-              <h2 className="font-ppmori text-white text-lg pb-2">Can't see your transaction?</h2>
+              <h2 className="font-ppmori text-white text-lg pb-2">Can't find your transaction?</h2>
                 <div className="font-ppmori text-white text-opacity-70 space-y-4">
                   <p className="pb-1">
                     1. After transactions are completed they will be moved to
