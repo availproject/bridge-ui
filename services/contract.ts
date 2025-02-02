@@ -6,6 +6,7 @@ import { Chain } from '@/types/common'
 import { parseAmount, parseAvailAmount } from '@/utils/parsers'
 import { ApiPromise } from 'avail-js-sdk'
 import { validAddress } from '@/utils/common'
+import BigNumber from 'bignumber.js'
 
 const contractAddresses = {
   [Chain.ETH]: appConfig.contracts.ethereum.availToken,
@@ -24,7 +25,12 @@ export async function getTokenBalance(chain: Chain, address: string, api?: ApiPr
   if (chain === Chain.AVAIL) {
     if (api) {
         const balance: any = await api.query.system.account(address)
-        return parseAvailAmount(balance["data"]["free"].toHuman(), 18)
+        const { free, frozen } = balance.data;
+        
+        const freeBalance = new BigNumber(free.toString());
+        const frozenBalance = new BigNumber(frozen.toString());
+        const spendableBalance = freeBalance.minus(frozenBalance);
+        return parseAvailAmount(spendableBalance.toString(), 18);
       } 
       throw new Error("API not connected")  
   }
