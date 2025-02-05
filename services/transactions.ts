@@ -98,7 +98,7 @@ export const getAllTransactions = async (
         fetchPromises.push(
             fetchWithErrorHandling(ethAddress, Chain.ETH, Chain.AVAIL),
             fetchWithErrorHandling(ethAddress, Chain.AVAIL, Chain.ETH),
-            // fetchWormholeTransactions(false, ethAddress as `0x${string}`)
+            fetchWormholeTransactions(false, ethAddress as `0x${string}`)
         );
     }
 
