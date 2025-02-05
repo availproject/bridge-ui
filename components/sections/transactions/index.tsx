@@ -126,14 +126,13 @@ export default function TransactionSection() {
               <h2 className="font-ppmori text-white text-lg pb-2">Can&apos;t find your transaction?</h2>
                 <div className="font-ppmori text-white text-opacity-70 space-y-4">
                   <p className="pb-1">
-                    1. After transactions are completed they will be moved to
+                    {">"} After transactions are completed they will be moved to
                     the history section.
                   </p>
                   <span className="pt-2">
                     <span>
-                      2. For all third party wormhole transactions, you&apos;ll have to track
-                      status on thier explorer, sorry for the
-                      inconvenience.
+                    {">"} All third party wormhole transactions might take a while to propogate, you can also track
+                      status on <span className="text-white">wormhole scan</span> in the meanwhile.
                     </span>
                     <Link
                       href={address ? `https://wormholescan.io/#/txs?address=${address}&network=${
@@ -145,7 +144,7 @@ export default function TransactionSection() {
                       rel="noopener noreferrer"
                       className="flex items-center text-blue-400 pt-1"  
                     >
-                      Wormhole Scan Explorer
+                     See your transactions
                       <ArrowUpRight size={16} />
                     </Link>
                   </span>

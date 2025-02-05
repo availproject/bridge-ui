@@ -136,8 +136,8 @@ export const fetchWormholeTransactions = async (isPolling = false, address: IAdd
 
     try {
       const response = await fetch(
-        appConfig.config === 'mainnet' ? `https://api.wormholescan.io/api/v1/operations?address=${address}&page=0&pageSize=50&sortOrder=DESC` :
-        `https://api.testnet.wormholescan.io/api/v1/operations?address=${address}&page=0&pageSize=50&sortOrder=DESC`
+        appConfig.config === 'mainnet' ? `https://api.wormholescan.io/api/v1/operations?address=${address}&page=0&pageSize=50&sortOrder=DESC&appId=&exclusiveAppId=&from=&payloadType=&sourceChain=&targetChain=&to=` :
+        `https://api.testnet.wormholescan.io/api/v1/operations?address=${address}&page=0&pageSize=50&sortOrder=DESC&appId=&exclusiveAppId=&from=&payloadType=&sourceChain=&targetChain=&to=`
       );
       
       if (!response.ok) throw new Error('Failed to fetch transactions');
@@ -154,7 +154,7 @@ export const fetchWormholeTransactions = async (isPolling = false, address: IAdd
           );
         })
         .map((tx: WormholeTransaction) => ({
-          status: tx.targetChain?.transaction?.txHash 
+          status: tx.targetChain
             ? TransactionStatus.CLAIMED 
             : TransactionStatus.BRIDGED,
           sourceChain: mapChainIdToEnum(tx.sourceChain.chainId),
