@@ -131,8 +131,8 @@ export default function TransactionSection() {
                   </p>
                   <span className="pt-2">
                     <span>
-                    {">"} All third party wormhole transactions might take a while propogate, you can also track
-                      status on thier own explorer
+                    {">"} All third party wormhole transactions might take a while to propogate, you can also track
+                      status on <span className="text-white">wormhole scan</span> in the meanwhile.
                     </span>
                     <Link
                       href={address ? `https://wormholescan.io/#/txs?address=${address}&network=${
@@ -144,7 +144,7 @@ export default function TransactionSection() {
                       rel="noopener noreferrer"
                       className="flex items-center text-blue-400 pt-1"  
                     >
-                      Wormhole Scan Explorer
+                     See your transactions
                       <ArrowUpRight size={16} />
                     </Link>
                   </span>
