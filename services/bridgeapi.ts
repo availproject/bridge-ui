@@ -74,12 +74,13 @@ export async function fetchTokenPrice({
 };
 
 export const sendPayload = (
-    body: LiquidityBridgeTransactionBody,
-    sig: string
+    body: string,
+    sig: string,
+    direction: string
   ): ResultAsync<PayloadResponse, Error> =>
     ResultAsync.fromPromise(
       axios.post(
-        `${appConfig.liquidityBridgeApiBaseUrl}/v1/avail_to_eth`,
+        `${appConfig.liquidityBridgeApiBaseUrl}/v1/${direction}`,
         body,
         {
           headers: {
@@ -89,3 +90,16 @@ export const sendPayload = (
       ),
       (error) => new Error(`Failed to send payload: ${error}`)
     ).map((response) => response.data);
+
+export interface ReviewResponse {
+  avail_to_eth_fee: string;
+  time: number
+  eth_to_avail_fee: string;
+}
+
+export const reviewTxn = (atomicAmount: string) : ResultAsync<ReviewResponse, Error> => {
+  return ResultAsync.fromPromise(
+    axios.get(`${appConfig.liquidityBridgeApiBaseUrl}/v1/review_transaction/${atomicAmount}`),
+    (error) => new Error(`Failed to review transaction: ${error}`)
+  ).map((response) => response.data);
+}

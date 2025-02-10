@@ -41,6 +41,8 @@ export function getHref(chain: Chain, txnHash: string) {
   }
 }
 
+export const fromBridgeHex = (hex: string) => parseInt(hex.toLowerCase().replace('0x', '').padStart(16, '0'), 16).toString();
+
 export const getStatusTime = ({
   from,
   to,

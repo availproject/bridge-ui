@@ -291,16 +291,16 @@ export async function signMessage(
 
     if (!signer) {
       throw new Error("Signer does not support signing raw messages");
-    }
+    } 
 
+    const hexMessage = u8aToHex(messageBytes);
     const { signature } = await signer.signRaw({
       type: 'payload',
-      data: u8aToHex(messageBytes),
+      data: hexMessage,
       address: account.address,
     });
 
-    const verification = signatureVerify(u8aToHex(messageBytes), signature, account.address);
-
+    const verification = signatureVerify(hexMessage, signature, account.address);
     if (!verification.isValid) {
       throw new Error("Invalid signature generated");
     }

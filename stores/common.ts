@@ -39,7 +39,8 @@ interface CommonStore {
   successDialog: SuccessDialog;
   errorDialog: ErrorDialog;
   reviewDialog: DialogBase;
-  setReviewDialog: (open: boolean) => void;
+  enableAutoClaimFlows: boolean;
+  setEnableAutoClaimFlows: (enable: boolean) => void;
 }
 
 export const useCommonStore = create<CommonStore>((set) => ({
@@ -97,8 +98,8 @@ export const useCommonStore = create<CommonStore>((set) => ({
         reviewDialog: { ...state.reviewDialog, isOpen: open },
       })),
   },
-  setReviewDialog: (open: boolean) =>
-    set((state) => ({
-      reviewDialog: { ...state.reviewDialog, isOpen: open },
-    })),
+
+  enableAutoClaimFlows: false,
+  setEnableAutoClaimFlows: (enable) =>
+    set((state) => ({ enableAutoClaimFlows: enable })),
 }));
