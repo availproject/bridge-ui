@@ -1,10 +1,12 @@
 import { appConfig } from "@/config/default";
 import { LatestBlockInfo } from "@/stores/blockinfo";
+import { LiquidityBridgeTransactionBody, PayloadResponse } from "@/types/common";
 import { AccountStorageProof, merkleProof } from "@/types/transaction";
 import { Logger } from "@/utils/logger";
 import { ApiPromise } from "avail-js-sdk";
 import axios from "axios";
 import jsonbigint from "json-bigint";
+import { ResultAsync } from "neverthrow";
 const JSONBigInt = jsonbigint({ useNativeBigInt: true });
 
 export const getMerkleProof = async (blockhash: string, index: number) => {
@@ -71,3 +73,33 @@ export async function fetchTokenPrice({
   return Number(data.price[coin][fiat]);
 };
 
+export const sendPayload = (
+    body: string,
+    sig: string,
+    direction: string
+  ): ResultAsync<PayloadResponse, Error> =>
+    ResultAsync.fromPromise(
+      axios.post(
+        `${appConfig.liquidityBridgeApiBaseUrl}/v1/${direction}`,
+        body,
+        {
+          headers: {
+            "X-Payload-Signature": sig,
+          },
+        }
+      ),
+      (error) => new Error(`Failed to send payload: ${error}`)
+    ).map((response) => response.data);
+
+export interface ReviewResponse {
+  avail_to_eth_fee: string;
+  time: number
+  eth_to_avail_fee: string;
+}
+
+export const reviewTxn = (atomicAmount: string) : ResultAsync<ReviewResponse, Error> => {
+  return ResultAsync.fromPromise(
+    axios.get(`${appConfig.liquidityBridgeApiBaseUrl}/v1/review_transaction/${atomicAmount}`),
+    (error) => new Error(`Failed to review transaction: ${error}`)
+  ).map((response) => response.data);
+}
