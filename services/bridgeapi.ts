@@ -9,6 +9,9 @@ import jsonbigint from "json-bigint";
 import { ResultAsync } from "neverthrow";
 const JSONBigInt = jsonbigint({ useNativeBigInt: true });
 
+
+const trim0x = (value: string) => value.startsWith('0x') ? value.slice(2) : value
+
 export const getMerkleProof = async (blockhash: string, index: number) => {
   const response = await axios.get(`${appConfig.bridgeApiBaseUrl}/eth/proof/${blockhash}`, {
     params: { index },
@@ -76,7 +79,8 @@ export async function fetchTokenPrice({
 export const sendPayload = (
     body: string,
     sig: string,
-    direction: string
+    direction: string,
+    publicKey?: string
   ): ResultAsync<PayloadResponse, Error> =>
     ResultAsync.fromPromise(
       axios.post(
@@ -85,6 +89,7 @@ export const sendPayload = (
         {
           headers: {
             "X-Payload-Signature": sig,
+            ...(publicKey && { "X-Public-Key": trim0x(publicKey) }),
           },
         }
       ),

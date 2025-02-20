@@ -13,16 +13,19 @@ import { substrateAddressToPublicKey } from "@/utils/common";
 import BigNumber from "bignumber.js";
 import useEthWallet from "./common/useEthWallet";
 import { chainToAddresses } from "@/components/common/utils";
-import { waitForTransactionReceipt, writeContract } from "@wagmi/core";
+import { verifyMessage, waitForTransactionReceipt, writeContract } from "@wagmi/core";
 import { config } from "@/config/walletConfig";
 import availTokenAbi from "@/constants/abis/availTokenAbi.json";
-
+import { signMessage as personalSign } from '@wagmi/core'
+import { hashMessage, recoverPublicKey } from "viem";
+import { publicKeyToAddress } from "viem/accounts";
+ 
 export default function useLiquidityBridge() {
   const { selected } = useAvailAccount();
   const { api, ensureConnection } = useApi();
   const { activeUserAddress, validateandSwitchChain, getERC20AvailBalance } = useEthWallet();
 
-  interface ILiquidtyBridgeParams {
+  interface ILiquidityBridgeParams {
     ERC20Chain: Chain;
     atomicAmount: string;
     destinationAddress: string;
@@ -51,19 +54,27 @@ export default function useLiquidityBridge() {
       throw error
     }
   }
+  const toHex = (num: string | number | bigint | boolean) => '0x' + BigInt(num).toString(16).toUpperCase();
+
+  const encodePayload = (payload: Record<string, any>): string => {
+    const jsonString = JSON.stringify(payload);
+    let encoded = Buffer.from(jsonString).toString('base64');
+    return encoded;
+  };
 
   /** BRIDGING FLOWS */
   const initERC20toAvailAutomaticBridging = async ({
     ERC20Chain,
     atomicAmount,
     destinationAddress,
-  }: ILiquidtyBridgeParams) => {
+  }: ILiquidityBridgeParams) => {
     /**
      * 1. initial checks
      * 2. balance transfer to pool account
-     * 3. use blockhash, tx_index and other fields to form a payload
-     * 4. generate signature (X-Payload-Signature to the ECDSA signature)
-     * 5. send payload at /v1/eth_to_avail
+     * 3. use blockhash, tx_index and other fields to form a payload and encode it
+     * 4. generate signature (X-Payload-Signature to the ECDSA signature) and verify it
+     * 5. generate public key from signature and verify it
+     * 5. send payload at /v1/eth_to_avail 
      */
 
     try {
@@ -81,22 +92,58 @@ export default function useLiquidityBridge() {
 
       const payload = {
         sender_address: activeUserAddress,
-        tx_index: 1,
-        block_hash: hash.blockhash,
-        eth_receiver_address: destinationAddress,
-        amount: atomicAmount,
+        tx_hash: hash.txnHash,
+        avl_receiver_address: destinationAddress,
+        amount: toHex(atomicAmount),
       };
+      const encodedPayload: `0x${string}` = `0x${encodePayload(payload)}`;
 
-      console.log('Payload:', payload)
+      console.log("Payload: ", payload, encodedPayload);
 
+      const sig = await personalSign(config, {
+        message: {raw: encodedPayload}, 
+      })
+      if (!sig) {
+        throw new Error("Failed to sign payload")
+      }
 
-      return {  
+      console.log("Signature: ", sig)
+
+      const isValid = await verifyMessage(config,{ 
+        address: activeUserAddress,
+        message: encodedPayload,
+        signature: sig,
+      })
+      if (!isValid) {
+        throw new Error("Invalid Signature")
+      }
+
+      console.log("Signature: ", isValid, sig)
+
+      const publicKey = await recoverPublicKey({
+        hash: hashMessage(encodedPayload),
+        signature: sig
+      })
+      const address = publicKeyToAddress(publicKey)
+      if (!publicKey) {
+        throw new Error("Failed to recover public key")
+      }
+
+      console.log("Public Key: ", publicKey)
+      console.log("Address of pub key: ", address)
+      
+      const response = await sendPayload(encodePayload(payload), sig, "eth_to_avail", publicKey);
+      if (response.isErr()) {
+        throw new Error(` ${response.error} : Failed to send payload`);
+      }
+
+      return {
         chain: ERC20Chain,
         hash: hash.txnHash
       }
 
-    } catch (error) {
-      throw new Error(`Failed to bridge from ${ERC20Chain} to Avail: ${error}`);
+    } catch (error: any) {
+      throw new Error(`Failed to bridge from ${ERC20Chain} to Avail: ${error.message}`);
     }
   };
 
@@ -104,7 +151,7 @@ export default function useLiquidityBridge() {
     ERC20Chain,
     atomicAmount,
     destinationAddress,
-  }: ILiquidtyBridgeParams) => {
+  }: ILiquidityBridgeParams) => {
     /**
      * 0. initial checks
      * 1. balance transfer to pool account
@@ -154,15 +201,16 @@ export default function useLiquidityBridge() {
         tx_index: result.value.txIndex,
         block_hash: result.value.blockhash,
         eth_receiver_address: destinationAddress,
-        amount: atomicAmount,
+        amount: toHex(atomicAmount),
       };
 
-      const sig = await signMessage(JSON.stringify(payload), selected);
+      const sig = await signMessage(encodePayload(payload), selected);
       if (sig.isErr()) {
         throw new Error(`${sig.error} : Failed to sign payload`);
       }
-
-      const response = await sendPayload(payload, sig.value);
+      
+      //NOTE: to be passed as base64 encoded string
+      const response = await sendPayload(encodePayload(payload), sig.value, "avail_to_eth");
       if (response.isErr()) {
         throw new Error(` ${response.error} : Failed to send payload`);
       }
