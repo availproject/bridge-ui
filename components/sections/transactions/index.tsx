@@ -131,7 +131,7 @@ export default function TransactionSection() {
                   </p>
                   <span className="pt-2">
                     <span>
-                    {">"} All third party wormhole transactions might take a while to propogate, you can also track
+                    {">"} All third party wormhole transactions might take a while to propagate, you can also track
                       status on <span className="text-white">wormhole scan</span> in the meanwhile.
                     </span>
                     <Link
