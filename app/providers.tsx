@@ -36,7 +36,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
        await fetchDollarAmount();
-
+ 
       const interval = setInterval(async () => {
         await fetchDollarAmount();
       }, 30000);
