@@ -13,6 +13,11 @@ export enum TransactionStatus {
   CLAIM_PENDING = "PENDING",
 }
 
+export enum TransactionResponseType {
+  AVAIL_SEND = "availSend",
+  ETH_SEND = "ethSend"
+}
+
 export interface ethBalance {
   decimals: number;
   formatted: string;

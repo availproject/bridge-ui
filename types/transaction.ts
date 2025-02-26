@@ -77,25 +77,18 @@ export interface sendMessageParams {
 }
 
 export interface Transaction {
-  status: TransactionStatus,
-  destinationChain: Chain,
-  messageId?: number,
-  sourceChain: Chain,
-  amount: string,
-  dataType?: "ERC20",
-  depositorAddress: `0x${string}` | string,
-  receiverAddress: string,
-  sourceBlockHash?: `${string}`,
-  sourceBlockNumber?: number,
-  sourceTransactionHash: `0x${string}`,
-  sourceTransactionIndex?: number,
-  sourceTimestamp: string
-  sourceTokenAddress?: `0x${string}`;
-  destinationTransactionHash?: `0x${string}` | string;
-  destinationTransactionBlockNumber?: number;
-  destinationTransactionTimestamp?: number;
-  destinationTransactionIndex?: number;
-  destinationTokenAddress?: `0x${string}`;
-  message?: string;
-  blockHash?: `0x${string}`;
+    amount: string,
+    depositorAddress: string,
+    destinationBlockHash?: string,
+    destinationBlockNumber?: number,
+    destinationTimestamp?: string,
+    messageId: number,
+    receiverAddress: string,
+    sourceBlockHash: string,
+    sourceBlockNumber: number,
+    sourceTimestamp: string,
+    sourceTransactionHash: string,
+    sourceTransactionIndex?: number,
+    status: TransactionStatus,
+    tokenId: string
 }
