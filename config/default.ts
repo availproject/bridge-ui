@@ -66,7 +66,7 @@ export const appConfig: AppConfig = {
             },
         },
         base: {
-            liquidityBridgeAddress: process.env.NEXT_PUBLIC_LP_ADDRESS_BASE || '',
+            liquidityBridgeAddress: process.env.NEXT_PUBLIC_LP_ADDRESS_BASE || '0xB5449eB18eD134368dE025Fa0F96A57F68Efe102',
             availToken: process.env.NEXT_PUBLIC_AVAIL_TOKEN_BASE || '0xf50F2B4D58ce2A24b62e480d795A974eD0f77A58',
             manager: process.env.NEXT_PUBLIC_MANAGER_ADDRESS_BASE || "0xf4B55457fCD2b6eF6ffd41E5F5b0D65fbE370EA3",
             transceiver: {
@@ -75,7 +75,7 @@ export const appConfig: AppConfig = {
             },
          },
       avail: {
-        liquidityBridgeAddress: process.env.NEXT_PUBLIC_LP_ADDRESS_AVAIL || '5GppC9pNvTafpCD86gAYxAJPZtLuYkNixFvzByoP1wPg5qKa',
+        liquidityBridgeAddress: process.env.NEXT_PUBLIC_LP_ADDRESS_AVAIL || '5GRTs4qaBTcZEYZMkn4juFbkmfeVLBRWXQCyXdNVuWmxrshN',
       }
     }
 };

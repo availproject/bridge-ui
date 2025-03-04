@@ -4,6 +4,7 @@ import { Transaction } from "@/types/transaction";
 import { Chain } from "@/types/common";
 import { Logger } from "@/utils/logger";
 import { fetchWormholeTransactions } from "@/hooks/wormhole/helper";
+import { fetchAllLiquidityBridgeTransactions } from "./bridgeapi";
 
 const indexerInstance = axios.create({
     baseURL: appConfig.bridgeIndexerBaseUrl,
@@ -98,14 +99,16 @@ export const getAllTransactions = async (
         fetchPromises.push(
             fetchWithErrorHandling(ethAddress, Chain.ETH, Chain.AVAIL),
             fetchWithErrorHandling(ethAddress, Chain.AVAIL, Chain.ETH),
-            // fetchWormholeTransactions(false, ethAddress as `0x${string}`)
+            fetchWormholeTransactions(false, ethAddress as `0x${string}`),
+            fetchAllLiquidityBridgeTransactions(false, ethAddress as `0x${string}`)
         );
     }
 
     if (availAddress) {
         fetchPromises.push(
             fetchWithErrorHandling(availAddress, Chain.AVAIL, Chain.ETH),
-            fetchWithErrorHandling(availAddress, Chain.ETH, Chain.AVAIL)
+            fetchWithErrorHandling(availAddress, Chain.ETH, Chain.AVAIL),
+            fetchAllLiquidityBridgeTransactions(false, availAddress as `0x${string}`)
         );
     }
 

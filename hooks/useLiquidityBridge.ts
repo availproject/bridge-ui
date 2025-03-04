@@ -96,12 +96,12 @@ export default function useLiquidityBridge() {
         avl_receiver_address: destinationAddress,
         amount: toHex(atomicAmount),
       };
-      const encodedPayload: `0x${string}` = `0x${encodePayload(payload)}`;
+      const encodedPayload = encodePayload(payload);
 
       console.log("Payload: ", payload, encodedPayload);
 
       const sig = await personalSign(config, {
-        message: {raw: encodedPayload}, 
+        message: encodedPayload, 
       })
       if (!sig) {
         throw new Error("Failed to sign payload")
@@ -121,6 +121,7 @@ export default function useLiquidityBridge() {
       console.log("Signature: ", isValid, sig)
 
       const publicKey = await recoverPublicKey({
+        //if not hashed the ethereum way it can't recover the right address and pub key
         hash: hashMessage(encodedPayload),
         signature: sig
       })

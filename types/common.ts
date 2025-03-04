@@ -11,6 +11,7 @@ export enum TransactionStatus {
   CLAIMED = "CLAIMED",
   FAILED = "FAILED",
   CLAIM_PENDING = "PENDING",
+  PENDING = "PENDING",
 }
 
 export interface ethBalance {

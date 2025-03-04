@@ -8,7 +8,7 @@ import BridgeSection from "../sections/bridge";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
 import { useTransactionsStore } from "@/stores/transactions";
-import TransactionModal from "../sections/bridge/review-section";
+import TransactionModal from "../sections/bridge/review-and-submit";
 import { useCommonStore } from "@/stores/common";
 import AdvancedSettings from "./settings";
 

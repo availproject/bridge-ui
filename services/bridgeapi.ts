@@ -1,9 +1,11 @@
 import { appConfig } from "@/config/default";
+import { IAddress } from "@/hooks/wormhole/helper";
 import { LatestBlockInfo } from "@/stores/blockinfo";
-import { LiquidityBridgeTransactionBody, PayloadResponse } from "@/types/common";
-import { AccountStorageProof, merkleProof } from "@/types/transaction";
+import { Chain, LiquidityBridgeTransactionBody, PayloadResponse, TransactionStatus } from "@/types/common";
+import { AccountStorageProof, merkleProof, Transaction } from "@/types/transaction";
+import { validAddress } from "@/utils/common";
 import { Logger } from "@/utils/logger";
-import { ApiPromise } from "avail-js-sdk";
+import { ApiPromise, isValidAddress } from "avail-js-sdk";
 import axios from "axios";
 import jsonbigint from "json-bigint";
 import { ResultAsync } from "neverthrow";
@@ -88,12 +90,12 @@ export const sendPayload = (
         body,
         {
           headers: {
-            "X-Payload-Signature": sig,
+            "X-Payload-Signature": trim0x(sig),
             ...(publicKey && { "X-Public-Key": trim0x(publicKey) }),
           },
         }
       ),
-      (error) => new Error(`Failed to send payload: ${error}`)
+      (error: any) => new Error(`Failed to send payload: ${error.message}`)
     ).map((response) => response.data);
 
 export interface ReviewResponse {
@@ -108,3 +110,90 @@ export const reviewTxn = (atomicAmount: string) : ResultAsync<ReviewResponse, Er
     (error) => new Error(`Failed to review transaction: ${error}`)
   ).map((response) => response.data);
 }
+
+export const fetchAvailToERC20AvailTransactions = async (address: IAddress | string): Promise<Transaction[]> => {
+  if (!isValidAddress(address)) {
+    return [];
+  }
+
+  try {
+    const response = await fetch(
+      `${appConfig.liquidityBridgeApiBaseUrl}/v1/avail_to_eth/status?sender_address=${address}`
+    );
+
+    if (!response.ok) throw new Error('Failed to fetch Avail to ETH transactions');
+    const transactions = await response.json();
+
+    console.log('transactions:', transactions);
+
+    return transactions.map((tx: any) => ({
+      status: tx.status === 'Bridged' ? TransactionStatus.CLAIMED : TransactionStatus.PENDING,
+      sourceChain: Chain.AVAIL,
+      //@luka-ethernal need to get this back from the api as well, no way to handle this on the FE, for multiple ERC20 chains
+      destinationChain: Chain.BASE,
+      amount: tx.amount,
+      depositorAddress: tx.sender_address,
+      receiverAddress: tx.eth_receiver_address,
+      sourceTransactionHash: tx.block_hash,
+      sourceTimestamp: new Date(tx.created_at).getTime(),
+      destinationTransactionHash: tx.bridged_tx_hash || undefined,
+      destinationTransactionTimestamp: tx.completed_at 
+        ? new Date(tx.completed_at).getTime() 
+        : undefined
+    })) as Transaction[];
+
+  } catch (err) {
+    throw err;
+  }
+};
+
+export const fetchERC20AvailToAvailTransactions = async (address: IAddress): Promise<Transaction[]> => {
+  if (!validAddress(address, Chain.ETH)) {
+    return [];
+  }
+
+  try {
+    const response = await fetch(
+      `${appConfig.liquidityBridgeApiBaseUrl}/v1/eth_to_avail/status?sender_address=${address}`
+    );
+
+    if (!response.ok) throw new Error('Failed to fetch ETH to Avail transactions');
+    
+    const transactions = await response.json();
+
+    return transactions.map((tx: any) => ({
+      status: tx.status === 'Bridged' ? TransactionStatus.CLAIMED : TransactionStatus.PENDING,
+      sourceChain: Chain.BASE,
+      destinationChain: Chain.AVAIL,
+      amount: tx.amount,
+      depositorAddress: tx.sender_public_key,
+      receiverAddress: tx.avl_receiver_address,
+      sourceTransactionHash: tx.tx_hash,
+      sourceTimestamp: new Date(tx.created_at).getTime(),
+      destinationTransactionHash: tx.bridged_block_hash || undefined,
+      destinationTransactionTimestamp: tx.completed_at 
+        ? new Date(tx.completed_at).getTime() 
+        : undefined
+    })) as Transaction[];
+
+  } catch (err) {
+    throw err;
+  }
+};
+
+export const fetchAllLiquidityBridgeTransactions = async (isPolling = false, address?: IAddress): Promise<Transaction[]> => {
+  if (!address) {
+    return [];
+  }
+
+  try {
+    const [availToEthTxs, ethToAvailTxs] = await Promise.all([
+      fetchAvailToERC20AvailTransactions(address),
+      fetchERC20AvailToAvailTransactions(address)
+    ]);
+
+    return [...availToEthTxs, ...ethToAvailTxs];
+  } catch (err) {
+    throw err;
+  }
+};

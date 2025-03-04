@@ -1,5 +1,5 @@
 
-import SubmitTransaction from "./submit-transaction";
+import SubmitTransaction from "./submit-button";
 import FromField from "./fromfield";
 import ToField from "./tofield";
 import ChainSwapBtn from "../../chainselector/chainswapbtn";
