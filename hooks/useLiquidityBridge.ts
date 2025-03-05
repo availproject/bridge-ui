@@ -47,7 +47,7 @@ export default function useLiquidityBridge() {
 
       return {
         txnHash: hash,
-        blockhash: (transactionReceipt).blockHash
+        blockhash: (transactionReceipt).blockHash,
       }
     } catch (error) {
       console.error('Transfer To Liquidity Bridge Failed:', error)
@@ -140,7 +140,8 @@ export default function useLiquidityBridge() {
 
       return {
         chain: ERC20Chain,
-        hash: hash.txnHash
+        hash: hash.txnHash,
+        id: response.value.id
       }
 
     } catch (error: any) {
@@ -219,6 +220,7 @@ export default function useLiquidityBridge() {
       return {
         chain: Chain.AVAIL,
         hash: result.value.txHash,
+        id: response.value.id
       };
     } catch (error) {
       throw new Error(`Failed to bridge from Avail to ${ERC20Chain}: ${error}`);

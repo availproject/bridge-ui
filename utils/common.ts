@@ -28,14 +28,15 @@ export function validAddress(address: string, chain: Chain) {
   return isAddress(address);
 }
 
-export function getHref(chain: Chain, txnHash: string) {
+export function getHref(chain: Chain, hash: string, isBlockHash?: boolean) {
   switch (chain) {
     case Chain.AVAIL:
-      return `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${txnHash}`
+      isBlockHash 
+      return isBlockHash ? `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/block/${hash}` : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${hash}`
     case Chain.ETH:
-      return `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${txnHash}`
+      return `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${hash}`
     case Chain.BASE:
-      return `${process.env.NEXT_PUBLIC_BASE_EXPLORER_URL}/tx/${txnHash}`
+      return `${process.env.NEXT_PUBLIC_BASE_EXPLORER_URL}/tx/${hash}`
     default:
       throw new Error(`Unsupported chain: ${chain}`)
   }

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { RxArrowTopRight } from "react-icons/rx";
 import { isWormholeBridge } from "./utils";
 
-export default function SubmitTransaction() {
+export default function ReviewButton() {
   const [transactionInProgress, setTransactionInProgress] =
     useState<boolean>(false);
 
@@ -16,13 +16,10 @@ export default function SubmitTransaction() {
   } = useCommonStore();
   const { buttonStatus, isDisabled } = useSubmitTxnState(transactionInProgress);
 
-
-
   const handleReview = (e: React.FormEvent) => {
     e.preventDefault();
     setShowReviewModal(true);
   };
-
 
     return (
       <>

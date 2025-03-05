@@ -1,8 +1,8 @@
 
-import SubmitTransaction from "./submit-button";
 import FromField from "./fromfield";
 import ToField from "./tofield";
 import ChainSwapBtn from "../../chainselector/chainswapbtn";
+import ReviewButton from "./review-btn";
 
 export default function BridgeSection() {
 
@@ -12,7 +12,7 @@ export default function BridgeSection() {
         <FromField/>
         <ChainSwapBtn/>
         <ToField />
-        <SubmitTransaction />
+        <ReviewButton />
       </div>
     </div>
   );

@@ -20,12 +20,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ReviewResponse, reviewTxn } from "@/services/bridgeapi";
 import Loader from "@/components/common/loader";
 import { parseAvailAmount } from "@/utils/parsers";
+import { Clock } from "lucide-react";
 
 interface TransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
 const TransactionModal: React.FC<TransactionModalProps> = ({
   isOpen,
   onClose,
@@ -157,12 +157,13 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
             bridgeResult = {
               chain: Chain.AVAIL,
               hash: init.hash,
+              id: init.id,
+              isLiquidityBridge: true
             };
           }
           break;
         }
         case ChainPairs.BASE_TO_AVAIL: {
-          console.log("BASE TO AVAIL", fromAmountAtomic, toAddress);
 
           const init = await initERC20toAvailAutomaticBridging({
             ERC20Chain: Chain.BASE,
@@ -171,10 +172,11 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
           });
 
           if (init.hash) {
-            console.log("BASE TO AVAIL", init.hash);
             bridgeResult = {
               chain: Chain.BASE,
               hash: init.hash,
+              id: init.id,
+              isLiquidityBridge: true
             };
           }
           break;
@@ -259,7 +261,10 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
 
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Estimated Time</span>
-                    <span className="text-white">{details.time}</span>
+                    <div className="flex items-center space-x-2">
+                      <Clock className="h-4 w-4 text-white" />
+                      <span className="text-white">~5 minutes</span>
+                    </div>
                   </div>
 
                   <div className="flex justify-between items-center">
@@ -270,12 +275,26 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
                   </div>
 
                   <div className="flex justify-between items-center pt-4">
-                    <span className="text-gray-400">User will recieve</span>
+                    <span className="text-gray-400">User will receive</span>
                     <div className="text-right">
                       <span className="text-2xl font-semibold text-white">
-                        11.34
+                        {toChain === Chain.AVAIL
+                          ? parseAvailAmount(
+                              new BigNumber(fromAmount).multipliedBy(10 ** 18)
+                                .minus(fromBridgeHex(details.eth_to_avail_fee))
+                                .toString(),
+                              18,
+                              6
+                            )
+                          : parseAvailAmount(
+                              new BigNumber(fromAmount).multipliedBy(10 ** 18)
+                                .minus(fromBridgeHex(details.avail_to_eth_fee))
+                                .toString(),
+                              18,
+                              6
+                            )}
                       </span>
-                      <span className="text-gray-400 ml-2">Avail</span>
+                      <span className="text-gray-400 ml-2">AVAIL</span>
                     </div>
                   </div>
                 </div>

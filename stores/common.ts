@@ -10,11 +10,19 @@ interface DialogBase {
 }
 
 export interface SuccessDialog extends DialogBase {
-  details: { chain: Chain; hash: string; isWormhole?: boolean } | null;
+  details: {
+    chain: Chain;
+    hash: string;
+    isWormhole?: boolean;
+    isLiquidityBridge?: boolean;
+    id?: number;
+  } | null;
   setDetails: (details: {
     chain: Chain;
     hash: string;
     isWormhole?: boolean;
+    isLiquidityBridge?: boolean;
+    id?: number;
   }) => void;
   claimDialog: boolean;
   setClaimDialog: (claimDialog: boolean) => void;
