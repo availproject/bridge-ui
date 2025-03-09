@@ -89,7 +89,7 @@ const DestinationStatus = () => {
                   <>
                  <Link href={getHref(toChain, liquidityClaimTxn ?? "0x", toChain === Chain.AVAIL)} className="text-white text-opacity-70 text-md underline" target="_blank">Destination Txn</Link><ArrowUpRight className="h-5 w-6 text-white text-opacity-70" /> </>
                 ) : (
-                  <StatusBadge txnStatus={getLiquidityBridgeStatus(liquidityStatus)} />
+               <StatusBadge txnStatus={getLiquidityBridgeStatus(liquidityStatus)} />
                 )}
               </div>
             </TooltipTrigger>

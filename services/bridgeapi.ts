@@ -111,14 +111,14 @@ export const reviewTxn = (atomicAmount: string) : ResultAsync<ReviewResponse, Er
   ).map((response) => response.data);
 }
 
-export const fetchAvailToERC20AvailTransactions = async (address: IAddress | string): Promise<Transaction[]> => {
-  if (!isValidAddress(address)) {
+export const fetchAvailToEVMTransactions = async (availAddress: string): Promise<Transaction[]> => {
+  if (!isValidAddress(availAddress)) {
     return [];
   }
 
   try {
     const response = await fetch(
-      `${appConfig.liquidityBridgeApiBaseUrl}/v1/avail_to_eth/status?sender_address=${address}`
+      `${appConfig.liquidityBridgeApiBaseUrl}/v1/avail_to_eth/status?sender_address=${availAddress}`
     );
 
     if (!response.ok) throw new Error('Failed to fetch Avail to ETH transactions');
@@ -126,15 +126,31 @@ export const fetchAvailToERC20AvailTransactions = async (address: IAddress | str
 
     console.log('transactions:', transactions);
 
-    return transactions.map((tx: any) => ({
+  interface IAvailtoEVMResponse {
+  amount: string;
+  amount_transferred: string;
+  bridged_tx_hash: string;
+  completed_at: string;
+  created_at: string;
+  id: number;
+  receiver_hash: string;
+  sender_hash: string;
+  source_block_hash: string;
+  status: string;
+  tx_index: number;
+}
+
+    return transactions.map((tx: IAvailtoEVMResponse) => ({
       status: tx.status === 'Bridged' ? TransactionStatus.CLAIMED : TransactionStatus.PENDING,
       sourceChain: Chain.AVAIL,
       //@luka-ethernal need to get this back from the api as well, no way to handle this on the FE, for multiple ERC20 chains
       destinationChain: Chain.BASE,
       amount: tx.amount,
-      depositorAddress: tx.sender_address,
-      receiverAddress: tx.eth_receiver_address,
-      sourceTransactionHash: tx.block_hash,
+      depositorAddress: tx.sender_hash, //this is not ss58, convert pub key to ss58
+      receiverAddress: tx.receiver_hash,
+      //needs to be changed, to source_extrisnic_hash once luka does it
+      sourceTransactionHash: tx.source_block_hash,
+            // add time remainaining
       sourceTimestamp: new Date(tx.created_at).getTime(),
       destinationTransactionHash: tx.bridged_tx_hash || undefined,
       destinationTransactionTimestamp: tx.completed_at 
@@ -147,30 +163,46 @@ export const fetchAvailToERC20AvailTransactions = async (address: IAddress | str
   }
 };
 
-export const fetchERC20AvailToAvailTransactions = async (address: IAddress): Promise<Transaction[]> => {
-  if (!validAddress(address, Chain.ETH)) {
+export const fetchEVMToAvailTransactions = async (ethAddress: IAddress): Promise<Transaction[]> => {
+  if (!validAddress(ethAddress, Chain.ETH)) {
     return [];
   }
 
   try {
     const response = await fetch(
-      `${appConfig.liquidityBridgeApiBaseUrl}/v1/eth_to_avail/status?sender_address=${address}`
+      `${appConfig.liquidityBridgeApiBaseUrl}/v1/eth_to_avail/status?sender_address=${ethAddress}`
     );
 
     if (!response.ok) throw new Error('Failed to fetch ETH to Avail transactions');
-    
     const transactions = await response.json();
 
-    return transactions.map((tx: any) => ({
+    interface IEVMtoAvailResponse {
+  amount: string;
+  amount_transferred: string;
+  bridged_block_hash: string;
+  bridged_tx_index: number;
+  completed_at: string;
+  created_at: string;
+  id: number;
+  receiver_hash: string;
+  sender_hash: string;
+  status: string;
+  tx_hash: string;
+}
+
+    return transactions.map((tx: IEVMtoAvailResponse) => ({
       status: tx.status === 'Bridged' ? TransactionStatus.CLAIMED : TransactionStatus.PENDING,
       sourceChain: Chain.BASE,
       destinationChain: Chain.AVAIL,
       amount: tx.amount,
-      depositorAddress: tx.sender_public_key,
-      receiverAddress: tx.avl_receiver_address,
+      depositorAddress: tx.sender_hash,
+      receiverAddress: tx.receiver_hash, //this is not ss58, convert pub key to ss58
       sourceTransactionHash: tx.tx_hash,
       sourceTimestamp: new Date(tx.created_at).getTime(),
-      destinationTransactionHash: tx.bridged_block_hash || undefined,
+      //needs to be changed to txn, once luka does it
+      destinationTransactionHash: tx.bridged_block_hash,
+            // add time remainaining
+      detinationBlockhash: tx.bridged_block_hash,
       destinationTransactionTimestamp: tx.completed_at 
         ? new Date(tx.completed_at).getTime() 
         : undefined
@@ -188,9 +220,11 @@ export const fetchAllLiquidityBridgeTransactions = async (isPolling = false, add
 
   try {
     const [availToEthTxs, ethToAvailTxs] = await Promise.all([
-      fetchAvailToERC20AvailTransactions(address),
-      fetchERC20AvailToAvailTransactions(address)
+      fetchAvailToEVMTransactions(address),
+      fetchEVMToAvailTransactions(address)
     ]);
+
+    console.log("debugger", [...availToEthTxs, ...ethToAvailTxs])
 
     return [...availToEthTxs, ...ethToAvailTxs];
   } catch (err) {

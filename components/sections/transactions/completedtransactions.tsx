@@ -1,7 +1,7 @@
 import { TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Transaction } from "@/types/transaction";
 import ParsedDate from "./parseddate";
-import TxnAddresses from "./txnaddresses";
+import TxnAddresses from "./txn-addresses";
 import { ChainLabel } from "@/components/ui/chainLabel";
 import { ArrowUpRight, MoveRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

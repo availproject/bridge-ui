@@ -75,7 +75,7 @@ export const appConfig: AppConfig = {
             },
          },
       avail: {
-        liquidityBridgeAddress: process.env.NEXT_PUBLIC_LP_ADDRESS_AVAIL || '5GRTs4qaBTcZEYZMkn4juFbkmfeVLBRWXQCyXdNVuWmxrshN',
+        liquidityBridgeAddress: process.env.NEXT_PUBLIC_LP_ADDRESS_AVAIL || '5GppC9pNvTafpCD86gAYxAJPZtLuYkNixFvzByoP1wPg5qKa',
       }
     }
 };

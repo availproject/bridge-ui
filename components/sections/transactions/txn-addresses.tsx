@@ -122,22 +122,25 @@ export default function TxnAddresses({ txn }: { txn: Transaction }) {
             </span>
           </p>
           <div className="space-y-1.5 mt-3">
-            <AddressRow
+           {txn.depositorAddress ? <AddressRow
               label="Depositor"
               address={txn.depositorAddress}
               stateKey="depositor"
-            />
-            <AddressRow
+            /> : '...'} 
+           {txn.receiverAddress ? <AddressRow
               label="Receiver"
               address={txn.receiverAddress}
               stateKey="receiver"
-            />
+            /> : '...' } 
+           {
+            txn.sourceTransactionHash ? 
             <HashRow
               label="Source Hash"
               hash={txn.sourceTransactionHash}
               stateKey="sourceHash"
               explorerUrl={getHref(txn.sourceChain, txn.sourceTransactionHash)}
-            />
+            /> : '...'
+           } 
             {!(txn.destinationTransactionHash === "0xundefined") && txn.destinationTransactionHash && (
               <HashRow
                 label="Destination Hash"

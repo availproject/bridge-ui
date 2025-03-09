@@ -23,7 +23,6 @@ function validateParams({ availAddress, ethAddress }: TransactionQueryParams) {
     if (!availAddress && !ethAddress) {
         Logger.info("Either availAddress or ethAddress must be provided.")
         return [];
-     
     }
 }
 
@@ -81,17 +80,7 @@ export const getAllTransactions = async (
 ): Promise<Transaction[]> => {
     validateParams({ availAddress, ethAddress });
 
-    const allTransactions: Transaction[] = [];
     const seenHashes = new Set<string>();
-
-    const addUniqueTransactions = (transactions: Transaction[]) => {
-        transactions.forEach(txn => {
-            if (!seenHashes.has(txn.sourceTransactionHash)) {
-                seenHashes.add(txn.sourceTransactionHash);
-                allTransactions.push(txn);
-            }
-        });
-    };
 
     const fetchPromises: Promise<Transaction[]>[] = [];
     
@@ -113,7 +102,13 @@ export const getAllTransactions = async (
     }
 
     const results = await Promise.all(fetchPromises);
-    results.forEach(addUniqueTransactions);
+    const allTransactions: Transaction[] = results.flat();
 
-    return allTransactions;
+    return allTransactions.filter(txn => {
+        if (!seenHashes.has(txn.sourceTransactionHash)) {
+            seenHashes.add(txn.sourceTransactionHash);
+            return true;
+        }
+        return false;
+    });
 };
