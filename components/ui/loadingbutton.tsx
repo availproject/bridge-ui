@@ -39,10 +39,11 @@ export interface ButtonProps
   loading?: boolean;
   loadingMessage?: string;
   subMessage?: string;
+  signatures?: string
 }
 
 const LoadingButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, loading, loadingMessage, subMessage, children, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, loading, loadingMessage, subMessage, signatures, children, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button';
     return (
       <>
@@ -58,7 +59,7 @@ const LoadingButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 rounded-xl backdrop-blur-sm">
               <div className="flex items-center gap-2 text-white">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="font-medium">{loadingMessage || 'Please sign transaction(s) on your wallet (1 of 2)'}</span>
+                <span className="font-medium">{loadingMessage || `Please sign transaction(s) on your wallet ${signatures}`}</span>
               </div>
             </div>
           )}

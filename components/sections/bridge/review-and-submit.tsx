@@ -42,6 +42,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
     successDialog,
     errorDialog: { onOpenChange: setErrorOpenDialog, setError },
     reviewDialog: { onOpenChange: setShowReviewModal, isOpen: reviewOpen },
+    signatures
   } = useCommonStore();
 
   const { fetchBalance } = useBalanceStore();
@@ -302,6 +303,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
                 onClick={handleSubmit}
                 className="!rounded-xl w-full !text-[15px] !py-8 max-md:mb-4 font-ppmori max-md:mt-4"
                 disabled={isDisabled}
+                signatures={signatures}
               >
                 {buttonStatus}
               </LoadingButton>

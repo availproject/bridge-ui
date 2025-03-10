@@ -19,11 +19,13 @@ import availTokenAbi from "@/constants/abis/availTokenAbi.json";
 import { signMessage as personalSign } from '@wagmi/core'
 import { hashMessage, recoverPublicKey } from "viem";
 import { publicKeyToAddress } from "viem/accounts";
+import { useCommonStore } from "@/stores/common";
  
 export default function useLiquidityBridge() {
   const { selected } = useAvailAccount();
   const { api, ensureConnection } = useApi();
   const { activeUserAddress, validateandSwitchChain, getERC20AvailBalance } = useEthWallet();
+  const { setSignatures } = useCommonStore()
 
   interface ILiquidityBridgeParams {
     ERC20Chain: Chain;
@@ -51,7 +53,9 @@ export default function useLiquidityBridge() {
       }
     } catch (error) {
       console.error('Transfer To Liquidity Bridge Failed:', error)
-      throw error
+      throw error 
+    } finally {
+      setSignatures("- 1 of 1")
     }
   }
   const toHex = (num: string | number | bigint | boolean) => '0x' + BigInt(num).toString(16).toUpperCase();
@@ -78,6 +82,7 @@ export default function useLiquidityBridge() {
      */
 
     try {
+      setSignatures('- 1 of 2')
       if (!activeUserAddress) throw new Error("No account selected");
       await validateandSwitchChain(ERC20Chain)
 
@@ -89,6 +94,7 @@ export default function useLiquidityBridge() {
       /**IMPORTANT: FOR BASE WHY IS THERE NO BLOCKHASH THAT SHOWS IN THEIR EXPLORER? */
       const hash = await transferERC20AvailToLiquidityBridge(atomicAmount, ERC20Chain)
       if (!hash) throw new Error("Failed to transfer to liquidity bridge")
+      setSignatures('- 2 of 2')
 
       const payload = {
         sender_address: activeUserAddress,
@@ -146,6 +152,8 @@ export default function useLiquidityBridge() {
 
     } catch (error: any) {
       throw new Error(`${error.message} : Failed to bridge from ${ERC20Chain} to Avail`);
+    } finally {
+      setSignatures('')
     }
   };
 
@@ -166,7 +174,7 @@ export default function useLiquidityBridge() {
       if (selected === undefined || selected === null) {
         throw new Error("No account selected");
       }
-
+      setSignatures('- 1 of 2')
       if (!api || !api.isConnected || !api.isReady) await ensureConnection();
       if (!api?.isReady)
         throw new Error("Uh oh! Failed to connect to Avail Api");
@@ -188,11 +196,11 @@ export default function useLiquidityBridge() {
       ) {
         throw new Error("insufficient avail balance");
       }
-
       const result = await transfer(atomicAmount, selected, api);
       if (result.isErr()) {
         throw new Error(`AVAIL_TRANSFER_FAILED ${result.error}`);
       }
+      setSignatures('- 2 of 2')
 
       if (!result.value.txIndex || !result.value.blockhash) {
         throw new Error("Failed to get blockhash and tx_index");
@@ -224,6 +232,8 @@ export default function useLiquidityBridge() {
       };
     } catch (error: any) {
       throw new Error(`${error.message} Failed to bridge from Avail to ${ERC20Chain}`);
+    } finally {
+      setSignatures("")
     }
   };
 

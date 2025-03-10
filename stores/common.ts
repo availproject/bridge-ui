@@ -47,8 +47,8 @@ interface CommonStore {
   successDialog: SuccessDialog;
   errorDialog: ErrorDialog;
   reviewDialog: DialogBase;
-  enableAutoClaimFlows: boolean;
-  setEnableAutoClaimFlows: (enable: boolean) => void;
+  signatures: string,
+  setSignatures: (text: string) => void
 }
 
 export const useCommonStore = create<CommonStore>((set) => ({
@@ -106,8 +106,6 @@ export const useCommonStore = create<CommonStore>((set) => ({
         reviewDialog: { ...state.reviewDialog, isOpen: open },
       })),
   },
-
-  enableAutoClaimFlows: false,
-  setEnableAutoClaimFlows: (enable) =>
-    set((state) => ({ enableAutoClaimFlows: enable })),
+  signatures: "",
+  setSignatures: (text) => set({ signatures: text }),
 }));

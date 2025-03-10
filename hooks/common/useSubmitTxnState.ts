@@ -82,7 +82,7 @@ export default function useSubmitTxnState(
     }
     if (isInvalidAmount) {
       if (isLiquidityBridge(`${fromChain}-${toChain}`) && fromAmount && parseFloat(fromAmount.toString()) > 0) {
-        return `Beta: Enter ${appConfig.bridgeLimits.baseAvail.min}-${appConfig.bridgeLimits.baseAvail.max} AVAIL`;
+        return `Enter Amount to Bridge`;
       }
       return "Enter Amount to Bridge";
     }

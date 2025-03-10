@@ -55,7 +55,7 @@ export const appConfig: AppConfig = {
         base: process.env.NEXT_PUBLIC_ETH_NETWORK === 'mainnet' ? base : baseSepolia,
     },
     bridgeApiBaseUrl: process.env.NEXT_PUBLIC_BRIDGE_API_URL || 'http://0.0.0.0:8080',
-    liquidityBridgeApiBaseUrl: process.env.NEXT_PUBLIC_LIQUIDITY_BRIDGE_API_URL || 'http://localhost:8080',
+    liquidityBridgeApiBaseUrl: process.env.NEXT_PUBLIC_LIQUIDITY_BRIDGE_API_URL || 'https://test.liquidity-bridge-api.availproject.org',
     bridgeIndexerBaseUrl: process.env.NEXT_PUBLIC_BRIDGE_INDEXER_URL ||'http://167.71.41.169:3000',
     bridgeIndexerPollingInterval: 30,
     bridgeHeadsPollingInterval: 600,

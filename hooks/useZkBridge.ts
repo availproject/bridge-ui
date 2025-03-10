@@ -30,6 +30,7 @@ import type {
 import { config } from "@/config/walletConfig";
 import { useApi } from "@/stores/api";
 import { getTokenBalance } from "@/services/contract";
+import { useCommonStore } from "@/stores/common";
 
 export default function useZkBridge() {
   const { activeUserAddress, validateandSwitchChain, getERC20AvailBalance } = useEthWallet();
@@ -38,6 +39,7 @@ export default function useZkBridge() {
   const { selected } = useAvailAccount();
   const { address } = useAccount();
   const { api, ensureConnection } = useApi();
+  const { setSignatures } = useCommonStore()
   const invokeSnap = useInvokeSnap();
   const networks = appConfig.networks;
 
@@ -174,12 +176,14 @@ export default function useZkBridge() {
       await validateandSwitchChain(Chain.ETH);
       const currentAllowance = await getCurrentAllowanceOnEth();
       if (new BigNumber(atomicAmount).gt(currentAllowance)) {
+        setSignatures("- 1 of 2")
         await approveOnEth(atomicAmount);
         showSuccessMessage({
           title: "Approval Executed",
           desc: "Your approval transaction has been successfully executed",
         });
       }
+      setSignatures("- 2 of 2")
 
       const availBalance = await getERC20AvailBalance(Chain.ETH);
       if (new BigNumber(atomicAmount).gte(new BigNumber(availBalance))) {
@@ -231,6 +235,7 @@ export default function useZkBridge() {
     destinationAddress: `${string}`;
   }) => {
     try {
+      setSignatures('- 1 of 1')
       if (selected === undefined || selected === null) {
         throw new Error("No account selected");
       }
@@ -346,6 +351,8 @@ export default function useZkBridge() {
         ["flow", "AVAIL -> ETH"]
       );
       throw error;
+    } finally {
+      setSignatures("")
     }
   };
 
