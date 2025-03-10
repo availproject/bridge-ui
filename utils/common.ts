@@ -31,7 +31,6 @@ export function validAddress(address: string, chain: Chain) {
 export function getHref(chain: Chain, hash: string, isBlockHash?: boolean) {
   switch (chain) {
     case Chain.AVAIL:
-      isBlockHash 
       return isBlockHash ? `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/block/${hash}` : `${process.env.NEXT_PUBLIC_SUBSCAN_URL}/extrinsic/${hash}`
     case Chain.ETH:
       return `${process.env.NEXT_PUBLIC_ETH_EXPLORER_URL}/tx/${hash}`

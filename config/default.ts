@@ -14,6 +14,12 @@ type AppConfig = {
     bridgePricePollingInterval: number,
     bridgeHeadsPollingInterval: number,
     liquidityBridgeApiBaseUrl: string,
+    bridgeLimits: {
+        baseAvail: {
+            min: number,
+            max: number
+        }
+    },
     contracts: {
         ethereum: {
             liquidityBridgeAddress: string,
@@ -54,6 +60,12 @@ export const appConfig: AppConfig = {
     bridgeIndexerPollingInterval: 30,
     bridgeHeadsPollingInterval: 600,
     bridgePricePollingInterval: 60,
+    bridgeLimits: {
+        baseAvail: {
+            min: Number(process.env.NEXT_PUBLIC_BASE_AVAIL_MIN_AMOUNT) || 1,
+            max: Number(process.env.NEXT_PUBLIC_BASE_AVAIL_MAX_AMOUNT) || 5000
+        }
+    },
     contracts: {
         ethereum: {
             liquidityBridgeAddress: process.env.NEXT_PUBLIC_LP_ADDRESS_ETH || '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',

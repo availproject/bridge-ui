@@ -3,7 +3,7 @@ import useSubmitTxnState from "@/hooks/common/useSubmitTxnState";
 import { useCommonStore } from "@/stores/common";
 import { useState } from "react";
 import { RxArrowTopRight } from "react-icons/rx";
-import { isWormholeBridge } from "./utils";
+import { isLiquidityBridge, isWormholeBridge } from "./utils";
 
 export default function ReviewButton() {
   const [transactionInProgress, setTransactionInProgress] =
@@ -36,6 +36,11 @@ export default function ReviewButton() {
         <p className="w-full text-white text-opacity-70 text-center text-xs">
           Using Third Party Wormhole Bridge{" "}
           <RxArrowTopRight className="inline-block h-4 w-3" />
+        </p>
+      )}
+      {isLiquidityBridge(`${fromChain}-${toChain}`) && (
+        <p className="w-full text-white text-opacity-70 text-center text-xs">
+        Only amounts between 1 to 5000 AVAIL allowed  <span className="font-bold">(Currently in Beta)</span>
         </p>
       )}
     </>

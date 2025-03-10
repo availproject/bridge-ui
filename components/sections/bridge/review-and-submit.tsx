@@ -21,6 +21,7 @@ import { ReviewResponse, reviewTxn } from "@/services/bridgeapi";
 import Loader from "@/components/common/loader";
 import { parseAvailAmount } from "@/utils/parsers";
 import { Clock } from "lucide-react";
+import { isLiquidityBridge, isWormholeBridge } from "./utils";
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -63,16 +64,15 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
       try {
         const _details = await reviewTxn(new BigNumber(fromAmount)
         .multipliedBy(new BigNumber(10).pow(18))
-        .toString(10));
+        .toString(10), fromChain);
         if (_details.isOk()) {
-          console.log(_details.value, "wow");
           setDetails(_details.value);
         }
       } catch (error) {
         console.error(error);
       }
     })();
-  }, [fromAmount, reviewOpen]);
+  }, [fromAmount, reviewOpen, fromChain]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -247,30 +247,33 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
               </div>
               {details ? (
                 <div className="space-y-1">
-                  <div className="flex justify-between items-center">
+                  {isLiquidityBridge(`${fromChain}-${toChain}`) &&  <div className="flex justify-between items-center">
                     <span className="text-gray-400">
                       Destination Gas Fee ($)
                     </span>
                     <span className="text-white">
-                      {toChain === Chain.AVAIL
-                        ? parseAvailAmount(fromBridgeHex(details.eth_to_avail_fee),18)
-                        : parseAvailAmount(fromBridgeHex(details.avail_to_eth_fee),18)} AVAIL
-                      (${dollarAmount * Number(parseAvailAmount(fromBridgeHex(details.eth_to_avail_fee),18, 6)) })
+                  {parseAvailAmount(fromBridgeHex(details.fee),18)}
+                      {" "} AVAIL
+                      (${dollarAmount * Number(parseAvailAmount(fromBridgeHex(details.fee),18, 6)) })
                     </span>
-                  </div>
+                  </div>}
+                 
 
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">Estimated Time</span>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 pb-1">
                       <Clock className="h-4 w-4 text-white" />
-                      <span className="text-white">~5 minutes</span>
+                      <span className="text-white">
+                        {isWormholeBridge(`${fromChain}-${toChain}`) ? '~20 minutes' : 
+                        isLiquidityBridge(`${fromChain}-${toChain}`) ? '~5 minutes' : '~2 hours'}
+                      </span>
                     </div>
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Claim Type</span>
+                    <span className="text-gray-400">Transaction Type</span>
                     <Badge variant={"avail"} className="text-white">
-                      Auto
+                    {isLiquidityBridge(`${fromChain}-${toChain}`) || isWormholeBridge(`${fromChain}-${toChain}`) ? 'Auto' : 'Manual'}
                     </Badge>
                   </div>
 
@@ -278,21 +281,15 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
                     <span className="text-gray-400">User will receive</span>
                     <div className="text-right">
                       <span className="text-2xl font-semibold text-white">
-                        {toChain === Chain.AVAIL
-                          ? parseAvailAmount(
+                        {
+                          parseAvailAmount(
                               new BigNumber(fromAmount).multipliedBy(10 ** 18)
-                                .minus(fromBridgeHex(details.eth_to_avail_fee))
+                                .minus(fromBridgeHex(details.fee))
                                 .toString(),
                               18,
                               6
                             )
-                          : parseAvailAmount(
-                              new BigNumber(fromAmount).multipliedBy(10 ** 18)
-                                .minus(fromBridgeHex(details.avail_to_eth_fee))
-                                .toString(),
-                              18,
-                              6
-                            )}
+                          }
                       </span>
                       <span className="text-gray-400 ml-2">AVAIL</span>
                     </div>

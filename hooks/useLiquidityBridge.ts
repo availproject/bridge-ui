@@ -135,7 +135,7 @@ export default function useLiquidityBridge() {
       
       const response = await sendPayload(encodePayload(payload), sig, "eth_to_avail", publicKey);
       if (response.isErr()) {
-        throw new Error(` ${response.error} : Failed to send payload`);
+        throw new Error(` ${response.error}`);
       }
 
       return {
@@ -145,7 +145,7 @@ export default function useLiquidityBridge() {
       }
 
     } catch (error: any) {
-      throw new Error(`Failed to bridge from ${ERC20Chain} to Avail: ${error.message}`);
+      throw new Error(`${error.message} : Failed to bridge from ${ERC20Chain} to Avail`);
     }
   };
 
@@ -222,8 +222,8 @@ export default function useLiquidityBridge() {
         hash: result.value.txHash,
         id: response.value.id
       };
-    } catch (error) {
-      throw new Error(`Failed to bridge from Avail to ${ERC20Chain}: ${error}`);
+    } catch (error: any) {
+      throw new Error(`${error.message} Failed to bridge from Avail to ${ERC20Chain}`);
     }
   };
 

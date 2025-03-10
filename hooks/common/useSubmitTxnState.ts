@@ -6,6 +6,8 @@ import { validAddress } from "@/utils/common";
 import BigNumber from "bignumber.js";
 import { useMemo } from "react";
 import { useAccount } from "wagmi";
+import { appConfig } from "@/config/default";
+import { isLiquidityBridge } from "@/components/sections/bridge/utils";
 
 export default function useSubmitTxnState(
   transactionInProgress: boolean
@@ -24,13 +26,25 @@ export default function useSubmitTxnState(
 
   const isInvalidAmount = useMemo(() => {
     const amount = parseFloat(fromAmount?.toString());
+
+    
+    if (isLiquidityBridge(`${fromChain}-${toChain}`)) {
+      return (
+        fromAmount === undefined ||
+        fromAmount === null ||
+        isNaN(amount) ||
+        amount < appConfig.bridgeLimits.baseAvail.min ||
+        amount > appConfig.bridgeLimits.baseAvail.max
+      );
+    }
+    
     return (
       fromAmount === undefined ||
       fromAmount === null ||
       isNaN(amount) ||
       amount <= 0
     );
-  }, [fromAmount]);
+  }, [fromAmount, fromChain, toChain]);
 
   const isValidToAddress = useMemo(() => {
     switch (toChain) {
@@ -43,7 +57,7 @@ export default function useSubmitTxnState(
       default:
         return false;
     }
-  }, [toAddress, fromChain, selected?.address, account?.address]);
+  }, [toChain, toAddress]);
 
   const hasInsufficientBalance = useMemo(() => {
     if (!fromAmount || isNaN(Number(fromAmount))) return false;
@@ -67,6 +81,9 @@ export default function useSubmitTxnState(
       return "Transaction in progress";
     }
     if (isInvalidAmount) {
+      if (isLiquidityBridge(`${fromChain}-${toChain}`) && fromAmount && parseFloat(fromAmount.toString()) > 0) {
+        return `Beta: Enter ${appConfig.bridgeLimits.baseAvail.min}-${appConfig.bridgeLimits.baseAvail.max} AVAIL`;
+      }
       return "Enter Amount to Bridge";
     }
     if (!isValidToAddress) {
@@ -84,15 +101,7 @@ export default function useSubmitTxnState(
 
     return "Review and Confirm Transaction";
    
-  }, [
-    isWalletConnected,
-    isValidToAddress,
-    transactionInProgress,
-    isInvalidAmount,
-    hasInsufficientBalance,
-    fromChain,
-    toChain,
-  ]);
+  }, [isWalletConnected, transactionInProgress, isInvalidAmount, isValidToAddress, hasInsufficientBalance, reviewDialog.isOpen, fromChain, toChain, fromAmount]);
 
   const isDisabled = useMemo(() => {
     return (

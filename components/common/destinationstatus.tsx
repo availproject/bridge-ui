@@ -62,7 +62,7 @@ const DestinationStatus = () => {
         case 'ClaimPending':
           return TransactionStatus.PENDING;
         default:
-          return TransactionStatus.PENDING;
+          return TransactionStatus.INITIATED;
       }
     };
 
@@ -75,7 +75,7 @@ const DestinationStatus = () => {
         case 'ClaimPending':
           return "Automatic bridging in progress (~5 minutes)";
         default:
-          return "Automatic bridging in progress (~5 minutes)";
+          return "Your txn will be picked up soon";
       }
     };
 
