@@ -15,16 +15,19 @@ import { getHref } from "@/utils/common";
 import { AlertCircle, ArrowUpRight, CheckCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { FaCheckCircle } from "react-icons/fa";
-import { useTransactionStatus } from "@/hooks/common/useTrackTxnStatus";
+import { useFinalityTracker } from "@/hooks/common/useFinalityTracker";
 import Loader from "./loader";
 import DestinationStatus from "./destinationstatus";
 import { getStepStatus } from "./utils";
 import { Badge } from "../ui/badge";
+import { useTransactionsStore } from "@/stores/transactions";
+import { TransactionStatus } from "@/types/common";
 
 export const SuccessDialog = () => {
   const { successDialog } = useCommonStore();
   const { isOpen, onOpenChange, details, claimDialog } = successDialog;
-  const { status, isLoading, timeEstimate } = useTransactionStatus(
+  const { transactionStatus } = useTransactionsStore();
+  const { status, timeEstimate, isLoading } = useFinalityTracker(
     details?.hash as IAddress,
     details?.chain,
     details?.isWormhole
@@ -105,17 +108,31 @@ export const SuccessDialog = () => {
           </DialogTitle>
         </DialogHeader>
         <div className="w-[100%] h-20 mx-auto rounded-xl bg-[#21242d] flex flex-col items-center justify-center">
-          {!isLoading ? (
-            <FaCheckCircle className="mr-4 h-8 w-8" color="0BDA51" />
-          ) : (
+          {/* In case of Liquidity Bridge use this transaction status, since it tracks status directly from the backend, for others, use isLoading */}
+          {details?.isLiquidityBridge ? (
+            transactionStatus === TransactionStatus.CLAIMED ? (
+              <FaCheckCircle className="mr-4 h-8 w-8" color="0BDA51" />
+            ) : (
+              <div className="flex flex-row items-center justify-center">
+                <Loader />{" "}
+                <span className="text-white border-r border-white h-8 border-opacity-30 border mr-4 ml-2"></span>{" "}
+                <p className="font-thicccboisemibold text-white text-opacity-70">
+                  {" "}
+                  Processing..
+                </p>
+              </div>
+            )
+          ) : isLoading ? (
             <div className="flex flex-row items-center justify-center">
               <Loader />{" "}
               <span className="text-white border-r border-white h-8 border-opacity-30 border mr-4 ml-2"></span>{" "}
               <p className="font-thicccboisemibold text-white text-opacity-70">
                 {" "}
-             Processing..
+                Processing..
               </p>
             </div>
+          ) : (
+            <FaCheckCircle className="mr-4 h-8 w-8" color="0BDA51" />
           )}
         </div>
         <div className="flex flex-col items-center justify-center !space-x-3 pt-4 px-1.5">
@@ -166,7 +183,7 @@ export const SuccessDialog = () => {
         </div>
 
         {/* Destination Chain Details */}
-        {!claimDialog && (
+        {(!details?.isWormhole && !claimDialog) &&  (
           <div className="flex flex-row items-center justify-between">
             <h1 className="font-thicccboisemibold text-white text-lg">
               Destination Status

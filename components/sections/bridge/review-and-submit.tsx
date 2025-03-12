@@ -4,7 +4,7 @@ import { LoadingButton } from "@/components/ui/loadingbutton";
 import useZkBridge from "@/hooks/useZkBridge";
 import useSubmitTxnState from "@/hooks/common/useSubmitTxnState";
 import { SuccessDialog, useCommonStore } from "@/stores/common";
-import { Chain } from "@/types/common";
+import { Chain, TransactionStatus } from "@/types/common";
 import { fromBridgeHex, validAddress } from "@/utils/common";
 import BigNumber from "bignumber.js";
 import { useState } from "react";
@@ -20,8 +20,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ReviewResponse, reviewTxn } from "@/services/bridgeapi";
 import Loader from "@/components/common/loader";
 import { parseAvailAmount } from "@/utils/parsers";
-import { Clock } from "lucide-react";
+import { Clock, InfoIcon } from "lucide-react";
 import { isLiquidityBridge, isWormholeBridge } from "./utils";
+import { useTransactionsStore } from "@/stores/transactions";
+import { formatEstimatedTime } from "@/components/common/utils";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -57,6 +60,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
   const { initWormholeBridge } = useWormHoleBridge();
   const { buttonStatus, isDisabled } = useSubmitTxnState(transactionInProgress);
   const {dollarAmount} = useCommonStore();
+  const {setTransactionStatus} = useTransactionsStore()
 
   const [details, setDetails] = useState<ReviewResponse | null>(null);
 
@@ -65,7 +69,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
       try {
         const _details = await reviewTxn(new BigNumber(fromAmount)
         .multipliedBy(new BigNumber(10).pow(18))
-        .toString(10), fromChain);
+        .toString(), fromChain);
         if (_details.isOk()) {
           setDetails(_details.value);
         }
@@ -78,6 +82,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     successDialog.setClaimDialog(false);
+    setTransactionStatus(TransactionStatus.INITIATED)
 
     try {
       let bridgeResult: SuccessDialog["details"] | null = null;
@@ -266,7 +271,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
                       <Clock className="h-4 w-4 text-white" />
                       <span className="text-white">
                         {isWormholeBridge(`${fromChain}-${toChain}`) ? '~20 minutes' : 
-                        isLiquidityBridge(`${fromChain}-${toChain}`) ? '~5 minutes' : '~2 hours'}
+                        isLiquidityBridge(`${fromChain}-${toChain}`) ? formatEstimatedTime(details.estimated_time_secs) : '~2 hours'}
                       </span>
                     </div>
                   </div>
@@ -279,7 +284,17 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
                   </div>
 
                   <div className="flex justify-between items-center pt-4">
-                    <span className="text-gray-400">User will receive</span>
+                    <span className="text-gray-400 flex flex-row space-x-1">
+                      <span>User will receive</span>
+                      <HoverCard>
+                        <HoverCardTrigger>
+                          <InfoIcon className="w-3 h-3 cursor-help"/>
+                        </HoverCardTrigger>
+                        <HoverCardContent align="end" className="w-80 bg-[#141414] text-sm font-ppmori border-0 text-white">
+                          The final amount might differ slighty based on destination gas fees.
+                        </HoverCardContent>
+                      </HoverCard>
+                    </span>
                     <div className="text-right">
                       <span className="text-2xl font-semibold text-white">
                         {

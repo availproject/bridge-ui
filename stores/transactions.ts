@@ -1,5 +1,6 @@
 
 import { getAllTransactions } from "@/services/transactions";
+import { TransactionStatus } from "@/types/common";
 import { Transaction } from "@/types/transaction";
 import { create } from "zustand";
 type ClickHandler<T> = (value: T) => void;
@@ -24,6 +25,8 @@ interface TransactionsStore {
   setPendingTransactionsNumber: (pendingTransactions: number) => void;
   readyToClaimTransactionsNumber: number;
   setReadyToClaimTransactionsNumber: (readyToClaimTransactions: number) => void;
+  transactionStatus: TransactionStatus,
+  setTransactionStatus: (status: TransactionStatus) => void;
 }
 
 type FetchTxnParams = {
@@ -80,4 +83,7 @@ export const useTransactionsStore = create<TransactionsStore>((set, get) => ({
   readyToClaimTransactionsNumber: 0,
   setReadyToClaimTransactionsNumber: (readyToClaimTransactionsNumber) =>
     set({ readyToClaimTransactionsNumber }),
+  transactionStatus: TransactionStatus.PENDING,
+  setTransactionStatus: (transactionStatus) => set({transactionStatus})
+
 }));

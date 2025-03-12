@@ -69,6 +69,11 @@ export const parseMinutes = (minutes: number) => {
       if(errorMessageString.match(/Cannot read properties of null (reading 'signature')/i)) {
           return "Transaction rejected, please try again.";
        }
+
+       if(errorMessageString.match(/does not match the target chain for the transaction/i))
+       {
+        return "Invalid chain detected, Please switch to correct chain in wallet."
+       }
       
       if (
           errorMessageString.match(/denied transaction/i) || // Metamask browser message

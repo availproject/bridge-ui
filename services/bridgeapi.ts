@@ -11,7 +11,7 @@ import {
   merkleProof,
   Transaction,
 } from "@/types/transaction";
-import { validAddress } from "@/utils/common";
+import { toBridgeHex, validAddress } from "@/utils/common";
 import { Logger } from "@/utils/logger";
 import { ApiPromise, isValidAddress } from "avail-js-sdk";
 import axios from "axios";
@@ -114,7 +114,8 @@ export const sendPayload = (
 
 export interface ReviewResponse {
   fee: string;
-  time: number;
+  estimated_time_secs: number;
+  allowed: boolean
 }
 
 export const reviewTxn = (
@@ -125,7 +126,7 @@ export const reviewTxn = (
     axios.get(
       `${appConfig.liquidityBridgeApiBaseUrl}/v1/${
         fromChain === Chain.AVAIL ? "avail_to_eth" : "eth_to_avail"
-      }/review_transaction/${atomicAmount}`
+      }/review_transaction/${toBridgeHex(atomicAmount)}`
     ),
     (error) => new Error(`Failed to review transaction: ${error}`)
   ).map((response) => response.data);
@@ -146,8 +147,6 @@ export const fetchAvailToEVMTransactions = async (
     if (!response.ok)
       throw new Error("Failed to fetch Avail to ETH transactions");
     const transactions = await response.json();
-
-    console.log("transactions:", transactions);
 
     interface IAvailtoEVMResponse {
       amount: string;

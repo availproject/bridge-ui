@@ -1,5 +1,5 @@
 import { appConfig } from "@/config/default";
-import { TxnLifecyle } from "@/hooks/common/useTrackTxnStatus";
+import { TxnLifecyle } from "@/hooks/common/useFinalityTracker";
 import { Chain } from "@/types/common";
 
 export const getStepStatus = (step: number, status: TxnLifecyle) => {
@@ -14,6 +14,19 @@ export const getStepStatus = (step: number, status: TxnLifecyle) => {
         : "waiting";
     }
     return "waiting";
+  };
+
+  export const formatEstimatedTime = (seconds: number) => {
+    if (seconds < 40) {
+      return "~ less than a minute";
+    } else if (seconds < 60) {
+      return "~ a minute";
+    } else if (seconds < 120) {
+      return "~ 2 minutes";
+    } else {
+      const minutes = Math.round(seconds / 60);
+      return `~ ${minutes} minutes`;
+    }
   };
 
   export const chainToChainId = (chain: Chain) => {
