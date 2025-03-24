@@ -20,6 +20,7 @@ export default function NavBar() {
           height="40"
           src="/images/nav.svg"
         />
+         <p className="font-mono text-white">[INTERNAL]</p>
       </div>
     </header>
   );
