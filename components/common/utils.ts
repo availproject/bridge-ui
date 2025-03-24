@@ -18,11 +18,11 @@ export const getStepStatus = (step: number, status: TxnLifecyle) => {
 
   export const formatEstimatedTime = (seconds: number) => {
     if (seconds < 40) {
-      return "~ less than a minute";
+      return "less than a minute";
     } else if (seconds < 60) {
-      return "~ a minute";
+      return "a minute left";
     } else if (seconds < 120) {
-      return "~ 2 minutes";
+      return "~2 minutes";
     } else {
       const minutes = Math.round(seconds / 60);
       return `~ ${minutes} minutes`;

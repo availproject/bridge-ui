@@ -43,12 +43,13 @@ export function getHref(chain: Chain, hash: string, isBlockHash?: boolean) {
 
 export const fromBridgeHex = (hex?: string) => {
   if (!hex) return '';
-  return parseInt(hex.toLowerCase().replace('0x', '').padStart(16, '0'), 16).toString()};
+  return parseInt(hex.toLowerCase().replace('0x', ''), 16).toString();
+};
   
 export const toBridgeHex = (decimalStr?: string): string => {
   if (!decimalStr) return '';
   const num = BigInt(decimalStr);
-  return `0x${num.toString(16).padStart(16, '0')}`;
+  return `0x${num.toString(16)}`;
 };
 
 export const getStatusTime = ({

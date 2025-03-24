@@ -49,6 +49,8 @@ interface CommonStore {
   reviewDialog: DialogBase;
   signatures: string,
   setSignatures: (text: string) => void
+  allowLiquidityBridgeTxn: boolean;
+  setAllowLiquidityBridgeTxn: (allow: boolean) => void;
 }
 
 export const useCommonStore = create<CommonStore>((set) => ({
@@ -108,4 +110,6 @@ export const useCommonStore = create<CommonStore>((set) => ({
   },
   signatures: "",
   setSignatures: (text) => set({ signatures: text }),
+  allowLiquidityBridgeTxn: true,
+  setAllowLiquidityBridgeTxn: (allow) => set({ allowLiquidityBridgeTxn: allow }),
 }));

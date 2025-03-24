@@ -51,6 +51,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
   const { fetchBalance } = useBalanceStore();
   const { selected } = useAvailAccount();
   const { address: ethAddress } = useAccount();
+  const { setAllowLiquidityBridgeTxn } = useCommonStore();
   const { api } = useApi();
   const { initEthToAvailBridging, initAvailToEthBridging } = useZkBridge();
   const {
@@ -61,7 +62,6 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
   const { buttonStatus, isDisabled } = useSubmitTxnState(transactionInProgress);
   const {dollarAmount} = useCommonStore();
   const {setTransactionStatus} = useTransactionsStore()
-
   const [details, setDetails] = useState<ReviewResponse | null>(null);
 
   useEffect(() => {
@@ -72,12 +72,13 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
         .toString(), fromChain);
         if (_details.isOk()) {
           setDetails(_details.value);
+          setAllowLiquidityBridgeTxn(_details.value.allowed);
         }
       } catch (error) {
         console.error(error);
       }
     })();
-  }, [fromAmount, reviewOpen, fromChain]);
+  }, [fromAmount, reviewOpen, fromChain, setAllowLiquidityBridgeTxn]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -277,9 +278,19 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-400">Transaction Type</span>
+                    <span className="text-gray-400 relative">
+                      Transaction Type
+                      <HoverCard>
+                        <HoverCardTrigger>
+                          <InfoIcon className="w-3 h-3 cursor-help absolute top-0 -right-2 transform translate-x-1/2 -translate-y-1/2"/>
+                        </HoverCardTrigger>
+                        <HoverCardContent align="end" className="w-80 bg-[#141414] text-sm font-ppmori border-0 text-white">
+                          Manual transactions require a claim on the destination chain, while auto transactions do not.
+                        </HoverCardContent>
+                      </HoverCard>
+                    </span>
                     <Badge variant={"avail"} className="text-white">
-                    {isLiquidityBridge(`${fromChain}-${toChain}`) || isWormholeBridge(`${fromChain}-${toChain}`) ? 'Auto' : 'Manual'}
+                      {isLiquidityBridge(`${fromChain}-${toChain}`) || isWormholeBridge(`${fromChain}-${toChain}`) ? 'Auto' : 'Manual'}
                     </Badge>
                   </div>
 

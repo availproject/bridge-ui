@@ -98,4 +98,5 @@ export interface Transaction {
   destinationTokenAddress?: `0x${string}`;
   message?: string;
   blockHash?: `0x${string}`;
+  timeRemaining?: number;
 }

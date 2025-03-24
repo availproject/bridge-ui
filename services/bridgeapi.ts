@@ -161,6 +161,7 @@ export const fetchAvailToEVMTransactions = async (
       source_extrinsic_hash: string;
       status: string;
       tx_index: number;
+      time_remaining_secs: number;
     }
 
     return transactions.map((tx: IAvailtoEVMResponse) => ({
@@ -175,7 +176,7 @@ export const fetchAvailToEVMTransactions = async (
       depositorAddress: encodeAddress(tx.sender_hash),
       receiverAddress: tx.receiver_hash,
       sourceTransactionHash: tx.source_extrinsic_hash,
-      // add time left
+      timeRemaining: tx.time_remaining_secs,
       sourceTimestamp: new Date(tx.created_at).getTime(),
       destinationTransactionHash: tx.bridged_tx_hash || undefined,
       destinationTransactionTimestamp: tx.completed_at
@@ -209,6 +210,7 @@ export const fetchEVMToAvailTransactions = async (
       bridged_block_hash: string;
       bridged_tx_index: number;
       bridged_extrinsic_hash: string;
+      time_remaining_secs: number,
       completed_at: string;
       created_at: string;
       id: number;
@@ -231,7 +233,7 @@ export const fetchEVMToAvailTransactions = async (
       sourceTransactionHash: tx.tx_hash,
       sourceTimestamp: new Date(tx.created_at).getTime(),
       destinationTransactionHash: tx.bridged_extrinsic_hash,
-      // add time left
+      timeRemaining: tx.time_remaining_secs,
       detinationBlockhash: tx.bridged_block_hash,
       destinationTransactionTimestamp: tx.completed_at
         ? new Date(tx.completed_at).getTime()
