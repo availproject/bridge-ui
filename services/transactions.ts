@@ -89,7 +89,7 @@ export const getAllTransactions = async (
             fetchWithErrorHandling(ethAddress, Chain.ETH, Chain.AVAIL),
             fetchWithErrorHandling(ethAddress, Chain.AVAIL, Chain.ETH),
             fetchWormholeTransactions(false, ethAddress as `0x${string}`),
-            fetchAllLiquidityBridgeTransactions(false, ethAddress as `0x${string}`)
+            // fetchAllLiquidityBridgeTransactions(false, ethAddress as `0x${string}`)
         );
     }
 
@@ -97,7 +97,7 @@ export const getAllTransactions = async (
         fetchPromises.push(
             fetchWithErrorHandling(availAddress, Chain.AVAIL, Chain.ETH),
             fetchWithErrorHandling(availAddress, Chain.ETH, Chain.AVAIL),
-            fetchAllLiquidityBridgeTransactions(false, availAddress as `0x${string}`)
+            // fetchAllLiquidityBridgeTransactions(false, availAddress as `0x${string}`)
         );
     }
 
