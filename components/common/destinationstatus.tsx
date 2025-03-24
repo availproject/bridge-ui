@@ -90,8 +90,6 @@ const DestinationStatus = () => {
     return () => clearInterval(interval);
   }, [details?.id, details?.isLiquidityBridge, toChain]);
 
-  console.log(liqudityTime, "wow")
-
   if (details?.isLiquidityBridge) {
 
     return (
