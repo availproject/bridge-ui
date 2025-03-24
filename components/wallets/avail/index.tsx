@@ -160,8 +160,8 @@ export default function AvailWalletConnect() {
       ) : (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="primary" size="sm" className="!ml-2">
-              Connect Wallet
+            <Button variant="primary" size="sm" className="!ml-2 !rounded-lg">
+              Connect Avail Wallet
             </Button>
           </DialogTrigger>
           

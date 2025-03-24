@@ -47,8 +47,9 @@ export default function Eth() {
               onClick={(e) => handleClick(e, show)}
               variant={"primary"}
               size={"sm"}
+              className="!rounded-lg"
             >
-              Connect Wallet
+              Connect ETH Wallet
             </Button>
           );
         }}

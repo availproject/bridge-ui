@@ -8,8 +8,8 @@ function NoTransactions() {
         className="text-opacity-80"
       ></img>
       <h2 className="font-ppmoribsemibold text-center w-[70%] md:text-lg mx-auto text-white text-opacity-90">
-        You don&apos;t have any transactions
-        <br /> with the connected accounts
+        You don&apos;t have any transactions did you enter the correct addresses?
+        <br />
       </h2>
     </div>
   );
