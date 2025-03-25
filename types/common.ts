@@ -11,6 +11,7 @@ export enum TransactionStatus {
   CLAIMED = "CLAIMED",
   FAILED = "FAILED",
   CLAIM_PENDING = "PENDING",
+  PENDING = "PENDING",
 }
 
 export interface ethBalance {
@@ -21,3 +22,21 @@ export interface ethBalance {
 }
 
 export type CheckedState = boolean | "indeterminate";
+
+export interface LiquidityBridgeTransactionBody {
+  sender_address: string;
+  tx_index: number;
+  block_hash: string;
+  eth_receiver_address: string;
+  amount: string;
+}
+
+export interface PayloadResponse {
+  id: number;
+  amount: string;
+  block_hash: string;
+  eth_receiver_address: string;
+  sender_address: string;
+  tx_index: number;
+  status: "InProgress" | "Completed" | "Failed";
+}

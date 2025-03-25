@@ -20,3 +20,7 @@ export const validInputAmount = (amount: string) => {
 export const isWormholeBridge = (chainPair: string) =>
     chainPair === ChainPairs.BASE_TO_ETH ||
     chainPair === ChainPairs.ETH_TO_BASE;
+
+export const isLiquidityBridge = (chainPair: string) =>
+    chainPair === ChainPairs.AVAIL_TO_BASE ||
+    chainPair === ChainPairs.BASE_TO_AVAIL

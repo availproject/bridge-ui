@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import BigNumber from "bignumber.js";
 import { useAccount, useWriteContract } from "wagmi";
 import { estimateGas, readContract } from "@wagmi/core";
@@ -30,32 +30,20 @@ import type {
 import { config } from "@/config/walletConfig";
 import { useApi } from "@/stores/api";
 import { getTokenBalance } from "@/services/contract";
+import { useCommonStore } from "@/stores/common";
 
-export default function useBridge() {
-  const { activeUserAddress, validateandSwitchChain } = useEthWallet();
+export default function useZkBridge() {
+  const { activeUserAddress, validateandSwitchChain, getERC20AvailBalance } = useEthWallet();
   const { addToLocalTransaction } = useTransactions();
   const { writeContractAsync } = useWriteContract();
   const { selected } = useAvailAccount();
   const { address } = useAccount();
-  const {api, ensureConnection} = useApi();
+  const { api, ensureConnection } = useApi();
+  const { setSignatures } = useCommonStore()
   const invokeSnap = useInvokeSnap();
   const networks = appConfig.networks;
 
   /** HELPER FUNCTIONS */
-  const getAvailBalanceOnEth = useCallback(async () => {
-    const balance = await readContract(config, {
-      address: appConfig.contracts.ethereum.availToken as `0x${string}`,
-      abi: availTokenAbi,
-      functionName: "balanceOf",
-      args: [activeUserAddress],
-      chainId: networks.ethereum.id,
-    });
-
-    if (!balance) return new BigNumber(0);
-
-    //@ts-ignore TODO: P2
-    return new BigNumber(balance);
-  }, [activeUserAddress, networks.ethereum.id]);
 
   const getCurrentAllowanceOnEth = useCallback(async () => {
     try {
@@ -186,17 +174,18 @@ export default function useBridge() {
         throw new Error("No account selected");
 
       await validateandSwitchChain(Chain.ETH);
-
       const currentAllowance = await getCurrentAllowanceOnEth();
       if (new BigNumber(atomicAmount).gt(currentAllowance)) {
+        setSignatures("- 1 of 2")
         await approveOnEth(atomicAmount);
         showSuccessMessage({
           title: "Approval Executed",
           desc: "Your approval transaction has been successfully executed",
         });
       }
+      setSignatures("- 2 of 2")
 
-      const availBalance = await getAvailBalanceOnEth();
+      const availBalance = await getERC20AvailBalance(Chain.ETH);
       if (new BigNumber(atomicAmount).gte(new BigNumber(availBalance))) {
         throw new Error("insufficient balance");
       }
@@ -246,6 +235,7 @@ export default function useBridge() {
     destinationAddress: `${string}`;
   }) => {
     try {
+      setSignatures('- 1 of 1')
       if (selected === undefined || selected === null) {
         throw new Error("No account selected");
       }
@@ -361,6 +351,8 @@ export default function useBridge() {
         ["flow", "AVAIL -> ETH"]
       );
       throw error;
+    } finally {
+      setSignatures("")
     }
   };
 

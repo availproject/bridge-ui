@@ -8,6 +8,9 @@ import BridgeSection from "../sections/bridge";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
 import { useTransactionsStore } from "@/stores/transactions";
+import TransactionModal from "../sections/bridge/review-and-submit";
+import { useCommonStore } from "@/stores/common";
+import AdvancedSettings from "./settings";
 
 export default function Container() {
   const [activeTab, setActiveTab] = useState("bridge");
@@ -15,6 +18,7 @@ export default function Container() {
   const { selected } = useAvailAccount();
   const { address } = useAccount();
   const { fetchAllTransactions, setTransactionLoader} = useTransactionsStore();
+  const { reviewDialog: { isOpen: isModalOpen, onOpenChange: setIsModalOpen } } = useCommonStore();
 
   useEffect(()=>{
     (async () => {
@@ -47,8 +51,8 @@ export default function Container() {
         id="container"
         className="section_bg p-2 w-screen max-sm:rounded-none max-sm:!border-x-0 !max-w-xl "
       >
-        <TabsList className="flex flex-row items-start justify-start bg-transparent !border-0 p-2 mb-6 mx-2 mt-1">
-          <div className="flex flex-row pb-[2vh] items-center justify-between">
+        <TabsList className="flex flex-row items-center justify-between bg-transparent !border-0 p-2 mb-6 mx-2 mt-2">
+          <div className="flex flex-row items-center justify-between">
             <h1 className="font-ppmori items-center flex flex-row space-x-2 text-white text-opacity-80 text-2xl w-full ">
               <span className="relative flex flex-row items-center justify-center">
                 <TabsTrigger
@@ -80,6 +84,7 @@ export default function Container() {
               </span>
             </h1>
           </div>
+         <AdvancedSettings/>
         </TabsList>
         <TabsContent id="bridge" value="bridge" className="flex-1">
        <BridgeSection/>
@@ -92,6 +97,7 @@ export default function Container() {
           <TransactionSection />
         </TabsContent>
       </Tabs>
+      <TransactionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }

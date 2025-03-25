@@ -73,7 +73,9 @@ export interface Account {
     ETH_TO_AVAIL: `${Chain.ETH}-${Chain.AVAIL}`,
     AVAIL_TO_ETH: `${Chain.AVAIL}-${Chain.ETH}`,
     BASE_TO_ETH: `${Chain.BASE}-${Chain.ETH}`,
-    ETH_TO_BASE: `${Chain.ETH}-${Chain.BASE}`
+    ETH_TO_BASE: `${Chain.ETH}-${Chain.BASE}`,
+    AVAIL_TO_BASE: `${Chain.AVAIL}-${Chain.BASE}`,
+    BASE_TO_AVAIL: `${Chain.BASE}-${Chain.AVAIL}`
   } as const;
   
   

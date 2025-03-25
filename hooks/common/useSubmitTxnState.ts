@@ -6,13 +6,15 @@ import { validAddress } from "@/utils/common";
 import BigNumber from "bignumber.js";
 import { useMemo } from "react";
 import { useAccount } from "wagmi";
+import { appConfig } from "@/config/default";
+import { isLiquidityBridge } from "@/components/sections/bridge/utils";
 
 export default function useSubmitTxnState(
   transactionInProgress: boolean
 ) {
   const account = useAccount();
   const { selected } = useAvailAccount();
-  const { fromChain, toChain, fromAmount, toAddress } = useCommonStore();
+  const { fromChain, toChain, fromAmount, toAddress, reviewDialog, allowLiquidityBridgeTxn } = useCommonStore();
   const { balances } = useBalanceStore();
 
   const isWalletConnected = useMemo(() => {
@@ -21,29 +23,40 @@ export default function useSubmitTxnState(
     } 
       return account.address && true;
   }, [account.address, selected?.address, fromChain]);
-
   const isInvalidAmount = useMemo(() => {
     const amount = parseFloat(fromAmount?.toString());
+
+    
+    if (isLiquidityBridge(`${fromChain}-${toChain}`)) {
+      return (
+        fromAmount === undefined ||
+        fromAmount === null ||
+        isNaN(amount) ||
+        amount < appConfig.bridgeLimits.baseAvail.min ||
+        amount > appConfig.bridgeLimits.baseAvail.max
+      );
+    }
+    
     return (
       fromAmount === undefined ||
       fromAmount === null ||
       isNaN(amount) ||
       amount <= 0
     );
-  }, [fromAmount]);
+  }, [fromAmount, fromChain, toChain]);
 
   const isValidToAddress = useMemo(() => {
-    switch (fromChain) {
+    switch (toChain) {
       case Chain.AVAIL:
-        return Boolean(toAddress && validAddress(toAddress, Chain.ETH));
+        return Boolean(toAddress && validAddress(toAddress, Chain.AVAIL));
       case Chain.BASE:
-        return Boolean(toAddress && validAddress(toAddress, Chain.ETH));
+        return Boolean(toAddress && validAddress(toAddress, Chain.BASE));
       case Chain.ETH:
-        return Boolean(toAddress && (validAddress(toAddress, Chain.BASE) || validAddress(toAddress, Chain.AVAIL)));
+        return Boolean(toAddress && (validAddress(toAddress, Chain.ETH)));
       default:
         return false;
     }
-  }, [toAddress, fromChain, selected?.address, account?.address]);
+  }, [toChain, toAddress]);
 
   const hasInsufficientBalance = useMemo(() => {
     if (!fromAmount || isNaN(Number(fromAmount))) return false;
@@ -67,6 +80,9 @@ export default function useSubmitTxnState(
       return "Transaction in progress";
     }
     if (isInvalidAmount) {
+      if (isLiquidityBridge(`${fromChain}-${toChain}`) && fromAmount && parseFloat(fromAmount.toString()) > 0) {
+        return `Enter Amount to Bridge`;
+      }
       return "Enter Amount to Bridge";
     }
     if (!isValidToAddress) {
@@ -76,18 +92,18 @@ export default function useSubmitTxnState(
     if (hasInsufficientBalance) {
       return "Insufficient Balance";
     }
-    return `Initiate bridge from ${
-      fromChain.charAt(0).toUpperCase() + fromChain.slice(1).toLowerCase()
-    } to ${toChain.charAt(0).toUpperCase() + toChain.slice(1).toLowerCase()}`;
-  }, [
-    isWalletConnected,
-    isValidToAddress,
-    transactionInProgress,
-    isInvalidAmount,
-    hasInsufficientBalance,
-    fromChain,
-    toChain,
-  ]);
+    if (isLiquidityBridge(`${fromChain}-${toChain}`) && !allowLiquidityBridgeTxn) {
+      return "Not enough funds in pool, try after some time";
+    }
+    if(reviewDialog.isOpen) {
+      return `Initiate bridge from ${
+        fromChain.charAt(0).toUpperCase() + fromChain.slice(1).toLowerCase()
+      } to ${toChain.charAt(0).toUpperCase() + toChain.slice(1).toLowerCase()}`;
+    }
+
+    return "Review and Confirm Transaction";
+   
+  }, [isWalletConnected, transactionInProgress, isInvalidAmount, isValidToAddress, hasInsufficientBalance, reviewDialog.isOpen, fromChain, toChain, fromAmount, allowLiquidityBridgeTxn]);
 
   const isDisabled = useMemo(() => {
     return (
@@ -95,15 +111,10 @@ export default function useSubmitTxnState(
       isInvalidAmount ||
       hasInsufficientBalance ||
       !isWalletConnected ||
-      !isValidToAddress
+      !isValidToAddress ||
+      (isLiquidityBridge(`${fromChain}-${toChain}`) && !allowLiquidityBridgeTxn)
     );
-  }, [
-    transactionInProgress,
-    isInvalidAmount,
-    hasInsufficientBalance,
-    isWalletConnected,
-    isValidToAddress,
-  ]);
+  }, [transactionInProgress, isInvalidAmount, hasInsufficientBalance, isWalletConnected, isValidToAddress, fromChain, toChain, allowLiquidityBridgeTxn]);
 
   return { buttonStatus, isDisabled };
 }
