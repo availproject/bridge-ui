@@ -24,6 +24,5 @@ export class Logger {
         const extraFields = Object.fromEntries(fields);
         
         datadogLogs.logger.error(message, extraFields);
-        console.error(message, extraFields);
     }
 }
