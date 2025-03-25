@@ -146,7 +146,7 @@ export default function useLiquidityBridge() {
       }
 
       Logger.info(
-        `LIQUIDITY_BRIDGE_INIT_SUCCESS ${hash.txnHash} receiver_address: ${destinationAddress} sender_address: ${activeUserAddress} amount: ${atomicAmount} flow: ${ERC20Chain} -> AVAIL`
+        `LIQUIDITY_BRIDGE INIT_SUCCESS ${hash.txnHash} receiver_address: ${destinationAddress} sender_address: ${activeUserAddress} amount: ${atomicAmount} flow: ${ERC20Chain} -> AVAIL`
       );
 
       return {
@@ -157,7 +157,7 @@ export default function useLiquidityBridge() {
 
     } catch (error: any) {
       Logger.error(
-        `LIQUIDITY_BRIDGE_INIT_FAILED: ${error.message}`,
+        `LIQUIDITY_BRIDGE INIT_FAILED: ${error.message}`,
         ["receiver_address", destinationAddress],
         ["sender_address", activeUserAddress],
         ["amount", formatUnits(BigInt(atomicAmount), 18)],
@@ -237,7 +237,7 @@ export default function useLiquidityBridge() {
         throw new Error(` ${response.error} : Failed to send payload`);
       }
       Logger.info(
-        `LIQUIDITY_BRIDGE_INIT_SUCCESS ${result.value.txHash} receiver_address: ${destinationAddress} sender_address: ${selected?.address} amount: ${atomicAmount} flow: AVAIL -> ${ERC20Chain}`
+        `LIQUIDITY_BRIDGE INIT_SUCCESS ${result.value.txHash} receiver_address: ${destinationAddress} sender_address: ${selected?.address} amount: ${atomicAmount} flow: AVAIL -> ${ERC20Chain}`
       );
 
       return {
@@ -247,7 +247,7 @@ export default function useLiquidityBridge() {
       };
     } catch (error: any) {
       Logger.error(
-        `LIQUIDITY_BRIDGE_INIT_FAILED: ${error.message}`,
+        `LIQUIDITY_BRIDGE INIT_FAILED: ${error.message}`,
         ["receiver_address", destinationAddress],
         ["sender_address", selected?.address],
         ["amount", formatUnits(BigInt(atomicAmount), 18)],
