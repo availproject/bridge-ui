@@ -17,9 +17,10 @@ import { verifyMessage, waitForTransactionReceipt, writeContract } from "@wagmi/
 import { config } from "@/config/walletConfig";
 import availTokenAbi from "@/constants/abis/availTokenAbi.json";
 import { signMessage as personalSign } from '@wagmi/core'
-import { hashMessage, recoverPublicKey } from "viem";
+import { formatUnits, hashMessage, recoverPublicKey } from "viem";
 import { publicKeyToAddress } from "viem/accounts";
 import { useCommonStore } from "@/stores/common";
+import { Logger } from "@/utils/logger";
  
 export default function useLiquidityBridge() {
   const { selected } = useAvailAccount();
@@ -144,6 +145,10 @@ export default function useLiquidityBridge() {
         throw new Error(` ${response.error}`);
       }
 
+      Logger.info(
+        `LIQUIDITY_BRIDGE_INIT_SUCCESS ${hash.txnHash} receiver_address: ${destinationAddress} sender_address: ${activeUserAddress} amount: ${atomicAmount} flow: ${ERC20Chain} -> AVAIL`
+      );
+
       return {
         chain: ERC20Chain,
         hash: hash.txnHash,
@@ -151,6 +156,13 @@ export default function useLiquidityBridge() {
       }
 
     } catch (error: any) {
+      Logger.error(
+        `LIQUIDITY_BRIDGE_INIT_FAILED: ${error.message}`,
+        ["receiver_address", destinationAddress],
+        ["sender_address", activeUserAddress],
+        ["amount", formatUnits(BigInt(atomicAmount), 18)],
+        ["flow", `${ERC20Chain} -> AVAIL`], 
+      );
       throw new Error(`${error.message} : Failed to bridge from ${ERC20Chain} to Avail`);
     } finally {
       setSignatures('')
@@ -224,6 +236,9 @@ export default function useLiquidityBridge() {
       if (response.isErr()) {
         throw new Error(` ${response.error} : Failed to send payload`);
       }
+      Logger.info(
+        `LIQUIDITY_BRIDGE_INIT_SUCCESS ${result.value.txHash} receiver_address: ${destinationAddress} sender_address: ${selected?.address} amount: ${atomicAmount} flow: AVAIL -> ${ERC20Chain}`
+      );
 
       return {
         chain: Chain.AVAIL,
@@ -231,6 +246,14 @@ export default function useLiquidityBridge() {
         id: response.value.id
       };
     } catch (error: any) {
+      Logger.error(
+        `LIQUIDITY_BRIDGE_INIT_FAILED: ${error.message}`,
+        ["receiver_address", destinationAddress],
+        ["sender_address", selected?.address],
+        ["amount", formatUnits(BigInt(atomicAmount), 18)],
+        ["flow", `AVAIL -> ${ERC20Chain}`],
+      );
+
       throw new Error(`${error.message} Failed to bridge from Avail to ${ERC20Chain}`);
     } finally {
       setSignatures("")
