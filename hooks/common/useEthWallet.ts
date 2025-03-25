@@ -56,6 +56,7 @@ export default function useEthWallet() {
   };
 
     const getERC20AvailBalance = useCallback(async (Chain: Chain) => {
+
       const balance = await readContract(config, {
         address: chainToAddresses(Chain).tokenAddress as `0x${string}`,
         abi: availTokenAbi,
@@ -68,7 +69,7 @@ export default function useEthWallet() {
   
       //@ts-ignore TODO: P2
       return new BigNumber(balance);
-    }, [activeUserAddress]);
+    }, [activeUserAddress, chainId]);
 
   return {
     activeUserAddress,
