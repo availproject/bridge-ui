@@ -259,9 +259,10 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
                       Destination Gas Fee ($)
                     </span>
                     <span className="text-white">
-                  {parseAvailAmount(fromBridgeHex(details.fee),18)}
-                      {" "} AVAIL
-                      (${dollarAmount * Number(parseAvailAmount(fromBridgeHex(details.fee),18, 6)) })
+                      {Number(parseAvailAmount(fromBridgeHex(details.fee),18, 6)) < 0.001 
+                        ? "< 0.001 AVAIL"
+                        : `${parseAvailAmount(fromBridgeHex(details.fee),18, 6)} AVAIL ($${(dollarAmount * Number(parseAvailAmount(fromBridgeHex(details.fee),18, 4))).toFixed(3)})`
+                      }
                     </span>
                   </div>}
                  
@@ -314,7 +315,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
                                 .minus(fromBridgeHex(details.fee))
                                 .toString(),
                               18,
-                              6
+                              6,
                             )
                           }
                       </span>

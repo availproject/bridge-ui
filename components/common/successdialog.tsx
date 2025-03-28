@@ -186,7 +186,7 @@ export const SuccessDialog = () => {
         {(!details?.isWormhole && !claimDialog) &&  (
           <div className="flex flex-row items-center justify-between">
             <h1 className="font-thicccboisemibold text-white text-lg">
-              Destination Status
+            Destination Status
             </h1>
             <DestinationStatus />
           </div>

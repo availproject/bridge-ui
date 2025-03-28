@@ -3,6 +3,7 @@ import { useApi } from '@/stores/api';
 import { getStatusTime } from '@/utils/common';
 import { Transaction } from '@/types/transaction';
 import { useLatestBlockInfo } from '@/stores/blockinfo';
+import { formatEstimatedTime } from '@/components/common/utils';
 
 export const StatusTimeComponent = ({
   txn,
@@ -23,7 +24,7 @@ export const StatusTimeComponent = ({
   return (
     <p className="text-xs flex flex-row items-end justify-end text-right text-white text-opacity-70 space-x-1">
       <span>
-        {getStatusTime({
+        {txn.timeRemaining ? formatEstimatedTime(txn.timeRemaining) : getStatusTime({
           from: txn.sourceChain,
           to: txn.destinationChain,
           status: txn.status,

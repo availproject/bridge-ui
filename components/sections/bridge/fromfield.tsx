@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { Chain } from "@/types/common";
 import {
   HoverCard,
@@ -56,7 +57,7 @@ export default function FromField() {
             You send
           </p>
           <input
-            className="!bg-inherit max-md:w-24 placeholder:text-white text-white placeholder:text-2xl text-2xl p-2 !h-8"
+            className="!bg-inherit max-md:w-24 placeholder:text-white text-white placeholder:text-2xl text-2xl p-2 !h-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             style={{
               border: "none",
               background: "none",
@@ -65,9 +66,23 @@ export default function FromField() {
               outline: "none",
             }}
             type="number"
+            min="0"
+            step="0.00001"
             placeholder="0.0"
             value={fromAmount}
-            onChange={(e) => setFromAmount(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+    
+              if (value.startsWith('-')) return;
+            
+              if (value.includes('.')) {
+                const decimals = value.split('.')[1];
+                if (decimals && decimals.length > 5) return;
+              }
+              
+              setFromAmount(value);
+            }}
+            onWheel={(e) => e.preventDefault()}
           />
           <p className="text-white font-ppmori text-sm text-opacity-60">
             ~ {availAmountToDollars.toFixed(decimal_points)}$
