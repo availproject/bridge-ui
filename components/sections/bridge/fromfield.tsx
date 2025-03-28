@@ -64,6 +64,7 @@ export default function FromField() {
               padding: 0,
               margin: 0,
               outline: "none",
+              pointerEvents: "auto"
             }}
             type="number"
             min="0"
@@ -82,7 +83,6 @@ export default function FromField() {
               
               setFromAmount(value);
             }}
-            onWheel={(e) => e.preventDefault()}
           />
           <p className="text-white font-ppmori text-sm text-opacity-60">
             ~ {availAmountToDollars.toFixed(decimal_points)}$
