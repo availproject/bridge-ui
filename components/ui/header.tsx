@@ -9,7 +9,7 @@ export default function NavBar() {
         style={{ backgroundColor: "#1D2A39" }}
       >
         <InfoIcon className="w-10 h-10 md:h-3 md:w-3 mr-2 text-white text-opacity-60" />{" "}
-        <span className="text-white text-xs text-opacity-60 max-md:text-left animate-pulse [animation-duration:1.7s]">
+        <span className="text-white text-xs text-opacity-60 max-md:text-left">
         Heads up! Transfers from Ethereum to Avail using Wormhole might not work right now - we&apos;re working on fixing this.
         </span>
       </div>
