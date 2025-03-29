@@ -4,15 +4,15 @@ import { InfoIcon } from "lucide-react";
 export default function NavBar() {
   return (
     <header className="w-full top-0 !z-50 flex flex-col justify-between items-center">
-      {/* <div
+      <div
         className="w-full flex flex-row px-8 pt-2 pb-2 text-sm font-[450] items-center text-center justify-center "
         style={{ backgroundColor: "#1D2A39" }}
       >
         <InfoIcon className="w-10 h-10 md:h-3 md:w-3 mr-2 text-white text-opacity-60" />{" "}
-        <span className="text-white text-xs text-opacity-60 max-md:text-left">
-        Ledger wallets are currently not supported on Avail DA. Please do not send to a Ledger address on Avail otherwise funds may be lost.
+        <span className="text-white text-xs text-opacity-60 max-md:text-left animate-pulse [animation-duration:1.7s]">
+        Heads up! Transfers from Ethereum to Avail using Wormhole might not work right now - we&apos;re working on fixing this.
         </span>
-      </div> */}
+      </div>
       <div className="pt-4 space-x-4 w-screen flex flex-row items-center justify-center">
         <img
           alt="Avail logo"
