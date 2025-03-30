@@ -112,6 +112,8 @@ export const SuccessDialog = () => {
           {details?.isLiquidityBridge ? (
             transactionStatus === TransactionStatus.CLAIMED ? (
               <FaCheckCircle className="mr-4 h-8 w-8" color="0BDA51" />
+            ) : transactionStatus === TransactionStatus.ERROR ? (
+              <AlertCircle className="mr-4 h-8 w-8 text-red-500" />
             ) : (
               <div className="flex flex-row items-center justify-center">
                 <Loader />{" "}

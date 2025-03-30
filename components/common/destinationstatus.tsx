@@ -16,6 +16,7 @@ import Link from "next/link";
 import { getHref } from "@/utils/common";
 import { useTransactionsStore } from "@/stores/transactions";
 import { formatEstimatedTime } from "./utils";
+import { Logger } from "@/utils/logger";
 
 const DestinationStatus = () => {
   const { successDialog, toChain  } = useCommonStore();
@@ -38,9 +39,11 @@ const DestinationStatus = () => {
       case 'Bridged':
         return TransactionStatus.CLAIMED;
       case 'InProgress':
-        return TransactionStatus.INITIATED
+        return TransactionStatus.INITIATED;
       case 'ClaimPending':
         return TransactionStatus.PENDING;
+      case 'Error':
+        return TransactionStatus.ERROR;
       default:
         return TransactionStatus.INITIATED;
     }
@@ -54,6 +57,8 @@ const DestinationStatus = () => {
         return "Your txn will be picked up soon";
       case 'ClaimPending':
         return "Automatic bridging in progress (~5 minutes)";
+      case 'Error':
+        return "There was something wrong with your txn, please report on Discord";
       default:
         return "Your txn will be picked up soon";
     }
@@ -79,6 +84,11 @@ const DestinationStatus = () => {
           setTransactionStatus(TransactionStatus.CLAIMED)
         }
         
+        if(getLiquidityBridgeStatus(data[0].status) === TransactionStatus.ERROR) {
+          setTransactionStatus(TransactionStatus.ERROR)
+          Logger.debug(`LIQUIDITY_BRIDGE TRANSACTION_ERROR_AFTER_SUCCESS_TRANSFER ${details.id} ${details.hash} ${data[0].status} ${data[0].bridged_tx_hash} ${data[0].bridged_block_hash} ${data[0].time_remaining_secs}`);
+        }
+        
       } catch (error) {
         console.error('Failed to fetch liquidity bridge status:', error);
       }
@@ -88,10 +98,9 @@ const DestinationStatus = () => {
     checkStatus();
 
     return () => clearInterval(interval);
-  }, [details?.id, details?.isLiquidityBridge, toChain]);
+  }, [details?.hash, details?.id, details?.isLiquidityBridge, setTransactionStatus, toChain]);
 
   if (details?.isLiquidityBridge) {
-
     return (
       <div className="flex items-center space-x-2">
         <TooltipProvider>
@@ -100,14 +109,18 @@ const DestinationStatus = () => {
               <div className="flex items-center">
                 {liquidityStatus === 'Bridged' ? (
                   <>
-                 <Link href={getHref(toChain, liquidityClaimTxn ?? "0x", toChain === Chain.AVAIL)} className="text-white text-opacity-70 text-md underline" target="_blank">Destination Txn</Link><ArrowUpRight className="h-5 w-6 text-white text-opacity-70" /> </>
+                    <Link href={getHref(toChain, liquidityClaimTxn ?? "0x", toChain === Chain.AVAIL)} className="text-white text-opacity-70 text-md underline" target="_blank">Destination Txn</Link>
+                    <ArrowUpRight className="h-5 w-6 text-white text-opacity-70" />
+                  </>
                 ) : (
-              <div className="flex flex-row items-center justify-between">
-                {liqudityTime &&
-                  <p className="text-white text-opacity-70 text-md">{formatEstimatedTime(liqudityTime)}</p>
-  }
-                <StatusBadge txnStatus={getLiquidityBridgeStatus(liquidityStatus)} />
-              </div> 
+                  <div className="flex flex-row items-center justify-between">
+                    {liquidityStatus === 'Error' ? (
+                      <InfoIcon className="h-5 w-5 text-red-500" />
+                    ) : (
+                      liqudityTime && <p className="text-white text-opacity-70 text-md">{formatEstimatedTime(liqudityTime)}</p>
+                    )}
+                    <StatusBadge txnStatus={getLiquidityBridgeStatus(liquidityStatus)} />
+                  </div>
                 )}
               </div>
             </TooltipTrigger>

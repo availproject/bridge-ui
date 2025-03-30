@@ -168,7 +168,9 @@ export const fetchAvailToEVMTransactions = async (
       status:
         tx.status === "Bridged"
           ? TransactionStatus.CLAIMED
-          : TransactionStatus.PENDING,
+          : tx.status === "Error"
+            ? TransactionStatus.ERROR
+            : TransactionStatus.PENDING,
       sourceChain: Chain.AVAIL,
       //@luka-ethernal need to get this back from the api as well, no way to handle this on the FE, for multiple ERC20 chains
       destinationChain: Chain.BASE,
@@ -224,7 +226,9 @@ export const fetchEVMToAvailTransactions = async (
       status:
         tx.status === "Bridged"
           ? TransactionStatus.CLAIMED
-          : TransactionStatus.PENDING,
+          : tx.status === "Error"
+            ? TransactionStatus.ERROR
+            : TransactionStatus.PENDING,
       sourceChain: Chain.BASE,
       destinationChain: Chain.AVAIL,
       amount: tx.amount,
