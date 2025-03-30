@@ -41,6 +41,32 @@ export function getHref(chain: Chain, txnHash: string) {
   }
 }
 
+
+
+export const getRpcUrl = (chain: Chain) => {
+  switch (chain) {
+    case Chain.AVAIL:
+      return process.env.NEXT_PUBLIC_AVAIL_RPC_URL;
+    case Chain.ETH:
+      return process.env.NEXT_PUBLIC_ETH_RPC_URL;
+    case Chain.BASE:
+      return process.env.NEXT_PUBLIC_BASE_RPC_URL;
+    default:
+      throw new Error(`Unsupported chain: ${chain}`);
+  }
+}
+
+export const fromBridgeHex = (hex?: string) => {
+  if (!hex) return '';
+  return parseInt(hex.toLowerCase().replace('0x', ''), 16).toString();
+};
+  
+export const toBridgeHex = (decimalStr?: string): string => {
+  if (!decimalStr) return '';
+  const num = BigInt(decimalStr);
+  return `0x${num.toString(16)}`;
+};
+
 export const getStatusTime = ({
   from,
   to,

@@ -13,7 +13,8 @@ import { capitalizeFirstLetter, NTT_CONTRACTS } from "./helper";
 import { appConfig } from "@/config/default";
 import { Logger } from "@/utils/logger";
 import useEthWallet from "../common/useEthWallet";
-import { Chain } from "@/types/common";
+import { Chain, whChainToChain } from "@/types/common";
+import { getRpcUrl } from "@/utils/common";
 
 export default function useWormHoleBridge() {
   const { data: walletClient } = useWalletClient();
@@ -41,7 +42,16 @@ export default function useWormHoleBridge() {
     switcher
   }: WormholeBridgeParams) => {
     try {
-      const wh = new Wormhole(capitalizeFirstLetter(appConfig.config) as "Mainnet" | "Testnet", [evm.Platform]);
+      const wh = new Wormhole(capitalizeFirstLetter(appConfig.config) as "Mainnet" | "Testnet", [evm.Platform], {
+        chains: {
+          [whfrom]: {
+            rpc: getRpcUrl(whChainToChain(whfrom)),
+          },
+          [whto]: {
+            rpc: getRpcUrl(whChainToChain(whto)),
+          },
+        },
+      });
       const sendChain = wh.getChain(whfrom);
       const rcvChain = wh.getChain(whto);
 
