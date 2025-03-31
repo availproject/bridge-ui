@@ -56,7 +56,7 @@ const DestinationStatus = () => {
       case 'InProgress':
         return "Your txn will be picked up soon";
       case 'ClaimPending':
-        return "Automatic bridging in progress (~5 minutes)";
+        return "Automatic bridging in progress";
       case 'Error':
         return "There was something wrong with your txn, please report on Discord";
       default:

@@ -57,7 +57,7 @@ export const SuccessDialog = () => {
         successful on the source chain.{" "}
         {details?.isLiquidityBridge ? (
           <>
-            Your transaction shall be picked up in the next 5 minutes and will
+            Your transaction shall be picked up in the next few minutes and will
             be fulfilled.
             <p>
               You can close this tab in the meantime, or initiate another
