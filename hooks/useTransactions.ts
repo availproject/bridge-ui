@@ -42,7 +42,7 @@ export default function useTransactions() {
       return [];
     }
 
-    const normalizeHash = (hash: string) => hash.toLowerCase();
+    const normalizeHash = (hash?: string) =>  hash?.toLowerCase() ?? hash;
     const transactionsMatch = (tx1: Transaction, tx2: Transaction) => 
       normalizeHash(tx1.sourceTransactionHash) === normalizeHash(tx2.sourceTransactionHash);
   
