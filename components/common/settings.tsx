@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Info, Settings } from 'lucide-react';
+import { ArrowLeft, Settings } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
