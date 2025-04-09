@@ -303,7 +303,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
                           <InfoIcon className="w-3 h-3 cursor-help"/>
                         </HoverCardTrigger>
                         <HoverCardContent align="end" className="w-80 bg-[#141414] text-sm font-ppmori border-0 text-white">
-                          The final amount might differ slighty based on destination gas fees.
+                          The final amount might differ slightly based on destination gas fees.
                         </HoverCardContent>
                       </HoverCard>
                     </span>
