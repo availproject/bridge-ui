@@ -19,7 +19,11 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({txnStatus} : StatusBadg
                 txnStatus === "INITIATED"
                   ? "bg-yellow-600"
                   : `${
-                      txnStatus === "PENDING" ? "bg-blue-600" : "bg-orange-500"
+                      txnStatus === "PENDING" 
+                        ? "bg-blue-600" 
+                        : txnStatus === "ERROR"
+                          ? "bg-red-600"
+                          : "bg-orange-500"
                     }`
               } opacity-75`}
             ></span>
@@ -28,7 +32,11 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({txnStatus} : StatusBadg
                 txnStatus === "INITIATED"
                   ? "bg-yellow-600"
                   : `${
-                      txnStatus === "PENDING" ? "bg-blue-600" : "bg-orange-500"
+                      txnStatus === "PENDING" 
+                        ? "bg-blue-600" 
+                        : txnStatus === "ERROR"
+                          ? "bg-red-600"
+                          : "bg-orange-500"
                     }`
               }`}
             ></span>

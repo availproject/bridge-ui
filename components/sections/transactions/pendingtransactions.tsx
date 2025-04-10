@@ -4,7 +4,7 @@ import { Transaction } from "@/types/transaction";
 import { parseAvailAmount } from "@/utils/parsers";
 import { MoveRight, ArrowUpRight, Clock } from 'lucide-react';
 import ParsedDate from "./parseddate";
-import TxnAddresses from "./txnaddresses";
+import TxnAddresses from "./txn-addresses";
 import { useState } from "react";
 import { SubmitClaim } from "./submitclaim";
 import { getHref } from "@/utils/common";

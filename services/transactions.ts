@@ -4,6 +4,7 @@ import { Transaction } from "@/types/transaction";
 import { Chain } from "@/types/common";
 import { Logger } from "@/utils/logger";
 import { fetchWormholeTransactions } from "@/hooks/wormhole/helper";
+import { fetchAllLiquidityBridgeTransactions } from "./bridgeapi";
 
 const indexerInstance = axios.create({
     baseURL: appConfig.bridgeIndexerBaseUrl,
@@ -22,7 +23,6 @@ function validateParams({ availAddress, ethAddress }: TransactionQueryParams) {
     if (!availAddress && !ethAddress) {
         Logger.info("Either availAddress or ethAddress must be provided.")
         return [];
-     
     }
 }
 
@@ -80,17 +80,7 @@ export const getAllTransactions = async (
 ): Promise<Transaction[]> => {
     validateParams({ availAddress, ethAddress });
 
-    const allTransactions: Transaction[] = [];
     const seenHashes = new Set<string>();
-
-    const addUniqueTransactions = (transactions: Transaction[]) => {
-        transactions.forEach(txn => {
-            if (!seenHashes.has(txn.sourceTransactionHash)) {
-                seenHashes.add(txn.sourceTransactionHash);
-                allTransactions.push(txn);
-            }
-        });
-    };
 
     const fetchPromises: Promise<Transaction[]>[] = [];
     
@@ -98,19 +88,27 @@ export const getAllTransactions = async (
         fetchPromises.push(
             fetchWithErrorHandling(ethAddress, Chain.ETH, Chain.AVAIL),
             fetchWithErrorHandling(ethAddress, Chain.AVAIL, Chain.ETH),
-            fetchWormholeTransactions(false, ethAddress as `0x${string}`)
+            fetchWormholeTransactions(false, ethAddress as `0x${string}`),
+            fetchAllLiquidityBridgeTransactions(false, ethAddress as `0x${string}`)
         );
     }
 
     if (availAddress) {
         fetchPromises.push(
             fetchWithErrorHandling(availAddress, Chain.AVAIL, Chain.ETH),
-            fetchWithErrorHandling(availAddress, Chain.ETH, Chain.AVAIL)
+            fetchWithErrorHandling(availAddress, Chain.ETH, Chain.AVAIL),
+            fetchAllLiquidityBridgeTransactions(false, availAddress as `0x${string}`)
         );
     }
 
     const results = await Promise.all(fetchPromises);
-    results.forEach(addUniqueTransactions);
+    const allTransactions: Transaction[] = results.flat();
 
-    return allTransactions;
+    return allTransactions.filter(txn => {
+        if (!seenHashes.has(txn.sourceTransactionHash)) {
+            seenHashes.add(txn.sourceTransactionHash);
+            return true;
+        }
+        return false;
+    });
 };

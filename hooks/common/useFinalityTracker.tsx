@@ -34,7 +34,7 @@ const getTimeEstimate = (confirmations: number, chain?: Chain, ) => {
       return "~1 minute";
   }
 };
-export function useTransactionStatus(
+export function useFinalityTracker(
   hash?: Hash,
   chain?: Chain,
   isWormhole?: boolean

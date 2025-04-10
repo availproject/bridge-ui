@@ -29,6 +29,7 @@
     "@radix-ui/react-select": "^2.1.2",
     "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-switch": "^1.1.2",
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-toast": "^1.2.2",
     "@radix-ui/react-tooltip": "^1.1.6",
@@ -59,6 +60,7 @@
     "dotenv": "^16.4.5",
     "ethers": "^5.7.2",
     "evm": "link:@wormhole-foundation/sdk/platforms/evm",
+    "framer-motion": "^12.0.3",
     "json-bigint": "^1.0.0",
     "lodash": "^4.17.21",
     "lucide-react": "^0.344.0",
@@ -80,7 +82,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
-    "@polkadot/types": "^11.3.1",
+    "@polkadot/types": "^10.13.1",
     "@simbathesailor/babel-plugin-use-what-changed": "^2.1.0",
     "@simbathesailor/use-what-changed": "^2.0.0",
     "@talismn/connect-wallets": "^1.2.5",
