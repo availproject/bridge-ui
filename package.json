@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:avail-wallet": "cd packages/avail-wallet && npm run build",
+    "dev:avail-wallet": "cd packages/avail-wallet && npm run dev",
+    "publish:avail-wallet": "cd packages/avail-wallet && npm publish"
   },
   "dependencies": {
     "@avail-project/metamask-avail-types": "^0.6.1",
