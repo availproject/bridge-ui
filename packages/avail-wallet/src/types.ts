@@ -1,5 +1,6 @@
 import { Wallet, WalletAccount } from "@talismn/connect-wallets";
 import { ApiPromise } from "avail-js-sdk";
+export type { StoreApi } from 'zustand';
 
 export type Snap = {
   permissionName: string;
@@ -33,9 +34,9 @@ export interface ExtendedWalletAccount extends WalletAccount {
 export interface UpdateMetadataParams {
   api: ApiPromise | undefined;
   account: WalletAccount;
-  metadataCookie: any;
+  metadataCookie: boolean | any;
   selectedWallet: Wallet;
-  setCookie: Function;
+  setCookie: (name: string, value: any, options?: any) => void;
 }
 
 export interface AvailWalletProviderProps {

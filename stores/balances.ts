@@ -3,7 +3,7 @@
 import { getTokenBalance } from "@/services/contract";
 import { Chain } from "@/types/common";
 import { ApiPromise } from "avail-js-sdk";
-import { create } from "zustand";
+import { create } from 'zustand';
 
 type TokenBalance = {
   value: string;

@@ -1,6 +1,6 @@
 import { initApi } from "@/utils/common";
 import { ApiPromise } from "avail-js-sdk";
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface Api {
     api?: ApiPromise

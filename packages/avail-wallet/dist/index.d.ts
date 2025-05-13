@@ -1,6 +1,8 @@
 import React$1, { ReactNode } from 'react';
 import { Wallet, WalletAccount } from '@talismn/connect-wallets';
 import { ApiPromise } from 'avail-js-sdk';
+import * as zustand_middleware from 'zustand/middleware';
+import * as zustand from 'zustand';
 import { MetaMaskInpageProvider } from '@metamask/providers';
 
 type Snap$1 = {
@@ -30,9 +32,9 @@ interface ExtendedWalletAccount extends WalletAccount {
 interface UpdateMetadataParams {
     api: ApiPromise | undefined;
     account: WalletAccount;
-    metadataCookie: any;
+    metadataCookie: boolean | any;
     selectedWallet: Wallet;
-    setCookie: Function;
+    setCookie: (name: string, value: any, options?: any) => void;
 }
 interface AvailWalletProviderProps {
     children: React.ReactNode;
@@ -57,11 +59,38 @@ interface AvailWalletContextType {
     setRpcUrl: (url: string) => void;
 }
 declare const useAvailWallet: () => AvailWalletContextType;
-declare const AvailWalletProvider: React$1.FC<AvailWalletProviderProps>;
+declare const AvailWalletProvider: React$1.FC<AvailWalletProviderProps & {
+    rpcUrl?: string;
+}>;
 
-declare const useAvailAccount: any;
+interface AvailWallet {
+    selected: WalletAccount | null;
+    setSelected: (selected: WalletAccount | null) => void;
+    selectedWallet: Wallet | null;
+    setSelectedWallet: (selectedWallet: Wallet | null) => void;
+    metadataUpdated: boolean;
+    setMetadataUpdated: (updated: boolean) => void;
+    clearWalletState: () => void;
+}
+declare const useAvailAccount: zustand.UseBoundStore<Omit<zustand.StoreApi<AvailWallet>, "persist"> & {
+    persist: {
+        setOptions: (options: Partial<zustand_middleware.PersistOptions<AvailWallet, unknown>>) => void;
+        clearStorage: () => void;
+        rehydrate: () => Promise<void> | void;
+        hasHydrated: () => boolean;
+        onHydrate: (fn: (state: AvailWallet) => void) => () => void;
+        onFinishHydration: (fn: (state: AvailWallet) => void) => () => void;
+        getOptions: () => Partial<zustand_middleware.PersistOptions<AvailWallet, unknown>>;
+    };
+}>;
 
-declare const useApi: any;
+interface Api {
+    api?: ApiPromise;
+    isReady: boolean;
+    setApi: (api: ApiPromise) => void;
+    ensureConnection: (initApiFn: () => Promise<ApiPromise>) => Promise<void>;
+}
+declare const useApi: zustand.UseBoundStore<zustand.StoreApi<Api>>;
 
 type MetaMaskContextType = {
     provider: MetaMaskInpageProvider | null;
@@ -127,7 +156,7 @@ declare const getInjectorMetadata: (api: ApiPromise) => {
     types: any;
     userExtensions: any;
 };
-declare function updateMetadata({ api, account, metadataCookie, selectedWallet, setCookie }: UpdateMetadataParams): Promise<void>;
+declare function updateMetadata({ api, account, metadataCookie, selectedWallet, setCookie, }: UpdateMetadataParams): Promise<void>;
 declare const initApi: (rpcUrl: string, retries?: number) => Promise<ApiPromise>;
 
 export { AccountSelectionProps, AccountSelector, AvailWalletConnect, AvailWalletConnectProps, AvailWalletProvider, AvailWalletProviderProps, DisconnectWallet, DisconnectWalletProps, ExtendedWalletAccount, MetaMaskContext, MetaMaskProvider, UpdateMetadataParams, WalletSelectionProps, WalletSelector, getInjectorMetadata, initApi, updateMetadata, useApi, useAvailAccount, useAvailWallet, useInvokeSnap, useMetaMask, useMetaMaskContext, useRequestSnap };

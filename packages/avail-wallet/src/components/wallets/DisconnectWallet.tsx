@@ -10,12 +10,12 @@ export const DisconnectWallet = memo(({
 
   return (
     <div
-      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-avail text-avail-foreground shadow hover:bg-avail/90 h-8 rounded-full px-3 cursor-pointer"
+      className="aw-flex-row aw-items-center aw-justify-center aw-text-sm aw-font-medium aw-rounded-xl aw-cursor-pointer aw-bg-darker aw-text-white aw-p-4"
       onClick={() => {
         navigator.clipboard.writeText(selected.address);
       }}
     >
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="pr-1 h-5 w-5">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="aw-pr-2 aw-h-5 aw-w-5">
         <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
         <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
         <path d="M18 9a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h4v-8Z"/>
@@ -26,7 +26,7 @@ export const DisconnectWallet = memo(({
           : "Retry Connecting"
         : selected.address.slice(0, 6) + "..." + selected.address?.slice(-4)}
       
-      <button className="ml-2" onClick={onDisconnect}>
+      <button className="aw-ml-2 aw-button" onClick={onDisconnect}>
         {selected.source === "MetamaskSnap" ? (
           installedSnap ? (
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512" fill="currentColor" width="12" height="12">

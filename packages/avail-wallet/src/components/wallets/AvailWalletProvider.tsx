@@ -1,12 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ApiPromise } from 'avail-js-sdk';
-import { useCookies } from 'react-cookie';
-import { getWallets, WalletAccount } from '@talismn/connect-wallets';
-import { MetaMaskProvider } from '../../hooks/metamask';
-import { AvailWalletProviderProps, ExtendedWalletAccount } from '../../types';
-import { useAvailAccount } from '../../stores/availwallet';
-import { useApi } from '../../stores/api';
-import { initApi } from '../../utils';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { ApiPromise } from "avail-js-sdk";
+import { getWallets } from "@talismn/connect-wallets";
+import { MetaMaskProvider } from "../../hooks/metamask";
+import { AvailWalletProviderProps, ExtendedWalletAccount } from "../../types";
+import { useAvailAccount } from "../../stores/availwallet";
+import { useApi } from "../../stores/api";
+import { initApi } from "../../utils";
 
 interface AvailWalletContextType {
   api?: ApiPromise;
@@ -17,34 +16,30 @@ interface AvailWalletContextType {
 
 const AvailWalletContext = createContext<AvailWalletContextType>({
   isConnected: false,
-  setRpcUrl: () => {}
+  setRpcUrl: () => {},
 });
 
 export const useAvailWallet = () => useContext(AvailWalletContext);
 
-export const AvailWalletProvider: React.FC<AvailWalletProviderProps> = ({ 
-  children, 
-  api: externalApi 
-}) => {
-  const [rpcUrl, setRpcUrl] = useState<string | undefined>(
-    typeof window !== 'undefined' ? (window as any).AVAIL_RPC_URL : undefined
+export const AvailWalletProvider: React.FC<
+  AvailWalletProviderProps & { rpcUrl?: string }
+> = ({ children, api: externalApi, rpcUrl: userProvidedRpcUrl }) => {
+  const DEFAULT_RPC_URL = "wss://turing-rpc.avail.so/";
+  const [rpcUrl, setRpcUrl] = useState<string>(
+    userProvidedRpcUrl || DEFAULT_RPC_URL,
   );
-  const [cookies, setCookie] = useCookies([
-    "substrateAddress", 
-    "substrateWallet", 
-    "metadataUpdated"
-  ]);
-  
+
   const { 
     selected, 
     setSelected, 
     selectedWallet, 
-    setSelectedWallet 
+    setSelectedWallet,
+    metadataUpdated 
   } = useAvailAccount();
-  
+
   const { api, isReady, setApi, ensureConnection } = useApi();
 
-  // Initialize API 
+  // Initialize API
   useEffect(() => {
     if (externalApi) {
       setApi(externalApi);
@@ -52,37 +47,40 @@ export const AvailWalletProvider: React.FC<AvailWalletProviderProps> = ({
     }
 
     if (!rpcUrl) return;
-    
+
     const initializeApi = async () => {
       await ensureConnection(() => initApi(rpcUrl));
     };
-    
+
     initializeApi();
   }, [rpcUrl, externalApi, setApi, ensureConnection]);
 
   // Load persisted wallet data
   useEffect(() => {
     const loadPersistedWallet = async () => {
-      if (!cookies.substrateAddress || !cookies.substrateWallet || !isReady) {
+      if (!selected?.address || !selectedWallet?.title || !isReady) {
         return;
       }
-      
-      if (cookies.substrateWallet !== "MetamaskSnap") {
+
+      if (selectedWallet.title !== "MetamaskSnap") {
         const wallets = getWallets();
-        const savedWallet = wallets.find(wallet => wallet.title === cookies.substrateWallet);
-        
+        const savedWallet = wallets.find(
+          (wallet) => wallet.title === selectedWallet.title,
+        );
+
         if (!savedWallet) return;
-        
+
         try {
           await savedWallet.enable("avail-wallet");
           const accounts = await savedWallet.getAccounts();
-          const substrateAccounts = (accounts as ExtendedWalletAccount[])
-            .filter(account => account.type !== "ethereum");
-            
+          const substrateAccounts = (
+            accounts as ExtendedWalletAccount[]
+          ).filter((account) => account.type !== "ethereum");
+
           const savedAccount = substrateAccounts.find(
-            account => account.address === cookies.substrateAddress
+            (account) => account.address === selected.address,
           );
-          
+
           if (savedAccount) {
             setSelectedWallet(savedWallet);
             setSelected(savedAccount);
@@ -92,18 +90,24 @@ export const AvailWalletProvider: React.FC<AvailWalletProviderProps> = ({
         }
       }
     };
-    
+
     loadPersistedWallet();
-  }, [cookies.substrateAddress, cookies.substrateWallet, isReady, setSelected, setSelectedWallet]);
+  }, [
+    selected,
+    selectedWallet,
+    isReady,
+    setSelected,
+    setSelectedWallet,
+  ]);
 
   return (
     <MetaMaskProvider>
-      <AvailWalletContext.Provider 
-        value={{ 
+      <AvailWalletContext.Provider
+        value={{
           api: api,
-          isConnected: isReady, 
-          rpcUrl,
-          setRpcUrl 
+          isConnected: isReady,
+          rpcUrl: rpcUrl,
+          setRpcUrl,
         }}
       >
         {children}

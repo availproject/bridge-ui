@@ -1,0 +1,293 @@
+/* Avail Wallet Package Styles */
+
+/* Wallet Selector Styles */
+.aw-container {
+  font-family: sans-serif;
+}
+
+.aw-flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.aw-flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.aw-gap-2 {
+  gap: 0.5rem;
+}
+
+.aw-gap-3 {
+  gap: 0.75rem;
+}
+
+.aw-items-center {
+  align-items: center;
+}
+
+.aw-items-start {
+  align-items: flex-start;
+}
+
+.aw-justify-between {
+  justify-content: space-between;
+}
+
+.aw-justify-start {
+  justify-content: flex-start;
+}
+
+.aw-justify-center {
+  justify-content: center;
+}
+
+.aw-max-h-48 {
+  max-height: 12rem;
+}
+
+.aw-max-h-72 {
+  max-height: 18rem;
+}
+
+.aw-overflow-y-scroll {
+  overflow-y: scroll;
+}
+
+.aw-overflow-x-hidden {
+  overflow-x: hidden;
+}
+
+.aw-text-left {
+  text-align: left;
+}
+
+.aw-ml-2 {
+  margin-left: 0.5rem;
+}
+
+.aw-mt-2 {
+  margin-top: 0.5rem;
+}
+
+.aw-mt-3 {
+  margin-top: 0.75rem;
+}
+
+.aw-mr-4 {
+  margin-right: 1rem;
+}
+
+.aw-my-3 {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.aw-mt-4 {
+  margin-top: 1rem;
+}
+
+.aw-pt-2 {
+  padding-top: 0.5rem;
+}
+
+.aw-pt-3 {
+  padding-top: 0.75rem;
+}
+
+.aw-pb-3 {
+  padding-bottom: 0.75rem;
+}
+
+.aw-p-4 {
+  padding: 1rem;
+}
+
+.aw-p-8 {
+  padding: 2rem;
+}
+
+.aw-space-x-2 {
+  column-gap: 0.5rem;
+}
+
+.aw-h-4 {
+  height: 1rem;
+}
+
+.aw-w-4 {
+  width: 1rem;
+}
+
+.aw-h-6 {
+  height: 1.5rem;
+}
+
+.aw-w-6 {
+  width: 1.5rem;
+}
+
+.aw-h-7 {
+  height: 1.75rem;
+}
+
+.aw-w-7 {
+  width: 1.75rem;
+}
+
+.aw-h-14 {
+  height: 3.5rem;
+}
+
+.aw-w-full {
+  width: 100%;
+}
+
+.aw-mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.aw-pr-2 {
+  padding-right: 0.5rem;
+}
+
+.aw-rounded-xl {
+  border-radius: 0.75rem;
+}
+
+.aw-text-sm {
+  font-size: 0.875rem;
+}
+
+.aw-text-md {
+  font-size: 1rem;
+}
+
+.aw-text-lg {
+  font-size: 1.125rem;
+}
+
+.aw-text-xl {
+  font-size: 1.25rem;
+}
+
+.aw-text-3xl {
+  font-size: 1.875rem;
+}
+
+.aw-font-thin {
+  font-weight: 100;
+}
+
+.aw-font-light {
+  font-weight: 300;
+}
+
+.aw-font-semibold {
+  font-weight: 600;
+}
+
+.aw-font-bold {
+  font-weight: 700;
+}
+
+.aw-cursor-pointer {
+  cursor: pointer;
+}
+
+.aw-underline {
+  text-decoration: underline;
+}
+
+.aw-text-white {
+  color: white;
+}
+
+.aw-text-opacity-70 {
+  opacity: 0.7;
+}
+
+.aw-text-opacity-90 {
+  opacity: 0.9;
+}
+
+.aw-bg-dark {
+  background-color: #252831;
+}
+
+.aw-bg-darker {
+  background-color: #3a3b3cb1;
+}
+
+.aw-border-2 {
+  border-width: 2px;
+}
+
+.aw-border-darker {
+  border-color: #3a3b3cb1;
+}
+
+.aw-text-blue {
+  color: #3489E8;
+}
+
+/* Button Styles */
+.aw-button {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.aw-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.aw-button-primary {
+  background-color: #3489E8;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+}
+
+.aw-button-primary:hover:not(:disabled) {
+  background-color: #2a70c0;
+}
+
+.aw-button-outline {
+  background-color: transparent;
+  color: white;
+  border: 1px solid #3a3b3cb1;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+}
+
+.aw-button-outline:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Dialog Styles */
+.aw-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aw-dialog-content {
+  position: relative;
+  background-color: #252831;
+  border: 2px solid #3a3b3cb1;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 425px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}

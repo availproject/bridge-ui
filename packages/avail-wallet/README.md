@@ -1,129 +1,142 @@
-# Avail Wallet
+# Avail Wallet Package
 
-A React library for connecting to Avail wallets including Metamask Snap and substrate-based wallets.
+## Overview
+This package provides components and hooks for integrating Avail wallets into your application.
 
 ## Installation
-
 ```bash
-npm install avail-wallet
-# or
-yarn add avail-wallet
+npm install @avail/wallet
 ```
 
-## Dependencies
+## Important Setup Requirements
 
-This package has peer dependencies that need to be installed:
+### CSS/Styling Setup
+This package includes its own CSS styling. You need to import it in your application:
 
-```bash
-npm install react react-dom avail-js-sdk @talismn/connect-wallets react-cookie zustand
+```js
+// In your main layout or component file
+import 'avail-wallet/dist/styles.css';
 ```
 
-## Usage
+This will ensure all wallet components are properly styled without any dependency on Tailwind or other CSS frameworks.
 
-### Basic Integration
+## Basic Usage
+Here's how to properly set up your application with this package:
 
-Wrap your application with the `AvailWalletProvider`:
+### Next.js App Router Setup
 
-```jsx
-import { AvailWalletProvider, AvailWalletConnect } from 'avail-wallet';
+```tsx
+// In your app/providers.tsx
+"use client";
 
-function App() {
+import { AvailWalletProvider } from 'avail-wallet';
+import 'avail-wallet/dist/styles.css';
+
+export function Providers({ children }) {
   return (
     <AvailWalletProvider>
-      <YourApp />
+      {children}
     </AvailWalletProvider>
   );
 }
 
-function YourApp() {
+// In your app/layout.tsx
+import { Providers } from './providers';
+import './globals.css';
+
+export default function RootLayout({ children }) {
   return (
-    <div>
-      <header>
-        <nav>
-          <AvailWalletConnect />
-        </nav>
-      </header>
-      <main>
-        {/* Your app content */}
-      </main>
-    </div>
+    <html lang="en">
+      <body>
+        <Providers>
+          {children}
+        </Providers>
+      </body>
+    </html>
   );
 }
 ```
 
-### Using with an External API Instance
+### Next.js Pages Router Setup
 
-If you already have an ApiPromise instance initialized:
-
-```jsx
+```tsx
+// In your _app.tsx or root component
 import { AvailWalletProvider } from 'avail-wallet';
-import { ApiPromise } from 'avail-js-sdk';
+import 'avail-wallet/dist/styles.css';
+import '../styles/globals.css';
 
-function App({ api }) {
+function App({ Component, pageProps }) {
   return (
-    <AvailWalletProvider api={api}>
-      {/* Your app content */}
+    <AvailWalletProvider>
+      <Component {...pageProps} />
     </AvailWalletProvider>
   );
 }
+
+export default App;
 ```
 
-### Accessing Wallet State
-
-```jsx
-import { useAvailAccount, useAvailWallet } from 'avail-wallet';
-
-function WalletStatus() {
-  const { selected } = useAvailAccount();
-  const { api, isConnected } = useAvailWallet();
-  
-  if (!selected) return <p>Not connected</p>;
-  
-  return (
-    <div>
-      <p>Connected address: {selected.address}</p>
-      <p>API status: {isConnected ? 'Connected' : 'Disconnected'}</p>
-    </div>
-  );
-}
-```
-
-### Setting Custom RPC URL
-
-```jsx
-import { useAvailWallet } from 'avail-wallet';
-
-function RpcSelector() {
-  const { setRpcUrl } = useAvailWallet();
-  
-  return (
-    <button onClick={() => setRpcUrl('wss://goldberg.avail.tools/ws')}>
-      Connect to Goldberg
-    </button>
-  );
-}
-```
+## Persistence
+The wallet state is automatically persisted in your browser's localStorage. This means users will remain connected to their wallets between sessions without having to reconnect every time they visit your application.
 
 ## Components
 
-- `AvailWalletProvider`: Context provider for wallet functionality
-- `AvailWalletConnect`: Main component for wallet connection UI
-- `AccountSelector`: Component for selecting accounts from a wallet
-- `DisconnectWallet`: Component for displaying connected wallet and disconnect button
-- `WalletSelector`: Component for selecting a wallet type
+### AvailWalletProvider
+Provides the wallet context to your application with built-in localStorage persistence.
+
+### AvailWalletConnect
+A component for connecting to Avail wallets with a styled UI.
+
+### AccountSelector
+Allows users to select an account from their wallet with a styled UI.
+
+### DisconnectWallet
+Provides UI for disconnecting from a wallet.
 
 ## Hooks
 
-- `useAvailAccount`: Access the selected account and wallet
-- `useAvailWallet`: Access the API instance and connection state
-- `useMetaMask`: Interact with MetaMask and snaps
-- `useInvokeSnap`: Invoke methods on the Avail Snap
-- `useRequestSnap`: Request installation of the Avail Snap
+### useAvailWallet
+Access the wallet context, including connection state and API.
 
-## Customization
+### useAvailAccount
+Access and manage the selected account.
 
-This library provides components without built-in styling, making it easy to integrate with your design system. You should apply your own CSS classes to style the components.
+### useApi
+Access the Avail API.
 
-## License
+## Example
+```tsx
+import { useAvailWallet, AvailWalletConnect } from '@avail/wallet';
 
-MIT
+function MyComponent() {
+  const { isConnected, api } = useAvailWallet();
+
+  return (
+    <div>
+      <AvailWalletConnect />
+      {isConnected ? 'Connected to wallet' : 'Not connected'}
+    </div>
+  );
+}
+```
+
+## Troubleshooting
+
+### CSS/Styling Issues
+If components appear unstyled:
+
+1. Make sure you've imported the CSS file: `import 'avail-wallet/dist/styles.css'`
+2. Ensure the CSS import is at the appropriate level in your component hierarchy
+3. Check for any CSS conflicts in your application that might be overriding the wallet styles
+
+### Custom Styling
+You can override the default styles by targeting the classes with higher specificity in your own CSS:
+
+```css
+/* In your custom CSS file */
+.aw-button-primary {
+  background-color: #YOUR_CUSTOM_COLOR !important;
+}
+```
+
+All component classes are prefixed with `aw-` to avoid conflicts with your application's styling.

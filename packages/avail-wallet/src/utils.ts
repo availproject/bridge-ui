@@ -60,10 +60,7 @@ export async function updateMetadata({
           wallet: selectedWallet.title,
           updated: true,
         },
-        {
-          path: "/",
-          sameSite: true,
-        },
+        {}
       );
     } catch (e) {
       console.error("Failed to update metadata", e);
@@ -72,7 +69,7 @@ export async function updateMetadata({
 }
 
 export const initApi = async (
-  rpcUrl = "wss://turing-rpc.avail.so/",
+  rpcUrl: string,
   retries = 3,
 ): Promise<ApiPromise> => {
   try {

@@ -11,6 +11,7 @@ import { updateMetadata } from "../../utils";
 import { WalletSelector } from "./WalletSelector";
 import { AvailWalletConnectProps, ExtendedWalletAccount } from "../../types";
 import { useAvailAccount } from "../../stores/availwallet";
+import { useApi } from "../../stores/api";
 
 export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
   api,
@@ -18,17 +19,20 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
   const [open, setOpen] = useState(false);
   const [supportedWallets, setSupportedWallets] = useState<Wallet[]>([]);
   const [enabledAccounts, setEnabledAccounts] = useState<WalletAccount[]>([]);
-  const [cookies, setCookie] = useState<{
-    substrateAddress?: string;
-    substrateWallet?: string;
-    metadataUpdated?: any;
-  }>({});
+  const { api: storeApi } = useApi();
 
   const requestSnap = useRequestSnap();
   const invokeSnap = useInvokeSnap();
 
-  const { selected, setSelected, selectedWallet, setSelectedWallet } =
-    useAvailAccount();
+  const { 
+    selected, 
+    setSelected, 
+    selectedWallet, 
+    setSelectedWallet,
+    metadataUpdated,
+    setMetadataUpdated,
+    clearWalletState
+  } = useAvailAccount();
 
   const { installedSnap, metamaskInstalled } = useMetaMask();
 
@@ -41,53 +45,45 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
   useEffect(() => {
     (async () => {
       const wallets = getSupportedWallets();
-
-      if (cookies.substrateAddress && cookies.substrateWallet) {
-        if (cookies.substrateWallet === "MetamaskSnap" && installedSnap) {
-          setSelected({
-            address: cookies.substrateAddress as string,
-            source: "MetamaskSnap",
-          });
+  
+      if (selected?.address && selectedWallet?.title) {
+        if (selectedWallet.title === "MetamaskSnap" && installedSnap) {
+          // Reconnect is handled by persistent state
         } else {
-          const selectedWallet = wallets.find((wallet) => {
-            return wallet.title === cookies.substrateWallet;
+          const matchedWallet = wallets.find((wallet) => {
+            return wallet.title === selectedWallet?.title;
           });
-
-          if (!selectedWallet) {
+  
+          if (!matchedWallet) {
             return;
           }
-
-          (selectedWallet.enable("avail-wallet") as any).then(() => {
-            selectedWallet.getAccounts().then((accounts: WalletAccount[]) => {
+  
+          (matchedWallet.enable("bridge-ui") as any).then(() => {
+            matchedWallet.getAccounts().then((accounts: WalletAccount[]) => {
               const enabledAccounts = (
                 accounts as ExtendedWalletAccount[]
               ).filter((account) => {
-                return account.type !== "ethereum";
+                return account.type! !== "ethereum";
               });
-              const selected = enabledAccounts.find(
-                (account) => account.address === cookies.substrateAddress,
+              const selectedAccount = enabledAccounts.find(
+                (account) => account.address === selected?.address
               );
-
-              if (!selected) {
+  
+              if (!selectedAccount) {
                 return;
               }
-
-              setSelectedWallet(selectedWallet);
+  
               setEnabledAccounts(enabledAccounts);
-              setSelected(selected);
             });
           });
         }
       }
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    cookies.substrateAddress,
-    cookies.substrateWallet,
     installedSnap,
     metamaskInstalled,
-    getSupportedWallets,
-    setSelected,
-    setSelectedWallet,
+    getSupportedWallets
   ]);
 
   const handleWalletSelect = useCallback(
@@ -97,11 +93,7 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
           await requestSnap();
           const address = await invokeSnap({ method: "getAddress" });
           setSelected({ address: address as string, source: "MetamaskSnap" });
-          setCookie({
-            ...cookies,
-            substrateAddress: address as string,
-            substrateWallet: "MetamaskSnap",
-          });
+          setSelectedWallet({ title: 'MetamaskSnap' } as Wallet);
         } catch (error) {
           console.error("Failed to connect to Avail Snap", error);
         }
@@ -119,8 +111,6 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
     [
       invokeSnap,
       requestSnap,
-      cookies,
-      setCookie,
       setSelected,
       setSelectedWallet,
     ],
@@ -129,23 +119,18 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
   const handleAccountSelect = useCallback(
     async (account: WalletAccount) => {
       setSelected(account);
-      setCookie({
-        ...cookies,
-        substrateAddress: account.address,
-        substrateWallet: selectedWallet?.title,
-      });
 
-      if (api && selectedWallet) {
+      const currentApi = api || storeApi;
+      if (currentApi && selectedWallet) {
         await updateMetadata({
-          api,
+          api: currentApi,
           account,
-          metadataCookie: cookies.metadataUpdated,
+          metadataCookie: metadataUpdated,
           selectedWallet: selectedWallet,
           setCookie: (name: string, value: any, options: any) => {
-            setCookie({
-              ...cookies,
-              [name]: value,
-            });
+            if (name === 'metadataUpdated') {
+              setMetadataUpdated(value);
+            }
           },
         });
       }
@@ -155,15 +140,13 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
         `AVAIL_WALLET_CONNECT - ${selectedWallet?.title} - ${account.address}`,
       );
     },
-    [selectedWallet, api, cookies, setCookie, setSelected],
+    [selectedWallet, api, storeApi, metadataUpdated, setMetadataUpdated, setSelected],
   );
 
   const handleDisconnect = useCallback(() => {
-    setCookie({});
-    setSelected(null);
-    setSelectedWallet(null);
+    clearWalletState();
     setEnabledAccounts([]);
-  }, [setCookie, setSelected, setSelectedWallet]);
+  }, [clearWalletState]);
 
   return (
     <>
@@ -177,28 +160,28 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
         <div>
           <button
             onClick={() => setOpen(!open)}
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2 !ml-2"
+            className="aw-button aw-button-primary aw-ml-2"
           >
             Connect Wallet
           </button>
 
           {open && (
-            <div className="fixed inset-0 z-50 flex items-start justify-center sm:items-center">
+            <div className="aw-dialog-overlay">
               <div
                 className="fixed inset-0 bg-black/50"
                 onClick={() => setOpen(false)}
               ></div>
-              <div className="z-50 grid w-full max-w-lg gap-4 bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg md:w-full">
-                <div className="sm:max-w-[425px] bg-[#252831] border-2 border-[#3a3b3cb1] rounded-xl p-4">
+              <div className="aw-dialog-content">
+                <div className="aw-bg-dark aw-border-2 aw-border-darker aw-rounded-xl p-4">
                   <div>
-                    <h2 className="font-bold text-3xl text-white">
+                    <h2 className="aw-font-bold aw-text-3xl aw-text-white">
                       Connect Wallet
                     </h2>
 
                     {enabledAccounts.length === 0 ? (
                       <>
-                        <p className="font-regular text-md text-white text-opacity-70 pt-2">
-                          <div className="flex flex-row items-start justify-start pt-3 space-x-2">
+                        <p className="aw-text-md aw-text-white aw-text-opacity-70 aw-pt-2">
+                          <div className="aw-flex-row aw-items-start aw-justify-start aw-pt-3 aw-space-x-2">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               width="24"
@@ -218,7 +201,7 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
                               Don&apos;t have an Avail Wallet yet? Checkout this{" "}
                               <a
                                 href="https://docs.availspace.app/avail-space/web-dashboard-user-guide/getting-started/how-to-install-subwallet-and-create-a-new-avail-account?utm_source=avail&utm_medium=docspace&utm_campaign=avlclaim"
-                                className="underline"
+                                className="aw-underline"
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
@@ -248,7 +231,7 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
                       {enabledAccounts && enabledAccounts.length > 0 ? (
                         <button
                           disabled={enabledAccounts.length <= 0}
-                          className="!bg-[#252831] hover:text-white !border-0 !p-0"
+                          className="aw-bg-dark aw-button aw-button-outline"
                           onClick={() => {
                             setEnabledAccounts([]);
                             setSelected(null);
@@ -264,12 +247,12 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="h-7 w-7 pr-2 inline-block"
+                            className="aw-h-7 aw-w-7 aw-pr-2 inline-block"
                           >
                             <path d="m12 19-7-7 7-7" />
                             <path d="M19 12H5" />
                           </svg>
-                          <span className="text-lg">Go back to wallets</span>
+                          <span className="aw-text-lg">Go back to wallets</span>
                         </button>
                       ) : (
                         <p>Scroll to find more wallets</p>

@@ -17,21 +17,21 @@ export const WalletSelector = memo(({
   );
 
   return (
-    <div className="flex flex-col gap-3 max-h-72 overflow-y-scroll">
+    <div className="aw-flex-col aw-gap-3 aw-max-h-72 aw-overflow-y-scroll">
       {/* Metamask Snap Button */}
       <button
         disabled={!metamaskInstalled}
-        className="!text-lg font-thin bg-[#3a3b3cb1] text-left font-ppmori rounded-xl !p-8"
+        className="aw-text-lg aw-font-thin aw-bg-darker aw-text-left aw-rounded-xl aw-p-8 aw-button"
         onClick={() => onWalletSelect({ title: 'MetamaskSnap' } as Wallet)}
         key="Metamask"
       >
-        <div className="flex flex-row">
+        <div className="aw-flex-row">
           <img
             alt="Metamask Snap"
             src="/images/availsnap.png"
             width="24" 
             height="24"
-            className="mr-4 h-6 w-6"
+            className="aw-mr-4 aw-h-6 aw-w-6"
           />
           Avail Snap
         </div>
@@ -42,16 +42,16 @@ export const WalletSelector = memo(({
         <button
           key={wallet.title}
           disabled={!wallet.installed}
-          className="!text-lg font-thin bg-[#3a3b3cb1] text-left font-ppmori rounded-xl !p-8"
+          className="aw-text-lg aw-font-thin aw-bg-darker aw-text-left aw-rounded-xl aw-p-8 aw-button"
           onClick={() => onWalletSelect(wallet)}
         >
-          <div className="flex flex-row">
+          <div className="aw-flex-row">
             <img
               alt={wallet.title}
               height="20"
               width="20"
               src={wallet.logo.src}
-              className="mr-4"
+              className="aw-mr-4"
             />
             {wallet.title}
           </div>

@@ -18,5 +18,5 @@ export declare const getInjectorMetadata: (api: ApiPromise) => {
     types: any;
     userExtensions: any;
 };
-export declare function updateMetadata({ api, account, metadataCookie, selectedWallet, setCookie }: UpdateMetadataParams): Promise<void>;
+export declare function updateMetadata({ api, account, metadataCookie, selectedWallet, setCookie, }: UpdateMetadataParams): Promise<void>;
 export declare const initApi: (rpcUrl: string, retries?: number) => Promise<ApiPromise>;

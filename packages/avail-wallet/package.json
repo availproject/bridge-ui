@@ -1,16 +1,17 @@
 {
   "name": "avail-wallet",
-  "version": "0.1.0",
+  "version": "0.1.5",
   "description": "React components for connecting to Avail wallets",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "dist/styles.css"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c && cp src/styles.css dist/",
     "dev": "rollup -c -w",
     "clean": "rimraf dist",
     "prepublishOnly": "npm run clean && npm run build"
@@ -27,9 +28,8 @@
     "@talismn/connect-wallets": ">=1.2.5",
     "avail-js-sdk": ">=0.2.18",
     "react": ">=16.8.0",
-    "react-cookie": ">=7.0.0",
     "react-dom": ">=16.8.0",
-    "zustand": ">=4.0.0"
+    "zustand": "^4.5.5"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.8",
