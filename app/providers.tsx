@@ -11,7 +11,7 @@ import { useCommonStore } from "@/stores/common";
 import { SuccessDialog } from "@/components/common/successdialog";
 import ErrorDialog from "@/components/common/error";
 import { useLatestBlockInfo } from "@/stores/blockinfo";
-import 'avail-wallet/dist/styles.css';
+import "../packages/avail-wallet/src/styles.css";
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -36,8 +36,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   /** FETCH AND POLL DOLLAR AMOUNT */
   useEffect(() => {
     (async () => {
-       await fetchDollarAmount();
- 
+      await fetchDollarAmount();
+
       const interval = setInterval(async () => {
         await fetchDollarAmount();
       }, 30000);
@@ -59,9 +59,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <ConnectKitProvider>
           <MetaMaskProvider>
-          <SuccessDialog/>
-          <ErrorDialog/>
-          {children}</MetaMaskProvider>
+            <SuccessDialog />
+            <ErrorDialog />
+            {children}
+          </MetaMaskProvider>
         </ConnectKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

@@ -15,7 +15,7 @@ This package includes its own CSS styling. You need to import it in your applica
 
 ```js
 // In your main layout or component file
-import 'avail-wallet/dist/styles.css';
+import '../../../packages/avail-wallet/src/styles.css';
 ```
 
 This will ensure all wallet components are properly styled without any dependency on Tailwind or other CSS frameworks.
@@ -30,7 +30,7 @@ Here's how to properly set up your application with this package:
 "use client";
 
 import { AvailWalletProvider } from 'avail-wallet';
-import 'avail-wallet/dist/styles.css';
+import '../../../packages/avail-wallet/src/styles.css';
 
 export function Providers({ children }) {
   return (
@@ -62,7 +62,7 @@ export default function RootLayout({ children }) {
 ```tsx
 // In your _app.tsx or root component
 import { AvailWalletProvider } from 'avail-wallet';
-import 'avail-wallet/dist/styles.css';
+import '../../../packages/avail-wallet/src/styles.css';
 import '../styles/globals.css';
 
 function App({ Component, pageProps }) {
@@ -125,7 +125,7 @@ function MyComponent() {
 ### CSS/Styling Issues
 If components appear unstyled:
 
-1. Make sure you've imported the CSS file: `import 'avail-wallet/dist/styles.css'`
+1. Make sure you've imported the CSS file: `import '../../../packages/avail-wallet/src/styles.css'`
 2. Ensure the CSS import is at the appropriate level in your component hierarchy
 3. Check for any CSS conflicts in your application that might be overriding the wallet styles
 
