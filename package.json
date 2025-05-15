@@ -54,6 +54,7 @@
     "@wormhole-foundation/sdk-definitions-ntt": "^0.6.1",
     "@wormhole-foundation/sdk-evm-ntt": "^0.6.1",
     "avail-js-sdk": "^0.2.18",
+    "avail-wallet": "0.1.8",
     "axios": "^1.7.7",
     "bignumber.js": "^9.1.2",
     "class-variance-authority": "^0.7.0",

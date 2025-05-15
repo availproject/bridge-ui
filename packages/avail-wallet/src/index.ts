@@ -1,5 +1,17 @@
-// Note: import the CSS file in your application with:
-// import 'avail-wallet/dist/styles.css';
+/// <reference path="./declarations.d.ts" />
+import "./styles.css";
+import availSnap from "./assets/images/availsnap.png";
+
+export { Button } from "./components/ui/Button";
+export { Badge } from "./components/ui/Badge";
+export {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "./components/ui/Dialog";
 
 export { AvailWalletConnect } from "./components/wallets/AvailWalletConnect";
 export { AccountSelector } from "./components/wallets/AccountSelector";
@@ -20,6 +32,22 @@ export {
   useMetaMask,
   useRequestSnap,
 } from "./hooks/metamask";
+
+// Export assets path for bundled assets
+export const ASSETS_PATH = {
+  fonts: {
+    PPMoriRegular: "./assets/fonts/PPMori-Regular.otf",
+    PPMoriSemiBold: "./assets/fonts/PPMori-SemiBold.otf",
+    ThicccboiBold: "./assets/fonts/THICCCBOI-Bold.woff2",
+    ThicccboiMedium: "./assets/fonts/THICCCBOI-Medium.woff2",
+    ThicccboiRegular: "./assets/fonts/THICCCBOI-Regular.otf",
+    ThicccboiSemiBold: "./assets/fonts/THICCCBOI-SemiBold.otf",
+  },
+  images: {
+    availSnap,
+  },
+};
+
 export type {
   UpdateMetadataParams,
   WalletSelectionProps,
@@ -30,6 +58,3 @@ export type {
   AvailWalletConnectProps,
 } from "./types";
 export { updateMetadata, getInjectorMetadata, initApi } from "./utils";
-
-// Export test components
-export { TestComponent } from "./test";

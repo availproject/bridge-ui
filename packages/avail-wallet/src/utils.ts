@@ -60,7 +60,7 @@ export async function updateMetadata({
           wallet: selectedWallet.title,
           updated: true,
         },
-        {}
+        {},
       );
     } catch (e) {
       console.error("Failed to update metadata", e);
@@ -87,3 +87,10 @@ export const initApi = async (
     }
   }
 };
+
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}

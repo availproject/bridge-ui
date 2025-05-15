@@ -20,3 +20,5 @@ export declare const getInjectorMetadata: (api: ApiPromise) => {
 };
 export declare function updateMetadata({ api, account, metadataCookie, selectedWallet, setCookie, }: UpdateMetadataParams): Promise<void>;
 export declare const initApi: (rpcUrl: string, retries?: number) => Promise<ApiPromise>;
+import { type ClassValue } from "clsx";
+export declare function cn(...inputs: ClassValue[]): string;

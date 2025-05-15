@@ -11,7 +11,6 @@ import { useCommonStore } from "@/stores/common";
 import { SuccessDialog } from "@/components/common/successdialog";
 import ErrorDialog from "@/components/common/error";
 import { useLatestBlockInfo } from "@/stores/blockinfo";
-import "../packages/avail-wallet/src/styles.css";
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {

@@ -1,7 +1,18 @@
 # Avail's Bridge UI
 This is the official UI for Avail's bridge from AVAIL -> ETH and vice versa. You can refer to bridging docs [here](https://docs.availproject.org/docs/end-user-guide/vectorx).
 
+## Project Structure
 
+The project consists of:
+- A Next.js application with UI components and bridge functionality
+- A reusable `avail-wallet` package for wallet integration
+
+### UI Components
+
+The project includes a comprehensive set of UI components:
+- **Main UI Components**: Found in `components/ui/` - includes buttons, dialogs, accordions, selectors, etc.
+- **Wallet Components**: Specialized components for wallet integration in `components/wallets/`
+- **Reusable Avail Wallet Package**: A separately publishable package in `packages/avail-wallet/` providing wallet connection components and hooks
 
 ## Run it Locally
 
@@ -20,8 +31,20 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Working with the Avail Wallet Package
 
+To build and develop the avail-wallet package:
 
+```bash
+# Build the package
+pnpm build:avail-wallet
+
+# Development mode with watch
+pnpm dev:avail-wallet
+
+# Publish the package
+pnpm publish:avail-wallet
+```
 
 ## Contribution Guidelines
 

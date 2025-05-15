@@ -12,6 +12,17 @@ import { WalletSelector } from "./WalletSelector";
 import { AvailWalletConnectProps, ExtendedWalletAccount } from "../../types";
 import { useAvailAccount } from "../../stores/availwallet";
 import { useApi } from "../../stores/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../components/ui/Dialog";
+import { Button } from "../../components/ui/Button";
+import { InfoIcon, ArrowLeft } from "lucide-react";
 
 export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
   api,
@@ -24,14 +35,14 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
   const requestSnap = useRequestSnap();
   const invokeSnap = useInvokeSnap();
 
-  const { 
-    selected, 
-    setSelected, 
-    selectedWallet, 
+  const {
+    selected,
+    setSelected,
+    selectedWallet,
     setSelectedWallet,
     metadataUpdated,
     setMetadataUpdated,
-    clearWalletState
+    clearWalletState,
   } = useAvailAccount();
 
   const { installedSnap, metamaskInstalled } = useMetaMask();
@@ -45,7 +56,7 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
   useEffect(() => {
     (async () => {
       const wallets = getSupportedWallets();
-  
+
       if (selected?.address && selectedWallet?.title) {
         if (selectedWallet.title === "MetamaskSnap" && installedSnap) {
           // Reconnect is handled by persistent state
@@ -53,11 +64,11 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
           const matchedWallet = wallets.find((wallet) => {
             return wallet.title === selectedWallet?.title;
           });
-  
+
           if (!matchedWallet) {
             return;
           }
-  
+
           (matchedWallet.enable("bridge-ui") as any).then(() => {
             matchedWallet.getAccounts().then((accounts: WalletAccount[]) => {
               const enabledAccounts = (
@@ -66,25 +77,21 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
                 return account.type! !== "ethereum";
               });
               const selectedAccount = enabledAccounts.find(
-                (account) => account.address === selected?.address
+                (account) => account.address === selected?.address,
               );
-  
+
               if (!selectedAccount) {
                 return;
               }
-  
+
               setEnabledAccounts(enabledAccounts);
             });
           });
         }
       }
     })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    installedSnap,
-    metamaskInstalled,
-    getSupportedWallets
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [installedSnap, metamaskInstalled, getSupportedWallets]);
 
   const handleWalletSelect = useCallback(
     async (wallet: Wallet) => {
@@ -93,7 +100,7 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
           await requestSnap();
           const address = await invokeSnap({ method: "getAddress" });
           setSelected({ address: address as string, source: "MetamaskSnap" });
-          setSelectedWallet({ title: 'MetamaskSnap' } as Wallet);
+          setSelectedWallet({ title: "MetamaskSnap" } as Wallet);
         } catch (error) {
           console.error("Failed to connect to Avail Snap", error);
         }
@@ -108,12 +115,7 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
         setEnabledAccounts(substrateAccounts);
       }
     },
-    [
-      invokeSnap,
-      requestSnap,
-      setSelected,
-      setSelectedWallet,
-    ],
+    [invokeSnap, requestSnap, setSelected, setSelectedWallet],
   );
 
   const handleAccountSelect = useCallback(
@@ -128,7 +130,7 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
           metadataCookie: metadataUpdated,
           selectedWallet: selectedWallet,
           setCookie: (name: string, value: any, options: any) => {
-            if (name === 'metadataUpdated') {
+            if (name === "metadataUpdated") {
               setMetadataUpdated(value);
             }
           },
@@ -140,7 +142,14 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
         `AVAIL_WALLET_CONNECT - ${selectedWallet?.title} - ${account.address}`,
       );
     },
-    [selectedWallet, api, storeApi, metadataUpdated, setMetadataUpdated, setSelected],
+    [
+      selectedWallet,
+      api,
+      storeApi,
+      metadataUpdated,
+      setMetadataUpdated,
+      setSelected,
+    ],
   );
 
   const handleDisconnect = useCallback(() => {
@@ -157,113 +166,126 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
           onDisconnect={handleDisconnect}
         />
       ) : (
-        <div>
-          <button
-            onClick={() => setOpen(!open)}
-            className="aw-button aw-button-primary aw-ml-2"
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="primary" size="sm" className="!ml-2">
+              Connect Wallet
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent
+            style={{
+              maxWidth: "425px",
+              backgroundColor: "#252831",
+              border: "2px solid #3a3b3cb1",
+              borderRadius: "0.75rem",
+            }}
           >
-            Connect Wallet
-          </button>
+            <DialogHeader>
+              <DialogTitle
+                style={{
+                  color: "white",
+                  fontSize: "2rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                Connect Wallet
+              </DialogTitle>
 
-          {open && (
-            <div className="aw-dialog-overlay">
-              <div
-                className="fixed inset-0 bg-black/50"
-                onClick={() => setOpen(false)}
-              ></div>
-              <div className="aw-dialog-content">
-                <div className="aw-bg-dark aw-border-2 aw-border-darker aw-rounded-xl p-4">
-                  <div>
-                    <h2 className="aw-font-bold aw-text-3xl aw-text-white">
-                      Connect Wallet
-                    </h2>
-
-                    {enabledAccounts.length === 0 ? (
-                      <>
-                        <p className="aw-text-md aw-text-white aw-text-opacity-70 aw-pt-2">
-                          <div className="aw-flex-row aw-items-start aw-justify-start aw-pt-3 aw-space-x-2">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <circle cx="12" cy="12" r="10" />
-                              <line x1="12" y1="16" x2="12" y2="12" />
-                              <line x1="12" y1="8" x2="12.01" y2="8" />
-                            </svg>
-                            <span>
-                              Don&apos;t have an Avail Wallet yet? Checkout this{" "}
-                              <a
-                                href="https://docs.availspace.app/avail-space/web-dashboard-user-guide/getting-started/how-to-install-subwallet-and-create-a-new-avail-account?utm_source=avail&utm_medium=docspace&utm_campaign=avlclaim"
-                                className="aw-underline"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                cool tutorial
-                              </a>{" "}
-                              by Subwallet.
-                            </span>
-                          </div>
-                        </p>
-                        <div className="pb-3" />
-                        <WalletSelector
-                          supportedWallets={supportedWallets}
-                          onWalletSelect={handleWalletSelect}
-                          metamaskInstalled={metamaskInstalled}
-                        />
-                      </>
-                    ) : (
-                      <AccountSelector
-                        selectedWallet={selectedWallet}
-                        enabledAccounts={enabledAccounts}
-                        onAccountSelect={handleAccountSelect}
-                      />
-                    )}
-                  </div>
-                  <div className="flex w-full mt-2 text-white text-opacity-70 !flex-col !items-center !justify-center">
-                    <div>
-                      {enabledAccounts && enabledAccounts.length > 0 ? (
-                        <button
-                          disabled={enabledAccounts.length <= 0}
-                          className="aw-bg-dark aw-button aw-button-outline"
-                          onClick={() => {
-                            setEnabledAccounts([]);
-                            setSelected(null);
-                          }}
+              {enabledAccounts.length === 0 ? (
+                <>
+                  <DialogDescription className="font-thicccboiregular text-md text-white text-opacity-70 pt-2">
+                    <div className="flex flex-row font-ppmori items-start justify-start pt-3 space-x-2">
+                      <InfoIcon />
+                      <span>
+                        Don&apos;t have an Avail Wallet yet? Checkout this{" "}
+                        <a
+                          href="https://docs.availspace.app/avail-space/web-dashboard-user-guide/getting-started/how-to-install-subwallet-and-create-a-new-avail-account?utm_source=avail&utm_medium=docspace&utm_campaign=avlclaim"
+                          className="underline"
+                          target="_blank"
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="aw-h-7 aw-w-7 aw-pr-2 inline-block"
-                          >
-                            <path d="m12 19-7-7 7-7" />
-                            <path d="M19 12H5" />
-                          </svg>
-                          <span className="aw-text-lg">Go back to wallets</span>
-                        </button>
-                      ) : (
-                        <p>Scroll to find more wallets</p>
-                      )}
+                          cool tutorial
+                        </a>{" "}
+                        by Subwallet.
+                      </span>
                     </div>
-                  </div>
-                </div>
+                  </DialogDescription>
+                  <div
+                    style={{
+                      marginBottom: "1rem",
+                    }}
+                  />
+                  <WalletSelector
+                    supportedWallets={supportedWallets}
+                    onWalletSelect={handleWalletSelect}
+                    metamaskInstalled={metamaskInstalled}
+                  />
+                </>
+              ) : (
+                <AccountSelector
+                  selectedWallet={selectedWallet}
+                  enabledAccounts={enabledAccounts}
+                  onAccountSelect={handleAccountSelect}
+                />
+              )}
+            </DialogHeader>
+            <DialogFooter
+              style={{
+                display: "flex",
+                width: "100%",
+                marginTop: "0.5rem",
+                color: "rgba(255, 255, 255, 0.7)",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <div style={{ textAlign: "center" }}>
+                {enabledAccounts && enabledAccounts.length > 0 ? (
+                  <Button
+                    disabled={enabledAccounts.length <= 0}
+                    variant={"outline"}
+                    style={{
+                      backgroundColor: "transparent",
+                      border: "none",
+                      padding: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "rgba(255, 255, 255, 0.7)",
+                    }}
+                    onClick={() => {
+                      setEnabledAccounts([]);
+                      setSelected(null);
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.color = "rgba(255, 255, 255, 0.5)";
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.color = "rgba(255, 255, 255, 0.7)";
+                    }}
+                  >
+                    <ArrowLeft
+                      style={{
+                        height: "1.75rem",
+                        width: "1.75rem",
+                        paddingRight: "0.5rem",
+                      }}
+                    />{" "}
+                    <span style={{ fontSize: "1.125rem" }}>
+                      Go back to wallets
+                    </span>
+                  </Button>
+                ) : (
+                  <p style={{ textAlign: "center" }}>
+                    {" "}
+                    Scroll to find more wallets{" "}
+                  </p>
+                )}
               </div>
-            </div>
-          )}
-        </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );
