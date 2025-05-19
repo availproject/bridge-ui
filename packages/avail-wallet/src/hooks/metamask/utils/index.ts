@@ -1,5 +1,5 @@
 // Explicitly retype MetaMaskInpageProvider to avoid import issues
-import type { MetaMaskInpageProvider } from '@metamask/providers';
+import type { MetaMaskInpageProvider } from "@metamask/providers";
 
 // Add ethereum to Window interface
 declare global {
@@ -14,28 +14,31 @@ declare global {
 /**
  * Check if the current provider supports snaps by calling `wallet_getSnaps`.
  */
-export async function hasSnapsSupport(
-  provider: MetaMaskInpageProvider = window.ethereum as MetaMaskInpageProvider,
-) {
+export const hasSnapsSupport = async (
+  provider: MetaMaskInpageProvider = window.ethereum as MetaMaskInpageProvider
+) => {
   try {
     await provider.request({
-      method: 'wallet_getSnaps',
+      method: "wallet_getSnaps",
     });
     return true;
   } catch {
     return false;
   }
-}
+};
 
 /**
  * Get a provider that supports snaps.
  */
-export async function getSnapsProvider() {
-  if (typeof window === 'undefined') {
+export const getSnapsProvider = async () => {
+  if (typeof window === "undefined") {
     return null;
   }
 
-  if (window.ethereum && await hasSnapsSupport(window.ethereum as MetaMaskInpageProvider)) {
+  if (
+    window.ethereum &&
+    (await hasSnapsSupport(window.ethereum as MetaMaskInpageProvider))
+  ) {
     return window.ethereum as MetaMaskInpageProvider;
   }
 
@@ -56,12 +59,12 @@ export async function getSnapsProvider() {
   }
 
   return null;
-}
+};
 
 /**
  * Check if a snap ID is a local snap ID.
  */
-export const isLocalSnap = (snapId: string) => snapId.startsWith('local:');
+export const isLocalSnap = (snapId: string) => snapId.startsWith("local:");
 
 // Set a default snap origin
-export const defaultSnapOrigin = process.env.SNAP_ORIGIN ?? `npm:@avail-project/avail-snap`;
+export const defaultSnapOrigin = `npm:@avail-project/avail-snap`;

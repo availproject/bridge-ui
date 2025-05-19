@@ -1,9 +1,8 @@
-import type { MetaMaskInpageProvider } from '@metamask/providers';
-import type { ReactNode } from 'react';
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Snap } from '../metamask';
-import { getSnapsProvider } from './utils';
-
+import type { MetaMaskInpageProvider } from "@metamask/providers";
+import type { ReactNode } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { Snap } from "../metamask";
+import { getSnapsProvider } from "./utils";
 
 type MetaMaskContextType = {
   provider: MetaMaskInpageProvider | null;
@@ -69,6 +68,6 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
  *
  * @returns The MetaMask context.
  */
-export function useMetaMaskContext() {
+export const useMetaMaskContext = () => {
   return useContext(MetaMaskContext);
-}
+};

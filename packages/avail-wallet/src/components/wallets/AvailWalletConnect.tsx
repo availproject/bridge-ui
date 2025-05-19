@@ -1,17 +1,12 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { getWallets, Wallet, WalletAccount } from "@talismn/connect-wallets";
 import {
-  useInvokeSnap,
-  useMetaMask,
-  useRequestSnap,
-} from "../../hooks/metamask";
-import { DisconnectWallet } from "./DisconnectWallet";
-import { AccountSelector } from "./AccountSelector";
-import { updateMetadata } from "../../utils";
-import { WalletSelector } from "./WalletSelector";
-import { AvailWalletConnectProps, ExtendedWalletAccount } from "../../types";
-import { useAvailAccount } from "../../stores/availwallet";
-import { useApi } from "../../stores/api";
+  getWalletBySource,
+  getWallets,
+  Wallet,
+  WalletAccount,
+} from "@talismn/connect-wallets";
+import { ArrowLeft, InfoIcon } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Button } from "../../components/ui/Button";
 import {
   Dialog,
   DialogContent,
@@ -21,13 +16,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../../components/ui/Dialog";
-import { Button } from "../../components/ui/Button";
-import { InfoIcon, ArrowLeft } from "lucide-react";
+import {
+  useInvokeSnap,
+  useMetaMask,
+  useRequestSnap,
+} from "../../hooks/metamask";
+import { useApi } from "../../stores/api";
+import { useAvailAccount } from "../../stores/availwallet";
+import {
+  AvailWalletConnectProps,
+  ExtendedWalletAccount,
+  UpdateMetadataParams,
+} from "../../types";
+import { useAvailWallet } from "../wallets/AvailWalletProvider";
+import AccountSelector from "./AccountSelector";
+import DisconnectWallet from "./DisconnectWallet";
+import WalletSelector from "./WalletSelector";
 
-export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
-  api,
-}) => {
-  const [open, setOpen] = useState(false);
+const AvailWalletConnect = ({ api, children }: AvailWalletConnectProps) => {
+  const { open, setOpen } = useAvailWallet();
   const [supportedWallets, setSupportedWallets] = useState<Wallet[]>([]);
   const [enabledAccounts, setEnabledAccounts] = useState<WalletAccount[]>([]);
   const { api: storeApi } = useApi();
@@ -77,7 +84,7 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
                 return account.type! !== "ethereum";
               });
               const selectedAccount = enabledAccounts.find(
-                (account) => account.address === selected?.address,
+                (account) => account.address === selected?.address
               );
 
               if (!selectedAccount) {
@@ -110,13 +117,67 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
         const accounts = await wallet.getAccounts();
         const substrateAccounts = accounts.filter(
           //@ts-expect-error - type is not defined in the WalletAccount interface but it exists
-          (account) => account.type !== "ethereum",
+          (account) => account.type !== "ethereum"
         );
         setEnabledAccounts(substrateAccounts);
       }
     },
-    [invokeSnap, requestSnap, setSelected, setSelectedWallet],
+    [invokeSnap, requestSnap, setSelected, setSelectedWallet]
   );
+
+  const getInjectorMetadata = (api: any) => {
+    return {
+      chain: api.runtimeChain.toString(),
+      specVersion: api.runtimeVersion.specVersion.toNumber(),
+      tokenDecimals: api.registry.chainDecimals[0] || 18,
+      tokenSymbol: api.registry.chainTokens[0] || "AVAIL",
+      genesisHash: api.genesisHash.toHex(),
+      ss58Format:
+        typeof api.registry.chainSS58 === "number" ? api.registry.chainSS58 : 0,
+      chainType: "substrate" as const,
+      icon: "substrate",
+      types: {},
+      userExtensions: [],
+    };
+  };
+
+  const updateMetadata = async ({
+    api,
+    account,
+    metadataCookie,
+    selectedWallet,
+    setCookie,
+  }: UpdateMetadataParams) => {
+    const injector = getWalletBySource(account.source);
+
+    if (!api || !api.isConnected || !(await api.isReady)) {
+      console.debug("API not ready, cannot update metadata");
+      return;
+    }
+
+    if (
+      injector &&
+      (!metadataCookie ||
+        (metadataCookie
+          ? metadataCookie.wallet !== selectedWallet.title
+          : true))
+    ) {
+      try {
+        const metadata = getInjectorMetadata(api);
+        await injector.extension.metadata.provide(metadata);
+        setCookie(
+          "metadataUpdated",
+          {
+            wallet: selectedWallet.title,
+            updated: true,
+          },
+          {}
+        );
+      } catch (e) {
+        console.error("Failed to update metadata", e);
+      }
+    }
+  };
 
   const handleAccountSelect = useCallback(
     async (account: WalletAccount) => {
@@ -129,7 +190,7 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
           account,
           metadataCookie: metadataUpdated,
           selectedWallet: selectedWallet,
-          setCookie: (name: string, value: any, options: any) => {
+          setCookie: (name: string, value: any) => {
             if (name === "metadataUpdated") {
               setMetadataUpdated(value);
             }
@@ -139,7 +200,7 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
 
       setOpen(false);
       console.info(
-        `AVAIL_WALLET_CONNECT - ${selectedWallet?.title} - ${account.address}`,
+        `AVAIL_WALLET_CONNECT - ${selectedWallet?.title} - ${account.address}`
       );
     },
     [
@@ -149,7 +210,7 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
       metadataUpdated,
       setMetadataUpdated,
       setSelected,
-    ],
+    ]
   );
 
   const handleDisconnect = useCallback(() => {
@@ -168,9 +229,11 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
       ) : (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="primary" size="sm" className="!ml-2">
-              Connect Wallet
-            </Button>
+            {children ?? (
+              <Button variant="primary" size="sm" className="!ml-2">
+                Connect Wallet
+              </Button>
+            )}
           </DialogTrigger>
 
           <DialogContent
@@ -290,3 +353,5 @@ export const AvailWalletConnect: React.FC<AvailWalletConnectProps> = ({
     </>
   );
 };
+
+export default AvailWalletConnect;

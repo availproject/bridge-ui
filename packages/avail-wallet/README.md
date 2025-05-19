@@ -1,235 +1,54 @@
-# Avail Wallet Package
+# React + TypeScript + Vite
 
-## Overview
-This package provides React components and hooks for integrating Avail wallets into your application. It includes both wallet connection functionality and styled UI components with all required fonts and assets bundled.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Installation
-```bash
-pnpm install avail-wallet
-```
+Currently, two official plugins are available:
 
-## Basic Usage
-Here's how to properly set up your application with this package:
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-### Next.js App Router Setup
+## Expanding the ESLint configuration
 
-```tsx
-// In your app/providers.tsx
-"use client";
-
-import { AvailWalletProvider } from 'avail-wallet';
-// Styles are automatically imported from the package
-// No need to separately import CSS files or add fonts!
-
-export function Providers({ children }) {
-  return (
-    <AvailWalletProvider>
-      {children}
-    </AvailWalletProvider>
-  );
-}
-
-// In your app/layout.tsx
-import { Providers } from './providers';
-import './globals.css';
-
-export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body>
-        <Providers>
-          {children}
-        </Providers>
-      </body>
-    </html>
-  );
-}
-```
-
-### Next.js Pages Router Setup
-
-```tsx
-// In your _app.tsx or root component
-import { AvailWalletProvider } from 'avail-wallet';
-// Styles are automatically imported from the package
-import '../styles/globals.css';
-
-function App({ Component, pageProps }) {
-  return (
-    <AvailWalletProvider>
-      <Component {...pageProps} />
-    </AvailWalletProvider>
-  );
-}
-
-export default App;
-```
-
-## Persistence
-The wallet state is automatically persisted in your browser's localStorage. This means users will remain connected to their wallets between sessions without having to reconnect every time they visit your application.
-
-## Components
-
-### Wallet Components
-
-#### AvailWalletProvider
-Provides the wallet context to your application with built-in localStorage persistence.
-
-#### AvailWalletConnect
-A component for connecting to Avail wallets with a styled UI.
-
-#### AccountSelector
-Allows users to select an account from their wallet with a styled UI.
-
-#### DisconnectWallet
-Provides UI for disconnecting from a wallet.
-
-#### WalletSelector
-Allows users to select which wallet provider to connect with.
-
-### UI Components
-
-The package includes several UI components that are used by the wallet components but can also be used independently:
-
-#### Button
-A customizable button component with various styles and variants.
-
-#### Badge
-A customizable badge component with different style variants.
-
-#### Dialog
-A modal dialog component with header, footer, title, and description components.
-
-## Hooks
-
-### useAvailWallet
-Access the wallet context, including connection state and API.
-
-### useAvailAccount
-Access and manage the selected account.
-
-### useApi
-Access the Avail API.
-
-### MetaMask Hooks
-The package also includes hooks for MetaMask integration:
-
-#### useMetaMask
-Access the MetaMask wallet state.
-
-#### useMetaMaskContext
-Access the MetaMask context.
-
-#### useRequestSnap
-Request the Avail snap for MetaMask.
-
-#### useInvokeSnap
-Invoke methods on the Avail snap for MetaMask.
-
-## Examples
-
-### Basic Wallet Connection
-```tsx
-import { useAvailWallet, AvailWalletConnect } from 'avail-wallet';
-
-function MyComponent() {
-  const { isConnected, api } = useAvailWallet();
-
-  return (
-    <div>
-      <AvailWalletConnect />
-      {isConnected ? 'Connected to wallet' : 'Not connected'}
-    </div>
-  );
-}
-```
-
-### Using UI Components
-```tsx
-import { Button, Badge, Dialog, DialogContent, DialogHeader, DialogTitle } from 'avail-wallet';
-
-function MyUIComponent() {
-  return (
-    <div>
-      <Button variant="primary" size="lg">Connect Wallet</Button>
-      <Badge variant="avail">Avail Network</Badge>
-
-      <Dialog>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Select a Wallet</DialogTitle>
-          </DialogHeader>
-          {/* Dialog content here */}
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
-```
-
-## Styling Information
-
-### Included Assets
-This package includes the following assets bundled and ready to use:
-
-- **Fonts**: All required fonts (PP Mori and THICCCBOI variants)
-- **Images**: The availsnap.png image for MetaMask integration
-
-### Custom Styling
-You can override the default styles by targeting the classes with higher specificity in your own CSS:
-
-```css
-/* In your custom CSS file */
-.aw-button-primary {
-  background-color: #YOUR_CUSTOM_COLOR !important;
-}
-```
-
-### Tailwind CSS
-If you're using Tailwind CSS, ensure your content configuration includes the package components:
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
 ```js
-// tailwind.config.js
-module.exports = {
-  content: [
-    // ...your other content paths
-    './node_modules/avail-wallet/**/*.{js,ts,jsx,tsx}'
+export default tseslint.config({
+  extends: [
+    // Remove ...tseslint.configs.recommended and replace with this
+    ...tseslint.configs.recommendedTypeChecked,
+    // Alternatively, use this for stricter rules
+    ...tseslint.configs.strictTypeChecked,
+    // Optionally, add this for stylistic rules
+    ...tseslint.configs.stylisticTypeChecked,
   ],
-  // ...rest of your config
-}
+  languageOptions: {
+    // other options...
+    parserOptions: {
+      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+})
 ```
 
-## TypeScript Support
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-The package includes TypeScript types for all components and hooks:
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-```tsx
-import type {
-  UpdateMetadataParams,
-  WalletSelectionProps,
-  AccountSelectionProps,
-  DisconnectWalletProps,
-  ExtendedWalletAccount,
-  AvailWalletProviderProps,
-  AvailWalletConnectProps
-} from 'avail-wallet';
-```
-
-## Utility Functions and Assets
-
-The package provides several utility functions and asset paths:
-
-### Utility Functions
-- `updateMetadata`: Update metadata for wallet accounts
-- `getInjectorMetadata`: Get metadata for wallet injectors
-- `initApi`: Initialize the Avail API
-
-### Asset Paths
-Asset paths are exposed for advanced use cases if needed:
-
-```tsx
-import { ASSETS_PATH } from 'avail-wallet';
-
-console.log(ASSETS_PATH.fonts.PPMoriRegular); // Path to the PP Mori Regular font
-console.log(ASSETS_PATH.images.availSnap);    // Path to the Avail Snap image
+export default tseslint.config({
+  plugins: {
+    // Add the react-x and react-dom plugins
+    'react-x': reactX,
+    'react-dom': reactDom,
+  },
+  rules: {
+    // other rules...
+    // Enable its recommended typescript rules
+    ...reactX.configs['recommended-typescript'].rules,
+    ...reactDom.configs.recommended.rules,
+  },
+})
 ```

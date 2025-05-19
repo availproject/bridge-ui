@@ -1,20 +1,31 @@
 {
   "name": "avail-wallet",
-  "version": "0.1.8",
-  "description": "React components for connecting to Avail wallets",
-  "main": "dist/index.js",
-  "module": "dist/index.esm.js",
-  "types": "dist/index.d.ts",
+  "version": "1.0.1",
+  "type": "module",
   "files": [
-    "dist",
-    "README.md"
+    "dist"
   ],
+  "main": "./dist/avail-wallet.cjs",
+  "module": "./dist/avail-wallet.js",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./dist/avail-wallet.js",
+      "require": "./dist/avail-wallet.cjs"
+    },
+    "./utils": {
+      "import": "./dist/utils.js",
+      "require": "./dist/utils.cjs"
+    },
+    "./index.css": "./dist/avail-wallet.css"
+  },
   "scripts": {
-    "build": "rollup -c && node scripts/fix-declarations.js",
-    "dev": "rollup -c -w",
-    "clean": "rimraf dist",
-    "prepublishOnly": "npm run clean && npm run build",
-    "demo": "npx serve -s ."
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "prebuild": "rm -rf dist",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "avail",
@@ -22,33 +33,40 @@
     "connect",
     "react"
   ],
-  "author": "",
-  "license": "MIT",
-  "peerDependencies": {
-    "@talismn/connect-wallets": ">=1.2.5",
-    "avail-js-sdk": ">=0.2.18",
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0",
-    "zustand": "^4.5.5"
-  },
   "dependencies": {
-    "class-variance-authority": "^0.7.0",
-    "lucide-react": "^0.344.0"
+    "@metamask/providers": "^22.1.0",
+    "@polkadot/api": "^15.10.2",
+    "@radix-ui/react-dialog": "^1.1.13",
+    "@radix-ui/react-slot": "^1.2.2",
+    "@tailwindcss/vite": "^4.1.7",
+    "@talismn/connect-wallets": "^1.2.8",
+    "avail-js-sdk": "^0.4.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.511.0",
+    "path": "^0.12.7",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-icons": "^5.5.0",
+    "tailwind-merge": "^3.3.0",
+    "tailwindcss": "^4.1.7",
+    "vite-plugin-dts": "^4.5.4",
+    "vite-tsconfig-paths": "^5.1.4",
+    "zustand": "^5.0.4"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.8",
-    "@rollup/plugin-node-resolve": "^15.3.1",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@rollup/plugin-url": "^8.0.2",
-    "@types/react": "^18.0.0",
-    "postcss": "^8.4.31",
-    "rimraf": "^5.0.0",
-    "rollup": "^3.29.5",
-    "rollup-plugin-copy": "^3.5.0",
-    "rollup-plugin-dts": "^5.3.1",
-    "rollup-plugin-peer-deps-external": "^2.2.4",
-    "rollup-plugin-postcss": "^4.0.2",
-    "rollup-plugin-terser": "^7.0.2",
-    "typescript": "^5.0.0"
+    "@eslint/js": "^9.25.0",
+    "@types/node": "^22.15.19",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "eslint": "^9.25.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "tw-animate-css": "^1.3.0",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.30.1",
+    "vite": "^6.3.5"
   }
 }

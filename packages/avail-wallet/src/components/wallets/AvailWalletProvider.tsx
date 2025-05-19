@@ -1,15 +1,16 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { ApiPromise } from "avail-js-sdk";
+// import useInitialise from "@/hooks/useInitialise";
 import { getWallets } from "@talismn/connect-wallets";
+import React, { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 import { MetaMaskProvider } from "../../hooks/metamask";
-import { AvailWalletProviderProps, ExtendedWalletAccount } from "../../types";
-import { useAvailAccount } from "../../stores/availwallet";
 import { useApi } from "../../stores/api";
-import { initApi } from "../../utils";
+import { useAvailAccount } from "../../stores/availwallet";
+import { AvailWalletProviderProps, ExtendedWalletAccount } from "../../types";
 
 interface AvailWalletContextType {
-  api?: ApiPromise;
+  api?: any;
   isConnected: boolean;
+  open:boolean
+  setOpen:Dispatch<SetStateAction<boolean>>
   rpcUrl?: string;
   setRpcUrl: (url: string) => void;
 }
@@ -17,6 +18,8 @@ interface AvailWalletContextType {
 const AvailWalletContext = createContext<AvailWalletContextType>({
   isConnected: false,
   setRpcUrl: () => {},
+  open:false,
+  setOpen:() => false
 });
 
 export const useAvailWallet = () => useContext(AvailWalletContext);
@@ -24,22 +27,17 @@ export const useAvailWallet = () => useContext(AvailWalletContext);
 export const AvailWalletProvider: React.FC<
   AvailWalletProviderProps & { rpcUrl?: string }
 > = ({ children, api: externalApi, rpcUrl: userProvidedRpcUrl }) => {
-  const DEFAULT_RPC_URL = "wss://turing-rpc.avail.so/";
   const [rpcUrl, setRpcUrl] = useState<string>(
-    userProvidedRpcUrl || DEFAULT_RPC_URL,
+    userProvidedRpcUrl || "wss://turing-rpc.avail.so/"
   );
+  const [open, setOpen] = useState(false);
 
-  const { 
-    selected, 
-    setSelected, 
-    selectedWallet, 
-    setSelectedWallet,
-    metadataUpdated 
-  } = useAvailAccount();
+  const { selected, setSelected, selectedWallet, setSelectedWallet } =
+    useAvailAccount();
+  // const { initializeApi } = useInitialise();
 
-  const { api, isReady, setApi, ensureConnection } = useApi();
+  const { api, isReady, setApi } = useApi();
 
-  // Initialize API
   useEffect(() => {
     if (externalApi) {
       setApi(externalApi);
@@ -48,12 +46,8 @@ export const AvailWalletProvider: React.FC<
 
     if (!rpcUrl) return;
 
-    const initializeApi = async () => {
-      await ensureConnection(() => initApi(rpcUrl));
-    };
-
-    initializeApi();
-  }, [rpcUrl, externalApi, setApi, ensureConnection]);
+    // initializeApi(rpcUrl);
+  }, [rpcUrl, externalApi]);
 
   // Load persisted wallet data
   useEffect(() => {
@@ -65,7 +59,7 @@ export const AvailWalletProvider: React.FC<
       if (selectedWallet.title !== "MetamaskSnap") {
         const wallets = getWallets();
         const savedWallet = wallets.find(
-          (wallet) => wallet.title === selectedWallet.title,
+          (wallet) => wallet.title === selectedWallet.title
         );
 
         if (!savedWallet) return;
@@ -78,7 +72,7 @@ export const AvailWalletProvider: React.FC<
           ).filter((account) => account.type !== "ethereum");
 
           const savedAccount = substrateAccounts.find(
-            (account) => account.address === selected.address,
+            (account) => account.address === selected.address
           );
 
           if (savedAccount) {
@@ -92,13 +86,7 @@ export const AvailWalletProvider: React.FC<
     };
 
     loadPersistedWallet();
-  }, [
-    selected,
-    selectedWallet,
-    isReady,
-    setSelected,
-    setSelectedWallet,
-  ]);
+  }, [selected, selectedWallet, isReady, setSelected, setSelectedWallet]);
 
   return (
     <MetaMaskProvider>
@@ -108,6 +96,8 @@ export const AvailWalletProvider: React.FC<
           isConnected: isReady,
           rpcUrl: rpcUrl,
           setRpcUrl,
+          open,
+          setOpen
         }}
       >
         {children}

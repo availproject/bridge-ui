@@ -1,10 +1,10 @@
-import React, { memo } from "react";
-import { WalletSelectionProps } from "../../types";
 import { Wallet } from "@talismn/connect-wallets";
-import { Button } from "../ui/Button";
+import React, { memo } from "react";
 import availSnap from "../../assets/images/availsnap.png";
+import { WalletSelectionProps } from "../../types";
+import { Button } from "../ui/Button";
 
-export const WalletSelector = memo(
+const WalletSelector = memo(
   ({
     supportedWallets,
     onWalletSelect,
@@ -17,7 +17,7 @@ export const WalletSelector = memo(
           if (b.title === "SubWallet") return 1;
           return 0;
         }),
-      [supportedWallets],
+      [supportedWallets]
     );
 
     return (
@@ -63,7 +63,7 @@ export const WalletSelector = memo(
         ))}
       </div>
     );
-  },
+  }
 );
 
-WalletSelector.displayName = "WalletSelector";
+export default WalletSelector;

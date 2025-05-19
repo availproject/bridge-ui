@@ -1,4 +1,9 @@
-import { MetaMaskContext, MetaMaskProvider, useMetaMaskContext } from './MetamaskContext';
+import { useEffect, useState } from "react";
+import {
+  MetaMaskContext,
+  MetaMaskProvider,
+  useMetaMaskContext,
+} from "./MetamaskContext";
 
 // Re-export types
 export type Snap = {
@@ -15,25 +20,29 @@ export type InvokeSnapParams = {
   params?: Record<string, unknown>;
 };
 
-export type Request = (params: { method: string; params?: any }) => Promise<unknown | null>;
+export type Request = (params: {
+  method: string;
+  params?: any;
+}) => Promise<unknown | null>;
 
 // Default snap origin
-export const defaultSnapOrigin = process.env.SNAP_ORIGIN ?? `npm:@avail-project/avail-snap`;
+export const defaultSnapOrigin = `npm:@avail-project/avail-snap`;
 
 // Export context components
 export { MetaMaskContext, MetaMaskProvider, useMetaMaskContext };
 
 // Define hooks here instead of importing
 
-export function useRequest(): Request {
+export const useRequest = (): Request => {
   const context = useMetaMaskContext();
-  
+
   return async ({ method, params }) => {
     try {
-      const data = await context.provider?.request({
-        method,
-        params,
-      }) ?? null;
+      const data =
+        (await context.provider?.request({
+          method,
+          params,
+        })) ?? null;
 
       return data;
     } catch (error) {
@@ -41,20 +50,20 @@ export function useRequest(): Request {
       return null;
     }
   };
-}
+};
 
-export function useMetaMask() {
+export const useMetaMask = () => {
   const { provider, setInstalledSnap, installedSnap } = useMetaMaskContext();
   const request = useRequest();
-  const [isFlask, setIsFlask] = useState(false);
+  // const [isFlask, setIsFlask] = useState(false);
   const [metamaskInstalled, setMetamaskInstalled] = useState(false);
 
   useEffect(() => {
     const detectMetaMask = () => {
-      if (typeof window === 'undefined') {
+      if (typeof window === "undefined") {
         return;
       }
-      
+
       const { ethereum } = window as any;
       const isMetaMaskInstalled = Boolean(ethereum && ethereum.isMetaMask);
       setMetamaskInstalled(isMetaMaskInstalled);
@@ -65,14 +74,14 @@ export function useMetaMask() {
 
   const snapsDetected = provider !== null;
 
-  const detectFlask = async () => {
-    const clientVersion = await request({
-      method: 'web3_clientVersion',
-    });
+  // const detectFlask = async () => {
+  //   const clientVersion = await request({
+  //     method: "web3_clientVersion",
+  //   });
 
-    const isFlaskDetected = (clientVersion as string[])?.includes('flask');
-    setIsFlask(isFlaskDetected);
-  };
+  //   const isFlaskDetected = (clientVersion as string[])?.includes("flask");
+  //   setIsFlask(isFlaskDetected);
+  // };
 
   const detectMetaMask = () => {
     const { ethereum } = window as any;
@@ -81,7 +90,7 @@ export function useMetaMask() {
 
   const getSnap = async () => {
     const snaps = (await request({
-      method: 'wallet_getSnaps',
+      method: "wallet_getSnaps",
     })) as GetSnapsResponse;
 
     setInstalledSnap(snaps[defaultSnapOrigin] ?? null);
@@ -98,15 +107,22 @@ export function useMetaMask() {
     detect().catch(console.error);
   }, [provider]);
 
-  return { isFlask, snapsDetected, installedSnap, getSnap, detectMetaMask, metamaskInstalled };
-}
+  return {
+    // isFlask,
+    snapsDetected,
+    installedSnap,
+    getSnap,
+    detectMetaMask,
+    metamaskInstalled,
+  };
+};
 
-export function useInvokeSnap(snapId = defaultSnapOrigin) {
+export const useInvokeSnap = (snapId = defaultSnapOrigin) => {
   const request = useRequest();
 
   const invokeSnap = async ({ method, params }: InvokeSnapParams) =>
     request({
-      method: 'wallet_invokeSnap',
+      method: "wallet_invokeSnap",
       params: {
         snapId,
         request: params ? { method, params } : { method },
@@ -114,18 +130,18 @@ export function useInvokeSnap(snapId = defaultSnapOrigin) {
     });
 
   return invokeSnap;
-}
+};
 
-export function useRequestSnap(
+export const useRequestSnap = (
   snapId = defaultSnapOrigin,
-  version?: string,
-) {
+  version?: string
+) => {
   const request = useRequest();
   const { setInstalledSnap } = useMetaMaskContext();
 
   const requestSnap = async () => {
     const snaps = (await request({
-      method: 'wallet_requestSnaps',
+      method: "wallet_requestSnaps",
       params: {
         [snapId]: version ? { version } : {},
       },
@@ -135,7 +151,4 @@ export function useRequestSnap(
   };
 
   return requestSnap;
-}
-
-// Import React for useState and useEffect
-import { useState, useEffect } from 'react';
+};
