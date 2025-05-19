@@ -1,11 +1,11 @@
-import React, { memo } from "react";
+import { Wallet } from "lucide-react";
+import { memo } from "react";
+import { FaArrowRotateRight } from "react-icons/fa6";
+import { IoMdClose } from "react-icons/io";
 import { DisconnectWalletProps } from "../../types";
 import { badgeVariants } from "../ui/Badge";
-import { Wallet } from "lucide-react";
-import { IoMdClose } from "react-icons/io";
-import { FaArrowRotateRight } from "react-icons/fa6";
 
-export const DisconnectWallet = memo(
+const DisconnectWallet = memo(
   ({ selected, installedSnap, onDisconnect }: DisconnectWalletProps) => {
     if (!selected) return null;
 
@@ -36,7 +36,7 @@ export const DisconnectWallet = memo(
         </button>
       </div>
     );
-  },
+  }
 );
 
-DisconnectWallet.displayName = "DisconnectWallet";
+export default DisconnectWallet;

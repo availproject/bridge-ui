@@ -1,9 +1,9 @@
-import React, { memo } from "react";
+import { ArrowDownCircle } from "lucide-react";
+import { memo } from "react";
 import { AccountSelectionProps } from "../../types";
 import { Button } from "../ui/Button";
-import { ArrowDownCircle } from "lucide-react";
 
-export const AccountSelector = memo(
+const AccountSelector = memo(
   ({
     selectedWallet,
     enabledAccounts,
@@ -46,7 +46,7 @@ export const AccountSelector = memo(
                 <div className="text-white text-opacity-90 space-x-2 !font-thicccboiregular text-md flex flex-row items-center justify-start">
                   <p>{"> "}</p>
                   <p className="font-thicccboisemibold text-xl cursor-pointer">
-                    {account.name?.length! > 12
+                    {account.name?.length && account.name?.length > 12
                       ? account.name?.slice(0, 12) + "..."
                       : account.name}
                   </p>
@@ -65,7 +65,7 @@ export const AccountSelector = memo(
         </div>
       </>
     );
-  },
+  }
 );
 
-AccountSelector.displayName = "AccountSelector";
+export default AccountSelector;

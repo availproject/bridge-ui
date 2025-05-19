@@ -1,7 +1,7 @@
 import type {
   EIP6963AnnounceProviderEvent,
   MetaMaskInpageProvider,
-} from '@metamask/providers';
+} from "@metamask/providers";
 
 // Add ethereum to Window interface
 declare global {
@@ -20,19 +20,19 @@ declare global {
  * `window.ethereum`.
  * @returns True if the provider supports snaps, false otherwise.
  */
-export async function hasSnapsSupport(
-  provider: MetaMaskInpageProvider = window.ethereum as MetaMaskInpageProvider,
-) {
+export const hasSnapsSupport = async (
+  provider: MetaMaskInpageProvider = window.ethereum as MetaMaskInpageProvider
+) => {
   try {
     await provider.request({
-      method: 'wallet_getSnaps',
+      method: "wallet_getSnaps",
     });
 
     return true;
   } catch {
     return false;
   }
-}
+};
 
 /**
  * Get a MetaMask provider using EIP6963. This will return the first provider
@@ -41,7 +41,7 @@ export async function hasSnapsSupport(
  *
  * @returns A MetaMask provider if found, otherwise null.
  */
-export async function getMetaMaskEIP6963Provider() {
+export const getMetaMaskEIP6963Provider = async () => {
   return new Promise<MetaMaskInpageProvider | null>((rawResolve) => {
     // Timeout looking for providers after 500ms
     const timeout = setTimeout(() => {
@@ -53,14 +53,14 @@ export async function getMetaMaskEIP6963Provider() {
      *
      * @param provider - A MetaMask provider if found, otherwise null.
      */
-    function resolve(provider: MetaMaskInpageProvider | null) {
+    const resolve = (provider: MetaMaskInpageProvider | null) => {
       window.removeEventListener(
-        'eip6963:announceProvider',
-        onAnnounceProvider as EventListener,
+        "eip6963:announceProvider",
+        onAnnounceProvider as EventListener
       );
       clearTimeout(timeout);
       rawResolve(provider);
-    }
+    };
 
     /**
      * Listener for the EIP6963 announceProvider event.
@@ -70,22 +70,25 @@ export async function getMetaMaskEIP6963Provider() {
      * @param event - The EIP6963 announceProvider event.
      * @param event.detail - The details of the EIP6963 announceProvider event.
      */
-    function onAnnounceProvider({ detail }: EIP6963AnnounceProviderEvent) {
+    const onAnnounceProvider = ({ detail }: EIP6963AnnounceProviderEvent) => {
       if (!detail) {
         return;
       }
 
       const { info, provider } = detail;
 
-      if (info.rdns.includes('io.metamask')) {
+      if (info.rdns.includes("io.metamask")) {
         resolve(provider);
       }
-    }
+    };
 
-    window.addEventListener('eip6963:announceProvider', onAnnounceProvider as EventListener);
-    window.dispatchEvent(new Event('eip6963:requestProvider'));
+    window.addEventListener(
+      "eip6963:announceProvider",
+      onAnnounceProvider as EventListener
+    );
+    window.dispatchEvent(new Event("eip6963:requestProvider"));
   });
-}
+};
 
 /**
  * Get a provider that supports snaps. This will loop through all the detected
@@ -93,12 +96,15 @@ export async function getMetaMaskEIP6963Provider() {
  *
  * @returns The provider, or `null` if no provider supports snaps.
  */
-export async function getSnapsProvider() {
-  if (typeof window === 'undefined') {
+export const getSnapsProvider = async () => {
+  if (typeof window === "undefined") {
     return null;
   }
 
-  if (window.ethereum && await hasSnapsSupport(window.ethereum as MetaMaskInpageProvider)) {
+  if (
+    window.ethereum &&
+    (await hasSnapsSupport(window.ethereum as MetaMaskInpageProvider))
+  ) {
     return window.ethereum as MetaMaskInpageProvider;
   }
 
@@ -125,4 +131,4 @@ export async function getSnapsProvider() {
   }
 
   return null;
-}
+};

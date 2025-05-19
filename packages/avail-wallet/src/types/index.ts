@@ -1,6 +1,6 @@
 import { Wallet, WalletAccount } from "@talismn/connect-wallets";
 import { ApiPromise } from "avail-js-sdk";
-export type { StoreApi } from 'zustand';
+export type { StoreApi } from "zustand";
 
 export type Snap = {
   permissionName: string;
