@@ -4,7 +4,6 @@ import {
   Wallet,
   WalletAccount,
 } from "@talismn/connect-wallets";
-import { ApiPromise } from "avail-js-sdk";
 import { ArrowLeft, InfoIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "../../components/ui/Button";
@@ -29,12 +28,13 @@ import {
   ExtendedWalletAccount,
   UpdateMetadataParams,
 } from "../../types";
+import { useAvailWallet } from "../wallets/AvailWalletProvider";
 import AccountSelector from "./AccountSelector";
 import DisconnectWallet from "./DisconnectWallet";
 import WalletSelector from "./WalletSelector";
 
-const AvailWalletConnect = ({ api }: AvailWalletConnectProps) => {
-  const [open, setOpen] = useState(false);
+const AvailWalletConnect = ({ api, children }: AvailWalletConnectProps) => {
+  const { open, setOpen } = useAvailWallet();
   const [supportedWallets, setSupportedWallets] = useState<Wallet[]>([]);
   const [enabledAccounts, setEnabledAccounts] = useState<WalletAccount[]>([]);
   const { api: storeApi } = useApi();
@@ -125,7 +125,7 @@ const AvailWalletConnect = ({ api }: AvailWalletConnectProps) => {
     [invokeSnap, requestSnap, setSelected, setSelectedWallet]
   );
 
-  const getInjectorMetadata = (api: ApiPromise) => {
+  const getInjectorMetadata = (api: any) => {
     return {
       chain: api.runtimeChain.toString(),
       specVersion: api.runtimeVersion.specVersion.toNumber(),
@@ -149,9 +149,6 @@ const AvailWalletConnect = ({ api }: AvailWalletConnectProps) => {
     setCookie,
   }: UpdateMetadataParams) => {
     const injector = getWalletBySource(account.source);
-
-    // const retriedApiConn: ApiPromise | null = null;
-    // const showError: Function | null = null;
 
     if (!api || !api.isConnected || !(await api.isReady)) {
       console.debug("API not ready, cannot update metadata");
@@ -232,9 +229,11 @@ const AvailWalletConnect = ({ api }: AvailWalletConnectProps) => {
       ) : (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="primary" size="sm" className="!ml-2">
-              Connect Wallet
-            </Button>
+            {children ?? (
+              <Button variant="primary" size="sm" className="!ml-2">
+                Connect Wallet
+              </Button>
+            )}
           </DialogTrigger>
 
           <DialogContent

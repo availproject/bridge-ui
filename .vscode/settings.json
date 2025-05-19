@@ -1,0 +1,17 @@
+{
+  "breadcrumbs.enabled": true,
+  "editor.cursorBlinking": "smooth",
+  "editor.wordWrap": "on",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "terminal.integrated.cursorBlinking": true,
+  "search.exclude": {
+    "**/*./node_modules": true,
+    "**/node_modules": false
+  }
+}

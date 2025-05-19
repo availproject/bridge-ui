@@ -1,6 +1,6 @@
 // import useInitialise from "@/hooks/useInitialise";
 import { getWallets } from "@talismn/connect-wallets";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 import { MetaMaskProvider } from "../../hooks/metamask";
 import { useApi } from "../../stores/api";
 import { useAvailAccount } from "../../stores/availwallet";
@@ -9,6 +9,8 @@ import { AvailWalletProviderProps, ExtendedWalletAccount } from "../../types";
 interface AvailWalletContextType {
   api?: any;
   isConnected: boolean;
+  open:boolean
+  setOpen:Dispatch<SetStateAction<boolean>>
   rpcUrl?: string;
   setRpcUrl: (url: string) => void;
 }
@@ -16,6 +18,8 @@ interface AvailWalletContextType {
 const AvailWalletContext = createContext<AvailWalletContextType>({
   isConnected: false,
   setRpcUrl: () => {},
+  open:false,
+  setOpen:() => false
 });
 
 export const useAvailWallet = () => useContext(AvailWalletContext);
@@ -26,6 +30,7 @@ export const AvailWalletProvider: React.FC<
   const [rpcUrl, setRpcUrl] = useState<string>(
     userProvidedRpcUrl || "wss://turing-rpc.avail.so/"
   );
+  const [open, setOpen] = useState(false);
 
   const { selected, setSelected, selectedWallet, setSelectedWallet } =
     useAvailAccount();
@@ -91,6 +96,8 @@ export const AvailWalletProvider: React.FC<
           isConnected: isReady,
           rpcUrl: rpcUrl,
           setRpcUrl,
+          open,
+          setOpen
         }}
       >
         {children}

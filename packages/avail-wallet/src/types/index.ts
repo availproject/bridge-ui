@@ -1,5 +1,6 @@
 import { Wallet, WalletAccount } from "@talismn/connect-wallets";
 import { ApiPromise } from "avail-js-sdk";
+import { ReactNode } from "react";
 export type { StoreApi } from "zustand";
 
 export type Snap = {
@@ -46,4 +47,5 @@ export interface AvailWalletProviderProps {
 
 export interface AvailWalletConnectProps {
   api?: ApiPromise;
+  children?:ReactNode
 }
