@@ -1,6 +1,6 @@
 {
   "name": "avail-wallet",
-  "version": "0.0.0",
+  "version": "1.0.1",
   "type": "module",
   "files": [
     "dist"
@@ -16,10 +16,6 @@
     "./utils": {
       "import": "./dist/utils.js",
       "require": "./dist/utils.cjs"
-    },
-    "./provider": {
-      "import": "./dist/provider.js",
-      "require": "./dist/provider.cjs"
     },
     "./index.css": "./dist/avail-wallet.css"
   },
