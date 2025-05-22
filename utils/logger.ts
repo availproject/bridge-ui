@@ -1,4 +1,4 @@
-import { datadogLogs } from '@datadog/browser-logs'
+import { datadogLogs } from "@datadog/browser-logs";
 
 datadogLogs.init({
   clientToken: process.env.NEXT_PUBLIC_DATADOG_RUM_CLIENT_TOKEN || "",
@@ -6,23 +6,24 @@ datadogLogs.init({
   forwardErrorsToLogs: true,
   sessionSampleRate: 100,
   service: process.env.NEXT_PUBLIC_DD_SERVICE || "avail-bridge-ui",
-  env: process.env.NEXT_PUBLIC_ENVIRONMENT || "local"
-})
+  env: process.env.NEXT_PUBLIC_ENVIRONMENT || "local",
+});
 
 export class Logger {
-    static info(message: string) {
-        datadogLogs.logger.info(message);
-        console.log(message);
-    }
+  static info(message: string, ...fields: [string, any][]) {
+    const extraFields = Object.fromEntries(fields);
+    datadogLogs.logger.info(message, extraFields);
+    console.log(message);
+  }
 
-    static debug(message: string) {
-        datadogLogs.logger.debug(message);
-        console.debug(message);
-    }
+  static debug(message: string) {
+    datadogLogs.logger.debug(message);
+    console.debug(message);
+  }
 
-    static error(message: string, ...fields: [string, any][]) {
-        const extraFields = Object.fromEntries(fields);
-        
-        datadogLogs.logger.error(message, extraFields);
-    }
+  static error(message: string, ...fields: [string, any][]) {
+    const extraFields = Object.fromEntries(fields);
+
+    datadogLogs.logger.error(message, extraFields);
+  }
 }

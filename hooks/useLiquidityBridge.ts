@@ -109,6 +109,16 @@ export default function useLiquidityBridge() {
       if (!hash) throw new Error("Failed to transfer to liquidity bridge");
       setSignatures("- 2 of 2");
 
+      Logger.info(
+        `LIQUIDITY_BRIDGE TRANSFER_SUCESS`,
+        ["receiver_address", destinationAddress],
+        ["sender_address", selected?.address],
+        ["amount", formatUnits(BigInt(atomicAmount), 18)],
+        ["flow", ` ${ERC20Chain} -> AVAIL`],
+        ["txnHash", hash.txnHash],
+        ["blockHash", hash.blockhash],
+      );
+
       const payload = {
         sender_address: activeUserAddress,
         tx_hash: hash.txnHash,
@@ -236,6 +246,16 @@ export default function useLiquidityBridge() {
         throw new Error("Failed to get blockhash and tx_index");
       }
 
+      Logger.info(
+        `LIQUIDITY_BRIDGE TRANSFER_SUCESS`,
+        ["receiver_address", destinationAddress],
+        ["sender_address", selected?.address],
+        ["amount", formatUnits(BigInt(atomicAmount), 18)],
+        ["flow", `AVAIL -> ${ERC20Chain}`],
+        ["txnHash", result.value.txHash],
+        ["blockHash", result.value.blockhash],
+        ["txnIndex", result.value.txIndex],
+      );
       const payload = {
         sender_address: substrateAddressToPublicKey(selected.address),
         tx_index: result.value.txIndex,
@@ -246,6 +266,12 @@ export default function useLiquidityBridge() {
 
       const sig = await signMessage(encodePayload(payload), selected);
       if (sig.isErr()) {
+        /*
+        1.check error if the user has rejected?
+        2. pop them up with warning modal saying - rejecting this would lead to your funds being stuck, do you want to proceed?
+        3. if user says - yes, say wait for 7 days and report on discord
+        4. if user says no - re - popup the same dialog
+        */
         throw new Error(`${sig.error} : Failed to sign payload`);
       }
 
