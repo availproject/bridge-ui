@@ -1,17 +1,13 @@
 import { appConfig } from "@/config/default";
 import { IAddress } from "@/hooks/wormhole/helper";
 import { LatestBlockInfo } from "@/stores/blockinfo";
-import {
-  Chain,
-  PayloadResponse,
-  TransactionStatus,
-} from "@/types/common";
+import { Chain, PayloadResponse, TransactionStatus } from "@/types/common";
 import {
   AccountStorageProof,
   merkleProof,
   Transaction,
 } from "@/types/transaction";
-import { toBridgeHex, validAddress } from "@/utils/common";
+import { nini, toBridgeHex, validAddress } from "@/utils/common";
 import { Logger } from "@/utils/logger";
 import { ApiPromise, isValidAddress } from "avail-js-sdk";
 import axios from "axios";
@@ -23,14 +19,13 @@ const JSONBigInt = jsonbigint({ useNativeBigInt: true });
 const trim0x = (value: string) =>
   value.startsWith("0x") ? value.slice(2) : value;
 
-
 export const getMerkleProof = async (blockhash: string, index: number) => {
   const response = await axios.get(
     `${appConfig.bridgeApiBaseUrl}/eth/proof/${blockhash}`,
     {
       params: { index },
       transformResponse: [(data) => data],
-    }
+    },
   );
   const proof: merkleProof = JSONBigInt.parse(response.data);
 
@@ -45,7 +40,7 @@ export async function fetchAvlHead(api: ApiPromise): Promise<{
   const blockHash = await api.rpc.chain.getBlockHash(avlHead.data.end);
   const block = await api.rpc.chain.getBlock(blockHash);
   const timestamp = parseInt(
-    block.block.extrinsics[0].args[0].toJSON() as string
+    block.block.extrinsics[0].args[0].toJSON() as string,
   );
 
   return { data: { data: { ...avlHead.data, endTimestamp: timestamp } } };
@@ -61,10 +56,10 @@ export async function fetchEthHead(): Promise<{
 
 export async function getAccountStorageProofs(
   blockhash: string,
-  messageid: number
+  messageid: number,
 ) {
   const response = await fetch(
-    `${appConfig.bridgeApiBaseUrl}/v1/avl/proof/${blockhash}/${messageid}`
+    `${appConfig.bridgeApiBaseUrl}/v1/avl/proof/${blockhash}/${messageid}`,
   ).catch((e: any) => {
     Logger.error(e);
     return Response.error();
@@ -82,14 +77,14 @@ export async function fetchTokenPrice({
   fiat: string;
 }): Promise<number> {
   const response = await fetch(
-    `/api/getTokenPrice?coins=${coin}&fiats=${fiat}`
+    `/api/getTokenPrice?coins=${coin}&fiats=${fiat}`,
   );
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(
       `status: ${response.status}, message: ${
         errorData.error || "Unknown error"
-      }`
+      }`,
     );
   }
   const data = await response.json();
@@ -100,40 +95,64 @@ export const sendPayload = (
   body: string,
   sig: string,
   direction: string,
-  publicKey?: string
-): ResultAsync<PayloadResponse, Error> =>
-  ResultAsync.fromPromise(
-    axios.post(`${appConfig.liquidityBridgeApiBaseUrl}/v1/${direction}`, body, {
-      headers: {
-        "X-Payload-Signature": trim0x(sig),
-        ...(publicKey && { "X-Public-Key": trim0x(publicKey) }),
-      },
-    }),
-    (error: any) => new Error(`Failed to send payload: ${error.message}`)
+  publicKey?: string,
+  maxRetries: number = 3,
+  retryDelay: number = 2,
+): ResultAsync<PayloadResponse, Error> => {
+  const attemptWithRetry = async (attemptsLeft: number): Promise<any> => {
+    try {
+      return await axios.post(
+        `${appConfig.liquidityBridgeApiBaseUrl}/v1/${direction}`,
+        body,
+        {
+          headers: {
+            "X-Payload-Signature": trim0x(sig),
+            ...(publicKey && { "X-Public-Key": trim0x(publicKey) }),
+          },
+        },
+      );
+    } catch (error: any) {
+      if (attemptsLeft <= 0) {
+        throw error;
+      }
+
+      Logger.debug(`Retrying sendPayload. Attempts left: ${attemptsLeft - 1}`);
+      await nini(retryDelay);
+      return attemptWithRetry(attemptsLeft - 1);
+    }
+  };
+
+  return ResultAsync.fromPromise(
+    attemptWithRetry(maxRetries),
+    (error: any) =>
+      new Error(
+        `Failed to send payload after ${maxRetries} attempts: ${error.message}`,
+      ),
   ).map((response) => response.data);
+};
 
 export interface ReviewResponse {
   fee: string;
   estimated_time_secs: number;
-  allowed: boolean
+  allowed: boolean;
 }
 
 export const reviewTxn = (
   atomicAmount: string,
-  fromChain: Chain
+  fromChain: Chain,
 ): ResultAsync<ReviewResponse, Error> => {
   return ResultAsync.fromPromise(
     axios.get(
       `${appConfig.liquidityBridgeApiBaseUrl}/v1/${
         fromChain === Chain.AVAIL ? "avail_to_eth" : "eth_to_avail"
-      }/review_transaction/${toBridgeHex(atomicAmount)}`
+      }/review_transaction/${toBridgeHex(atomicAmount)}`,
     ),
-    (error) => new Error(`Failed to review transaction: ${error}`)
+    (error) => new Error(`Failed to review transaction: ${error}`),
   ).map((response) => response.data);
 };
 
 export const fetchAvailToEVMTransactions = async (
-  availAddress: string
+  availAddress: string,
 ): Promise<Transaction[]> => {
   if (!isValidAddress(availAddress)) {
     return [];
@@ -141,7 +160,7 @@ export const fetchAvailToEVMTransactions = async (
 
   try {
     const response = await fetch(
-      `${appConfig.liquidityBridgeApiBaseUrl}/v1/avail_to_eth/status?sender_address=${availAddress}`
+      `${appConfig.liquidityBridgeApiBaseUrl}/v1/avail_to_eth/status?sender_address=${availAddress}`,
     );
 
     if (!response.ok)
@@ -191,7 +210,7 @@ export const fetchAvailToEVMTransactions = async (
 };
 
 export const fetchEVMToAvailTransactions = async (
-  ethAddress: IAddress
+  ethAddress: IAddress,
 ): Promise<Transaction[]> => {
   if (!validAddress(ethAddress, Chain.ETH)) {
     return [];
@@ -199,7 +218,7 @@ export const fetchEVMToAvailTransactions = async (
 
   try {
     const response = await fetch(
-      `${appConfig.liquidityBridgeApiBaseUrl}/v1/eth_to_avail/status?sender_address=${ethAddress}`
+      `${appConfig.liquidityBridgeApiBaseUrl}/v1/eth_to_avail/status?sender_address=${ethAddress}`,
     );
 
     if (!response.ok)
@@ -212,7 +231,7 @@ export const fetchEVMToAvailTransactions = async (
       bridged_block_hash: string;
       bridged_tx_index: number;
       bridged_extrinsic_hash: string;
-      time_remaining_secs: number,
+      time_remaining_secs: number;
       completed_at: string;
       created_at: string;
       id: number;
@@ -250,7 +269,7 @@ export const fetchEVMToAvailTransactions = async (
 
 export const fetchAllLiquidityBridgeTransactions = async (
   isPolling = false,
-  address?: IAddress
+  address?: IAddress,
 ): Promise<Transaction[]> => {
   if (!address) {
     return [];
