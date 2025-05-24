@@ -26,18 +26,82 @@ import { publicKeyToAddress } from "viem/accounts";
 import { useCommonStore } from "@/stores/common";
 import { Logger } from "@/utils/logger";
 
+// Helper function to detect if error is due to user signature rejection
+const isSignatureRejection = (error: any): boolean => {
+  const errorMessage = error?.message || error?.toString() || "";
+  return (
+    errorMessage.match(/denied transaction/i) ||
+    errorMessage.match(/User rejected the transaction/i) ||
+    errorMessage.match(/User rejected the request/i) ||
+    errorMessage.match(/user rejected transaction/i) ||
+    errorMessage.match(/Rejected by user/i) ||
+    errorMessage.match(/user denied/i) ||
+    errorMessage.match(/cancelled/i) ||
+    errorMessage.includes("ACTION_REJECTED")
+  );
+};
+
 export default function useLiquidityBridge() {
   const { selected } = useAvailAccount();
   const { api, ensureConnection } = useApi();
   const { activeUserAddress, validateandSwitchChain, getERC20AvailBalance } =
     useEthWallet();
-  const { setSignatures } = useCommonStore();
+  const { setSignatures, warningDialog } = useCommonStore();
 
   interface ILiquidityBridgeParams {
     ERC20Chain: Chain;
     atomicAmount: string;
     destinationAddress: string;
   }
+
+  const handleSignatureWithRetry = async (
+    signFunction: () => Promise<string>,
+    onSuccess: (signature: string) => Promise<any>,
+  ): Promise<any> => {
+    try {
+      const signature = await signFunction();
+      return await onSuccess(signature);
+    } catch (signError: any) {
+      if (isSignatureRejection(signError)) {
+        return new Promise((resolve, reject) => {
+          warningDialog.setCallbacks(
+            // onReject callback
+            () => {
+              reject(
+                new Error(
+                  "Funds will be manually refunded on source chain 7 days later, reach out on discord, you rejected the signature",
+                ),
+              );
+            },
+            // onRetry callback
+            async () => {
+              try {
+                const retrySignature = await signFunction();
+                const result = await onSuccess(retrySignature);
+                resolve(result);
+              } catch (retryError: any) {
+                if (isSignatureRejection(retryError)) {
+                  reject(
+                    new Error(
+                      "Funds will be manually refunded on source chain 7 days later, reach out on discord, you rejected the signature",
+                    ),
+                  );
+                } else {
+                  reject(retryError);
+                }
+              }
+            },
+          );
+          warningDialog.setWarning(
+            "Signature required to complete transaction",
+          );
+          warningDialog.onOpenChange(true);
+        });
+      } else {
+        throw signError;
+      }
+    }
+  };
 
   /** HELPER FUNCTIONS */
   async function transferERC20AvailToLiquidityBridge(
@@ -129,58 +193,32 @@ export default function useLiquidityBridge() {
 
       console.log("Payload: ", payload, encodedPayload);
 
-      const sig = await personalSign(config, {
-        message: encodedPayload,
-      });
-      if (!sig) {
-        throw new Error("Failed to sign payload");
-      }
-
-      console.log("Signature: ", sig);
-
-      const isValid = await verifyMessage(config, {
-        address: activeUserAddress,
-        message: encodedPayload,
-        signature: sig,
-      });
-      if (!isValid) {
-        throw new Error("Invalid Signature");
-      }
-
-      console.log("Signature: ", isValid, sig);
-
-      const publicKey = await recoverPublicKey({
-        //if not hashed the ethereum way it can't recover the right address and pub key
-        hash: hashMessage(encodedPayload),
-        signature: sig,
-      });
-      const address = publicKeyToAddress(publicKey);
-      if (!publicKey) {
-        throw new Error("Failed to recover public key");
-      }
-
-      console.log("Public Key: ", publicKey);
-      console.log("Address of pub key: ", address);
-
-      const response = await sendPayload(
-        encodePayload(payload),
-        sig,
-        "eth_to_avail",
-        publicKey,
+      // Use the helper function to handle signature with retry
+      return await handleSignatureWithRetry(
+        // Sign function
+        async () => {
+          const sig = await personalSign(config, {
+            message: encodedPayload,
+          });
+          if (!sig) {
+            throw new Error("Failed to sign payload");
+          }
+          return sig;
+        },
+        // Success callback
+        async (sig: string) => {
+          return await continueAfterSignature(
+            sig,
+            payload,
+            encodedPayload,
+            hash,
+            destinationAddress,
+            activeUserAddress,
+            atomicAmount,
+            ERC20Chain,
+          );
+        },
       );
-      if (response.isErr()) {
-        throw new Error(` ${response.error}`);
-      }
-
-      Logger.info(
-        `LIQUIDITY_BRIDGE INIT_SUCCESS ${hash.txnHash} receiver_address: ${destinationAddress} sender_address: ${activeUserAddress} amount: ${atomicAmount} flow: ${ERC20Chain} -> AVAIL`,
-      );
-
-      return {
-        chain: ERC20Chain,
-        hash: hash.txnHash,
-        id: response.value.id,
-      };
     } catch (error: any) {
       Logger.error(
         `LIQUIDITY_BRIDGE INIT_FAILED: ${error.message}`,
@@ -195,6 +233,64 @@ export default function useLiquidityBridge() {
     } finally {
       setSignatures("");
     }
+  };
+
+  // Helper function to continue processing after successful signature
+  const continueAfterSignature = async (
+    sig: string,
+    payload: any,
+    encodedPayload: string,
+    hash: any,
+    destinationAddress: string,
+    activeUserAddress: string,
+    atomicAmount: string,
+    ERC20Chain: Chain,
+  ) => {
+    console.log("Signature: ", sig);
+
+    const isValid = await verifyMessage(config, {
+      address: activeUserAddress as `0x${string}`,
+      message: encodedPayload,
+      signature: sig as `0x${string}`,
+    });
+    if (!isValid) {
+      throw new Error("Invalid Signature");
+    }
+
+    console.log("Signature: ", isValid, sig);
+
+    const publicKey = await recoverPublicKey({
+      //if not hashed the ethereum way it can't recover the right address and pub key
+      hash: hashMessage(encodedPayload),
+      signature: sig`0x${string}`,
+    });
+    const address = publicKeyToAddress(publicKey);
+    if (!publicKey) {
+      throw new Error("Failed to recover public key");
+    }
+
+    console.log("Public Key: ", publicKey);
+    console.log("Address of pub key: ", address);
+
+    const response = await sendPayload(
+      encodePayload(payload),
+      sig,
+      "eth_to_avail",
+      publicKey,
+    );
+    if (response.isErr()) {
+      throw new Error(` ${response.error}`);
+    }
+
+    Logger.info(
+      `LIQUIDITY_BRIDGE INIT_SUCCESS ${hash.txnHash} receiver_address: ${destinationAddress} sender_address: ${activeUserAddress} amount: ${atomicAmount} flow: ${ERC20Chain} -> AVAIL`,
+    );
+
+    return {
+      chain: ERC20Chain,
+      hash: hash.txnHash,
+      id: response.value.id,
+    };
   };
 
   const initAvailToERC20AutomaticBridging = async ({
@@ -264,35 +360,38 @@ export default function useLiquidityBridge() {
         amount: toHex(atomicAmount),
       };
 
-      const sig = await signMessage(encodePayload(payload), selected);
-      if (sig.isErr()) {
-        /*
-        1.check error if the user has rejected?
-        2. pop them up with warning modal saying - rejecting this would lead to your funds being stuck, do you want to proceed?
-        3. if user says - yes, say wait for 7 days and report on discord
-        4. if user says no - re - popup the same dialog
-        */
-        throw new Error(`${sig.error} : Failed to sign payload`);
-      }
+      // Use the helper function to handle signature with retry
+      return await handleSignatureWithRetry(
+        // Sign function
+        async () => {
+          const sig = await signMessage(encodePayload(payload), selected);
+          if (sig.isErr()) {
+            throw new Error(sig.error);
+          }
+          return sig.value;
+        },
+        // Success callback
+        async (signature: string) => {
+          //NOTE: to be passed as base64 encoded string
+          const response = await sendPayload(
+            encodePayload(payload),
+            signature,
+            "avail_to_eth",
+          );
+          if (response.isErr()) {
+            throw new Error(` ${response.error} : Failed to send payload`);
+          }
+          Logger.info(
+            `LIQUIDITY_BRIDGE INIT_SUCCESS ${result.value.txHash} receiver_address: ${destinationAddress} sender_address: ${selected?.address} amount: ${atomicAmount} flow: AVAIL -> ${ERC20Chain}`,
+          );
 
-      //NOTE: to be passed as base64 encoded string
-      const response = await sendPayload(
-        encodePayload(payload),
-        sig.value,
-        "avail_to_eth",
+          return {
+            chain: Chain.AVAIL,
+            hash: result.value.txHash,
+            id: response.value.id,
+          };
+        },
       );
-      if (response.isErr()) {
-        throw new Error(` ${response.error} : Failed to send payload`);
-      }
-      Logger.info(
-        `LIQUIDITY_BRIDGE INIT_SUCCESS ${result.value.txHash} receiver_address: ${destinationAddress} sender_address: ${selected?.address} amount: ${atomicAmount} flow: AVAIL -> ${ERC20Chain}`,
-      );
-
-      return {
-        chain: Chain.AVAIL,
-        hash: result.value.txHash,
-        id: response.value.id,
-      };
     } catch (error: any) {
       Logger.error(
         `LIQUIDITY_BRIDGE INIT_FAILED: ${error.message}`,

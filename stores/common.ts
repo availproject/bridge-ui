@@ -32,6 +32,14 @@ interface ErrorDialog extends DialogBase {
   error: Error | string | null;
   setError: (error: Error | string | null) => void;
 }
+
+interface WarningDialog extends DialogBase {
+  warning: Error | string | null;
+  setWarning: (warning: Error | string | null) => void;
+  onReject?: () => void;
+  onRetry?: () => void;
+  setCallbacks: (onReject: () => void, onRetry: () => void) => void;
+}
 interface CommonStore {
   fromChain: Chain;
   setFromChain: (fromChain: Chain) => void;
@@ -46,9 +54,10 @@ interface CommonStore {
   setToAddress: (toAddress: string) => void;
   successDialog: SuccessDialog;
   errorDialog: ErrorDialog;
+  warningDialog: WarningDialog;
   reviewDialog: DialogBase;
-  signatures: string,
-  setSignatures: (text: string) => void
+  signatures: string;
+  setSignatures: (text: string) => void;
   allowLiquidityBridgeTxn: boolean;
   setAllowLiquidityBridgeTxn: (allow: boolean) => void;
 }
@@ -101,6 +110,24 @@ export const useCommonStore = create<CommonStore>((set) => ({
         errorDialog: { ...state.errorDialog, error },
       })),
   },
+  warningDialog: {
+    isOpen: false,
+    onOpenChange: (open: boolean) =>
+      set((state) => ({
+        warningDialog: { ...state.warningDialog, isOpen: open },
+      })),
+    warning: null,
+    setWarning: (warning: Error | string | null) =>
+      set((state) => ({
+        warningDialog: { ...state.warningDialog, warning },
+      })),
+    onReject: undefined,
+    onRetry: undefined,
+    setCallbacks: (onReject: () => void, onRetry: () => void) =>
+      set((state) => ({
+        warningDialog: { ...state.warningDialog, onReject, onRetry },
+      })),
+  },
   reviewDialog: {
     isOpen: false,
     onOpenChange: (open: boolean) =>
@@ -111,5 +138,6 @@ export const useCommonStore = create<CommonStore>((set) => ({
   signatures: "",
   setSignatures: (text) => set({ signatures: text }),
   allowLiquidityBridgeTxn: true,
-  setAllowLiquidityBridgeTxn: (allow) => set({ allowLiquidityBridgeTxn: allow }),
+  setAllowLiquidityBridgeTxn: (allow) =>
+    set({ allowLiquidityBridgeTxn: allow }),
 }));
