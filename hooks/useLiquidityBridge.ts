@@ -129,7 +129,13 @@ export default function useLiquidityBridge() {
         ["sender_address", selected?.address],
         ["amount", formatUnits(BigInt(atomicAmount), 18)],
         ["flow", ` ${ERC20Chain} -> AVAIL`],
-        ["txnHash", hash.txnHash],
+        [
+          "fields",
+          {
+            source_tx_hash: hash.txnHash,
+            source_chain_id: ERC20Chain,
+          },
+        ],
         ["blockHash", hash.blockhash],
       );
 
@@ -310,7 +316,13 @@ export default function useLiquidityBridge() {
         ["sender_address", selected?.address],
         ["amount", formatUnits(BigInt(atomicAmount), 18)],
         ["flow", `AVAIL -> ${ERC20Chain}`],
-        ["txnHash", result.value.txHash],
+        [
+          "fields",
+          {
+            source_tx_hash: result.value.txHash,
+            destination_chain_id: ERC20Chain,
+          },
+        ],
         ["blockHash", result.value.blockhash],
         ["txnIndex", result.value.txIndex],
       );
