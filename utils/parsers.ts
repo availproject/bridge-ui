@@ -135,6 +135,9 @@ export function parseError(error: any): string {
   if (errorMessageString.match(/Failed to fetch heads from api/i)) {
     return "Beep Boop! Failed to fetch latest slot. Please refresh and try again";
   }
+  if (errorMessageString.match(/manually refunded/i)) {
+    return "You rejected the signature, funds will be returned to your wallet after 7 days.";
+  }
   if (typeof error === "string") {
     return error;
   }
