@@ -36,8 +36,6 @@ export const WarningDialog = () => {
 
   if (!isOpen) return null;
 
-  if (!isOpen) return null;
-
   const handleReject = () => {
     onReject?.();
     onOpenChange(false);

@@ -36,6 +36,7 @@ const isSignatureRejection = (error: any): boolean => {
     errorMessage.match(/Rejected by user/i) ||
     errorMessage.match(/user denied/i) ||
     errorMessage.match(/cancelled/i) ||
+    errorMessage.match(/user rejected signature/i) ||
     errorMessage.includes("ACTION_REJECTED")
   );
 };
@@ -326,6 +327,7 @@ export default function useLiquidityBridge() {
         ["blockHash", result.value.blockhash],
         ["txnIndex", result.value.txIndex],
       );
+
       const payload = {
         sender_address: substrateAddressToPublicKey(selected.address),
         tx_index: result.value.txIndex,
