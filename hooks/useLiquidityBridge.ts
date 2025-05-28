@@ -336,7 +336,13 @@ export default function useLiquidityBridge() {
         amount: toHex(atomicAmount),
       };
 
+      let sig;
+
       const sigResult = await signMessage(encodePayload(payload), selected);
+
+      if (sigResult.isOk()) {
+        sig = sigResult.value;
+      }
       if (sigResult.isErr()) {
         if (isSignatureRejection(sigResult.error)) {
           const retrySigResult = await new Promise<any>((resolve, reject) => {
@@ -382,24 +388,7 @@ export default function useLiquidityBridge() {
             warningDialog.onOpenChange(true);
           });
 
-          //NOTE: to be passed as base64 encoded string
-          const response = await sendPayload(
-            encodePayload(payload),
-            retrySigResult.value,
-            "avail_to_eth",
-          );
-          if (response.isErr()) {
-            throw new Error(` ${response.error} : Failed to send payload`);
-          }
-          Logger.info(
-            `LIQUIDITY_BRIDGE INIT_SUCCESS ${result.value.txHash} receiver_address: ${destinationAddress} sender_address: ${selected?.address} amount: ${atomicAmount} flow: AVAIL -> ${ERC20Chain}`,
-          );
-
-          return {
-            chain: Chain.AVAIL,
-            hash: result.value.txHash,
-            id: response.value.id,
-          };
+          sig = retrySigResult.value;
         } else {
           throw new Error(`${sigResult.error} : Failed to sign payload`);
         }
@@ -408,7 +397,7 @@ export default function useLiquidityBridge() {
       //NOTE: to be passed as base64 encoded string
       const response = await sendPayload(
         encodePayload(payload),
-        sigResult.value,
+        sig,
         "avail_to_eth",
       );
       if (response.isErr()) {
