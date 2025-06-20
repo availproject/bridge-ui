@@ -127,7 +127,7 @@ export default function useLiquidityBridge() {
       Logger.info(
         `LIQUIDITY_BRIDGE TRANSFER_SUCESS`,
         ["receiver_address", destinationAddress],
-        ["sender_address", selected?.address],
+        ["sender_address", activeUserAddress],
         ["amount", formatUnits(BigInt(atomicAmount), 18)],
         ["flow", ` ${ERC20Chain} -> AVAIL`],
         [
