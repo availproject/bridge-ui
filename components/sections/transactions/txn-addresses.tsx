@@ -8,6 +8,7 @@ import {
 import { Copy, ExternalLink } from "lucide-react";
 import { IoIosArrowDown } from "react-icons/io";
 import { Transaction } from "@/types/transaction";
+import { TransactionStatus } from "@/types/common";
 import { Logger } from "@/utils/logger";
 import { getHref } from "@/utils/common";
 
@@ -32,7 +33,7 @@ export default function TxnAddresses({ txn }: { txn: Transaction }) {
         Logger.error("Error copying text to clipboard", error);
       }
     },
-    []
+    [],
   );
 
   const AddressRow = ({
@@ -121,34 +122,62 @@ export default function TxnAddresses({ txn }: { txn: Transaction }) {
               Transaction Details
             </span>
           </p>
+          {txn.status === TransactionStatus.RETRY && (
+            <div className="mt-3 mb-3 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-md">
+              <p className="text-white text-opacity-80 font-medium text-sm">
+                Your transaction wasn't completely signed the first time, click
+                retry to sign initiate the bridging txn
+              </p>
+              <p className="text-white text-opacity-70 text-sm mt-1">
+                If you don't wish to proceed, you can contact us on discord to
+                get your funds back on the source chain
+              </p>
+            </div>
+          )}
           <div className="space-y-1.5 mt-3">
-           {txn.depositorAddress ? <AddressRow
-              label="Depositor"
-              address={txn.depositorAddress}
-              stateKey="depositor"
-            /> : '...'} 
-           {txn.receiverAddress ? <AddressRow
-              label="Receiver"
-              address={txn.receiverAddress}
-              stateKey="receiver"
-            /> : '...' } 
-           {
-            txn.sourceTransactionHash ? 
-            <HashRow
-              label="Source Hash"
-              hash={txn.sourceTransactionHash}
-              stateKey="sourceHash"
-              explorerUrl={getHref(txn.sourceChain, txn.sourceTransactionHash)}
-            /> : '...'
-           } 
-            {!(txn.destinationTransactionHash === "0xundefined") && txn.destinationTransactionHash && (
-              <HashRow
-                label="Destination Hash"
-                hash={txn.destinationTransactionHash}
-                stateKey="destHash"
-                explorerUrl={getHref(txn.destinationChain, txn.destinationTransactionHash)}
+            {txn.depositorAddress ? (
+              <AddressRow
+                label="Depositor"
+                address={txn.depositorAddress}
+                stateKey="depositor"
               />
+            ) : (
+              ""
             )}
+            {txn.receiverAddress ? (
+              <AddressRow
+                label="Receiver"
+                address={txn.receiverAddress}
+                stateKey="receiver"
+              />
+            ) : (
+              ""
+            )}
+            {txn.sourceTransactionHash ? (
+              <HashRow
+                label="Source Hash"
+                hash={txn.sourceTransactionHash}
+                stateKey="sourceHash"
+                explorerUrl={getHref(
+                  txn.sourceChain,
+                  txn.sourceTransactionHash,
+                )}
+              />
+            ) : (
+              ""
+            )}
+            {!(txn.destinationTransactionHash === "0xundefined") &&
+              txn.destinationTransactionHash && (
+                <HashRow
+                  label="Destination Hash"
+                  hash={txn.destinationTransactionHash}
+                  stateKey="destHash"
+                  explorerUrl={getHref(
+                    txn.destinationChain,
+                    txn.destinationTransactionHash,
+                  )}
+                />
+              )}
           </div>
         </HoverCardContent>
       </HoverCard>

@@ -76,11 +76,11 @@ export const RetryTxns = ({
       loading={isLoading}
       disabled={isLoading}
       loadingMessage="Retrying..."
-      className="w-full rounded-lg font-thicccboibold px-12 py-3 bg-red-900/20 text-red-400 hover:bg-red-900/60 transition-colors duration-300 relative overflow-hidden"
+      className="w-full rounded-xl font-thicccboibold px-4 py-3 !bg-[#395358] border-2 border-green-500 !text-white hover:bg-green-500/10 transition-colors duration-300 relative overflow-hidden"
       onClick={onRetry}
     >
-      <RotateCcw className="w-4 h-4" />
-      Retry
+      <RotateCcw className="w-4 h-4 mr-2" />
+      Retry Now
     </LoadingButton>
   );
 };
