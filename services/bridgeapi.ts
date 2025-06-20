@@ -19,6 +19,21 @@ const JSONBigInt = jsonbigint({ useNativeBigInt: true });
 const trim0x = (value: string) =>
   value.startsWith("0x") ? value.slice(2) : value;
 
+const mapApiStatusToTransactionStatus = (
+  apiStatus: string,
+): TransactionStatus => {
+  switch (apiStatus) {
+    case "Bridged":
+      return TransactionStatus.CLAIMED;
+    case "Error":
+      return TransactionStatus.ERROR;
+    case "Unclaimed":
+      return TransactionStatus.RETRY;
+    default:
+      return TransactionStatus.PENDING;
+  }
+};
+
 export const getMerkleProof = async (blockhash: string, index: number) => {
   const response = await axios.get(
     `${appConfig.bridgeApiBaseUrl}/eth/proof/${blockhash}`,
@@ -184,16 +199,13 @@ export const fetchAvailToEVMTransactions = async (
     }
 
     return transactions.map((tx: IAvailtoEVMResponse) => ({
-      status:
-        tx.status === "Bridged"
-          ? TransactionStatus.CLAIMED
-          : tx.status === "Error"
-            ? TransactionStatus.ERROR
-            : TransactionStatus.PENDING,
+      status: mapApiStatusToTransactionStatus(tx.status),
       sourceChain: Chain.AVAIL,
       //@luka-ethernal need to get this back from the api as well, no way to handle this on the FE, for multiple ERC20 chains
       destinationChain: Chain.BASE,
       amount: tx.amount,
+      sourceTransactionIndex: tx.tx_index,
+      sourceBlockHash: tx.source_block_hash,
       depositorAddress: encodeAddress(tx.sender_hash),
       receiverAddress: tx.receiver_hash,
       sourceTransactionHash: tx.source_extrinsic_hash,
@@ -242,12 +254,7 @@ export const fetchEVMToAvailTransactions = async (
     }
 
     return transactions.map((tx: IEVMtoAvailResponse) => ({
-      status:
-        tx.status === "Bridged"
-          ? TransactionStatus.CLAIMED
-          : tx.status === "Error"
-            ? TransactionStatus.ERROR
-            : TransactionStatus.PENDING,
+      status: mapApiStatusToTransactionStatus(tx.status),
       sourceChain: Chain.BASE,
       destinationChain: Chain.AVAIL,
       amount: tx.amount,
