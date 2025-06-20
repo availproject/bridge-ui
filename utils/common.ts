@@ -91,6 +91,9 @@ export const getStatusTime = ({
   if (status === "READY_TO_CLAIM") {
     return "~";
   }
+  if (status === "RETRY") {
+    return "~";
+  }
   if (status === "INITIATED") {
     return "Waiting for finalisation";
   }

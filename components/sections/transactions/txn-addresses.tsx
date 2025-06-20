@@ -5,7 +5,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { Copy, ExternalLink } from "lucide-react";
+import { AlertTriangle, Copy, ExternalLink } from "lucide-react";
 import { IoIosArrowDown } from "react-icons/io";
 import { Transaction } from "@/types/transaction";
 import { TransactionStatus } from "@/types/common";
@@ -108,6 +108,9 @@ export default function TxnAddresses({ txn }: { txn: Transaction }) {
               setIsHoverCardOpen(!isHoverCardOpen);
             }}
           >
+            {txn.status === TransactionStatus.RETRY && (
+              <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 font-thin" />
+            )}
             <p>More Details</p>
             <IoIosArrowDown className="w-4 h-4" />
           </span>
@@ -125,12 +128,12 @@ export default function TxnAddresses({ txn }: { txn: Transaction }) {
           {txn.status === TransactionStatus.RETRY && (
             <div className="mt-3 mb-3 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-md">
               <p className="text-white text-opacity-80 font-medium text-sm">
-                Your transaction wasn't completely signed the first time, click
-                retry to sign initiate the bridging txn
+                Your transaction wasn&apos;t completely signed the first time,
+                click retry to sign initiate the bridging txn
               </p>
               <p className="text-white text-opacity-70 text-sm mt-1">
-                If you don't wish to proceed, you can contact us on discord to
-                get your funds back on the source chain
+                If you do&apos;t wish to proceed, you can contact us on discord
+                to get your funds back on the source chain
               </p>
             </div>
           )}

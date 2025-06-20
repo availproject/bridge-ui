@@ -103,14 +103,14 @@ export const PendingTransactions = ({
                 </TableCell>
               </div>
               {/* Warning Message for RETRY transactions */}
-              {txn.status === "RETRY" && (
+              {/* {txn.status === "RETRY" && (
                 <div className="flex items-center space-x-2 p-3 mx-4 mb-3 bg-yellow-900/20 border border-yellow-900/30 rounded-lg">
                   <AlertTriangle className="w-5 h-5 text-yellow-400 flex-shrink-0 font-thin" />
                   <p className="text-yellow-400 text-sm font-thin">
                     Retry now to avoid a 7-day wait for your funds.
                   </p>
                 </div>
-              )}
+              )} */}
             </TableRow>
           ))}
       </TableBody>
