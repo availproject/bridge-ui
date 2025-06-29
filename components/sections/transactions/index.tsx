@@ -133,7 +133,7 @@ export default function TransactionSection() {
                   </p>
                   <p className="pb-1">
                     {">"} We fetch transaction data by connected wallet, make
-                    sure you`&apos;re connected to the right accounts.
+                    sure you&apos;re connected to the right accounts.
                   </p>
                   <span className="">
                     <span>
