@@ -22,7 +22,7 @@ interface TransactionProgress {
   timeEstimate: string;
 }
 
-const getTimeEstimate = (confirmations: number, chain?: Chain, ) => {
+const getTimeEstimate = (confirmations: number, chain?: Chain) => {
   switch (chain) {
     case Chain.ETH:
       return `~${confirmations * 15} seconds`;
@@ -37,12 +37,12 @@ const getTimeEstimate = (confirmations: number, chain?: Chain, ) => {
 export function useFinalityTracker(
   hash?: Hash,
   chain?: Chain,
-  isWormhole?: boolean
+  isWormhole?: boolean,
 ) {
   const [progress, setProgress] = useState<TransactionProgress>({
     status: "submitted",
     isLoading: true,
-    timeEstimate: getTimeEstimate(2, chain || Chain.ETH)
+    timeEstimate: getTimeEstimate(2, chain || Chain.ETH),
   });
 
   const { api, ensureConnection } = useApi();
@@ -52,92 +52,99 @@ export function useFinalityTracker(
 
     const trackTransaction = async () => {
       const logStep = (step: string, data?: any) => {
-        console.log(`[TX Tracker][${chain}][${hash}] ${step}`, data || '', "TX");
+        console.log(
+          `[TX Tracker][${chain}][${hash}] ${step}`,
+          data || "",
+          "TX",
+        );
       };
-    
+
       try {
-        logStep('Starting transaction tracking');
+        logStep("Starting transaction tracking");
         if (!chain) {
-          throw new Error('Chain not specified');
+          throw new Error("Chain not specified");
         }
-    
+
         const isAvailChain = chain === Chain.AVAIL;
-        
+
         if (isAvailChain) {
-          logStep('Processing AVAIL transaction');
-          setProgress(prev => ({
+          logStep("Processing AVAIL transaction");
+          setProgress((prev) => ({
             ...prev,
-            status: 'included',
-            isLoading: true
+            status: "included",
+            isLoading: true,
           }));
-    
+
           if (!api?.isConnected || !api?.isReady) {
-            logStep('Ensuring API connection');
+            logStep("Ensuring API connection");
             await ensureConnection();
           }
-    
-          logStep('Checking AVAIL transaction status');
+
+          logStep("Checking AVAIL transaction status");
           await checkTransactionStatus(api!, hash, "subscribeFinalizedHeads");
         } else {
-
-          logStep('Processing ETH compatible txns'); 
-          setProgress(prev => ({
+          logStep("Processing ETH compatible txns");
+          setProgress((prev) => ({
             ...prev,
-            status: 'submitted',
+            status: "submitted",
             isLoading: true,
-            timeEstimate: '~30 seconds'
+            timeEstimate: "",
           }));
-  
-          logStep('Transaction details before waiting', {
+
+          logStep("Transaction details before waiting", {
             hash,
-            chainId: config.chains[0]?.id, 
+            chainId: config.chains[0]?.id,
           });
           const initialReceipt = await waitForTransactionReceipt(config, {
             hash,
             confirmations: 1,
             onReplaced: (response) => {
               const { reason, transaction } = response;
-              logStep('Transaction replacement detected', { reason, newHash: transaction?.hash });
-              
-              if (reason === 'replaced' && transaction?.hash) {
+              logStep("Transaction replacement detected", {
+                reason,
+                newHash: transaction?.hash,
+              });
+
+              if (reason === "replaced" && transaction?.hash) {
                 trackTransaction();
               }
             },
           });
-          logStep('Received initial confirmation', { blockNumber: initialReceipt.blockNumber });
-          
-          setProgress(prev => ({
+          logStep("Received initial confirmation", {
+            blockNumber: initialReceipt.blockNumber,
+          });
+
+          setProgress((prev) => ({
             ...prev,
-            status: 'included',
-            isLoading: true
+            status: "included",
+            isLoading: true,
           }));
-    
-          logStep('Waiting for final confirmation', hash);
+
+          logStep("Waiting for final confirmation", hash);
           const finalReceipt = await waitForTransactionReceipt(config, {
             hash,
             confirmations: 2,
           });
-          logStep('Received final confirmation', { 
+          logStep("Received final confirmation", {
             blockNumber: finalReceipt.blockNumber,
-            gasUsed: finalReceipt.gasUsed.toString()
+            gasUsed: finalReceipt.gasUsed.toString(),
           });
         }
-    
-        setProgress(prev => ({
+
+        setProgress((prev) => ({
           ...prev,
-          status: 'finalised',
-          isLoading: false
+          status: "finalised",
+          isLoading: false,
         }));
-        logStep('Transaction tracking completed successfully');
-    
+        logStep("Transaction tracking completed successfully");
       } catch (error) {
-        logStep('Error tracking transaction', error);
-        
-        setProgress(prev => ({
+        logStep("Error tracking transaction", error);
+
+        setProgress((prev) => ({
           ...prev,
-          status: 'error',
+          status: "error",
           error: error as Error,
-          isLoading: false
+          isLoading: false,
         }));
       }
     };

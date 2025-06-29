@@ -73,15 +73,16 @@ const DestinationStatus = () => {
     const checkStatus = async () => {
       try {
         const response = await fetch(
-          `${appConfig.liquidityBridgeApiBaseUrl}/v1/${toChain === Chain.AVAIL ? "eth_to_avail" : "avail_to_eth"}/status?id=${details.id}`,
+          `${appConfig.liquidityBridgeApiBaseUrl}/v1/${details.chain === Chain.BASE ? "eth_to_avail" : "avail_to_eth"}/status?id=${details.id}`,
         );
         if (!response.ok) throw new Error("Failed to fetch status");
         const data = await response.json();
+
         setLiquidityStatus(data[0].status);
         setLiquidityClaimTxn(
-          toChain === Chain.BASE
-            ? data[0].bridged_tx_hash
-            : data[0].bridged_block_hash,
+          details.chain === Chain.BASE
+            ? data[0].bridged_block_hash
+            : data[0].bridged_tx_hash,
         );
         setLiquidityTime(data[0].time_remaining_secs);
 
@@ -114,6 +115,7 @@ const DestinationStatus = () => {
     details?.isLiquidityBridge,
     setTransactionStatus,
     toChain,
+    liquidityStatus,
   ]);
 
   if (details?.isLiquidityBridge) {
@@ -123,13 +125,16 @@ const DestinationStatus = () => {
           <Tooltip>
             <TooltipTrigger>
               <div className="flex items-center">
-                {liquidityStatus === "Bridged" ? (
+                {liquidityStatus === "Bridged" && liquidityClaimTxn ? (
                   <>
+                    {/* this should be ideally disabled instead in destinationChain is not defined, and also when liquidityClaimTxn does not show up */}
                     <Link
                       href={getHref(
-                        toChain,
-                        liquidityClaimTxn ?? "0x",
-                        toChain === Chain.AVAIL,
+                        details?.chain === Chain.AVAIL
+                          ? Chain.BASE
+                          : Chain.AVAIL,
+                        liquidityClaimTxn,
+                        details?.chain === Chain.AVAIL ? false : true,
                       )}
                       className="text-white text-opacity-70 text-md underline"
                       target="_blank"

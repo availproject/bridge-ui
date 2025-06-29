@@ -123,28 +123,40 @@ export default function TransactionSection() {
                 Can&apos;t find your transaction?
               </HoverCardTrigger>
               <HoverCardContent className="font-ppmori bg-[#282B34] text-white text-opacity-70 w-2/3">
-              <h2 className="font-ppmori text-white text-lg pb-2">Can&apos;t find your transaction?</h2>
-                <div className="font-ppmori text-white text-opacity-70 space-y-4">
+                <h2 className="font-ppmori text-white text-lg pb-2">
+                  Can&apos;t find your transaction?
+                </h2>
+                <div className="font-ppmori text-white text-opacity-70">
                   <p className="pb-1">
                     {">"} After transactions are completed they will be moved to
                     the history section.
                   </p>
-                  <span className="pt-2">
+                  <p className="pb-1">
+                    {">"} We fetch transaction data by connected wallet, make
+                    sure you`&apos;re connected to the right accounts.
+                  </p>
+                  <span className="">
                     <span>
-                    {">"} All third party wormhole transactions might take a while to propagate, you can also track
-                      status on <span className="text-white">wormhole scan</span> in the meanwhile.
+                      {">"} All third party wormhole transactions might take a
+                      while to propagate, you can also track status on{" "}
+                      <span className="text-white">wormhole scan</span> in the
+                      meanwhile.
                     </span>
                     <Link
-                      href={address ? `https://wormholescan.io/#/txs?address=${address}&network=${
-                        capitalizeFirstLetter(appConfig.config) as
-                          | "Mainnet"
-                          | "Testnet"
-                      }` : "https://wormholescan.io/"}
+                      href={
+                        address
+                          ? `https://wormholescan.io/#/txs?address=${address}&network=${
+                              capitalizeFirstLetter(appConfig.config) as
+                                | "Mainnet"
+                                | "Testnet"
+                            }`
+                          : "https://wormholescan.io/"
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center text-blue-400 pt-1"  
+                      className="flex items-center text-blue-400 pt-1"
                     >
-                     See your transactions
+                      See your transactions
                       <ArrowUpRight size={16} />
                     </Link>
                   </span>

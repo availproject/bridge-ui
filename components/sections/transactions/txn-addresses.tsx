@@ -128,12 +128,12 @@ export default function TxnAddresses({ txn }: { txn: Transaction }) {
           {txn.status === TransactionStatus.RETRY && (
             <div className="mt-3 mb-3 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-md">
               <p className="text-white text-opacity-80 font-medium text-sm">
-                Your transaction wasn&apos;t completely signed the first time,
-                click retry to sign initiate the bridging txn
+                Your transaction wasn&apos;t initiated properly the first time,
+                click retry to sign the bridging transaction.
               </p>
               <p className="text-white text-opacity-70 text-sm mt-1">
-                If you do&apos;t wish to proceed, you can contact us on discord
-                to get your funds back on the source chain
+                If you do not wish to proceed, you can contact us on discord to
+                get your funds back on the source chain after 7 days.
               </p>
             </div>
           )}
