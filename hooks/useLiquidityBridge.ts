@@ -25,6 +25,7 @@ import { formatUnits, hashMessage, recoverPublicKey } from "viem";
 import { publicKeyToAddress } from "viem/accounts";
 import { useCommonStore } from "@/stores/common";
 import { Logger } from "@/utils/logger";
+import { Transaction } from "@/types/transaction";
 
 const isSignatureRejection = (error: any): boolean => {
   const errorMessage = error?.message || error?.toString() || "";
@@ -429,8 +430,245 @@ export default function useLiquidityBridge() {
     }
   };
 
+  interface RetryParams {
+    signOn: Chain;
+    response: Transaction;
+  }
+
+  async function retryLiquidityBridgeTxn({ signOn, response }: RetryParams) {
+    /*
+    1. check what direction the txn is - get from params
+    2. remake the payload from txn response (check payload above)
+    3. encode + popup signature based on signOn chain
+    4. send payload again based on signOn chain
+    5. give back response is success or error
+    */
+    try {
+      Logger.info("LIQUIDITY_BRIDGE RETRY_INITIATED");
+
+      if (!response.sourceTransactionHash) {
+        throw new Error("Source transaction hash is required for retry");
+      }
+      if (!response.amount) {
+        throw new Error("Transaction amount is required for retry");
+      }
+
+      const isAvailToEth = response.sourceChain === Chain.AVAIL;
+      const isEthToAvail =
+        response.sourceChain === Chain.ETH ||
+        response.sourceChain === Chain.BASE;
+
+      let payload;
+      let direction: string;
+
+      /* VALIDATIONS */
+      if (isAvailToEth) {
+        if (!selected?.address) {
+          throw new Error("Please connect Avail wallet");
+        }
+        if (!response.sourceTransactionIndex || !response.sourceBlockHash) {
+          throw new Error(
+            "Transaction index and block hash are required for Avail to ETH retry",
+          );
+        }
+        payload = {
+          sender_address: substrateAddressToPublicKey(selected.address),
+          tx_index: response.sourceTransactionIndex,
+          block_hash: response.sourceBlockHash,
+          eth_receiver_address: activeUserAddress || response.receiverAddress,
+          amount: toHex(response.amount),
+        };
+        direction = "avail_to_eth";
+      } else if (isEthToAvail) {
+        if (!activeUserAddress) {
+          throw new Error("Please connect EVM wallet");
+        }
+        payload = {
+          sender_address: activeUserAddress,
+          tx_hash: response.sourceTransactionHash,
+          avl_receiver_address: selected?.address || response.receiverAddress,
+          amount: toHex(response.amount),
+        };
+        direction = "eth_to_avail";
+      } else {
+        throw new Error("Unknown transaction direction");
+      }
+
+      /* PAYLOAD CREATION */
+      const encodedPayload = encodePayload(payload);
+      if (signOn === Chain.AVAIL) {
+        if (!selected?.address) {
+          throw new Error("Please connect Avail wallet");
+        }
+      } else {
+        if (!activeUserAddress) {
+          throw new Error("Please connect EVM wallet");
+        }
+      }
+
+      /* SIGNATURE POPUP */
+      let sig: string | `0x${string}`;
+      if (signOn === Chain.AVAIL) {
+        const sigResult = await signMessage(encodedPayload, selected!);
+        if (sigResult.isErr()) {
+          if (isSignatureRejection(sigResult.error)) {
+            const retrySigResult = await new Promise<any>((resolve, reject) => {
+              warningDialog.setCallbacks(
+                () => {
+                  reject(
+                    new Error(
+                      "Signature required to retry transaction. Transaction retry cancelled.",
+                    ),
+                  );
+                },
+                async () => {
+                  try {
+                    const retrySig = await signMessage(
+                      encodedPayload,
+                      selected!,
+                    );
+                    if (retrySig.isErr()) {
+                      if (isSignatureRejection(retrySig.error)) {
+                        reject(
+                          new Error(
+                            "Signature required to retry transaction. Transaction retry cancelled.",
+                          ),
+                        );
+                      } else {
+                        reject(
+                          new Error(
+                            `${retrySig.error} : Failed to sign payload on retry`,
+                          ),
+                        );
+                      }
+                      return;
+                    }
+                    resolve(retrySig);
+                  } catch (retryError: any) {
+                    reject(retryError);
+                  }
+                },
+              );
+              warningDialog.setWarning(
+                "Signature required to retry transaction",
+              );
+              warningDialog.onOpenChange(true);
+            });
+
+            sig = retrySigResult.value;
+          } else {
+            throw new Error(`${sigResult.error} : Failed to sign payload`);
+          }
+        } else {
+          sig = sigResult.value;
+        }
+      } else {
+        // Use EVM signing
+
+        try {
+          sig = await personalSign(config, {
+            message: encodedPayload,
+          });
+          if (!sig) {
+            throw new Error("Failed to sign payload");
+          }
+        } catch (signError: any) {
+          if (isSignatureRejection(signError)) {
+            sig = await new Promise<`0x${string}`>((resolve, reject) => {
+              warningDialog.setCallbacks(
+                () => {
+                  reject(
+                    new Error(
+                      "Signature required to retry transaction. Transaction retry cancelled.",
+                    ),
+                  );
+                },
+                async () => {
+                  try {
+                    const retrySig = await personalSign(config, {
+                      message: encodedPayload,
+                    });
+                    if (!retrySig) {
+                      throw new Error("Failed to sign payload on retry");
+                    }
+                    resolve(retrySig);
+                  } catch (retryError: any) {
+                    if (isSignatureRejection(retryError)) {
+                      reject(
+                        new Error(
+                          "Signature required to retry transaction. Transaction retry cancelled.",
+                        ),
+                      );
+                    } else {
+                      reject(retryError);
+                    }
+                  }
+                },
+              );
+              warningDialog.setWarning(
+                "Signature required to retry transaction",
+              );
+              warningDialog.onOpenChange(true);
+            });
+          } else {
+            throw signError;
+          }
+        }
+
+        // Verify signature for EVM
+        const isValid = await verifyMessage(config, {
+          address: activeUserAddress!,
+          message: encodedPayload,
+          signature: sig as `0x${string}`,
+        });
+        if (!isValid) {
+          throw new Error("Invalid Signature");
+        }
+      }
+
+      /* SEND PAYLOAD */
+      let apiResponse;
+      if (signOn === Chain.AVAIL) {
+        apiResponse = await sendPayload(encodedPayload, sig, direction);
+      } else {
+        const publicKey = await recoverPublicKey({
+          hash: hashMessage(encodedPayload),
+          signature: sig as `0x${string}`,
+        });
+        apiResponse = await sendPayload(
+          encodedPayload,
+          sig as string,
+          direction,
+          publicKey,
+        );
+      }
+      if (apiResponse.isErr()) {
+        throw new Error(`${apiResponse.error}`);
+      }
+
+      Logger.info(
+        `LIQUIDITY_BRIDGE RETRY_SUCCESS hash: ${response.sourceTransactionHash} id: ${apiResponse.value.id}`,
+      );
+
+      return {
+        chain: response.sourceChain,
+        hash: response.sourceTransactionHash,
+        id: apiResponse.value.id,
+      };
+    } catch (error: any) {
+      Logger.error(`LIQUIDITY_BRIDGE RETRY_FAILED: ${error.message}`);
+
+      throw new Error(
+        `${error.message} : Failed to retry liquidity bridge transaction`,
+      );
+    } finally {
+      setSignatures("");
+    }
+  }
+
   return {
     initAvailToERC20AutomaticBridging,
     initERC20toAvailAutomaticBridging,
+    retryLiquidityBridgeTxn,
   };
 }
