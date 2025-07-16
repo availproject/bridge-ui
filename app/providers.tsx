@@ -12,6 +12,7 @@ import { SuccessDialog } from "@/components/common/successdialog";
 import ErrorDialog from "@/components/common/error";
 import { useLatestBlockInfo } from "@/stores/blockinfo";
 import WarningDialog from "@/components/common/warning";
+import { HumanBehaviorProvider } from "humanbehavior-js/react";
 const queryClient = new QueryClient();
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -55,17 +56,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, [isReady]);
 
   return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <ConnectKitProvider>
-          <MetaMaskProvider>
-            <SuccessDialog />
-            <ErrorDialog />
-            <WarningDialog />
-            {children}
-          </MetaMaskProvider>
-        </ConnectKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <HumanBehaviorProvider apiKey="0e303358-824b-4fed-be07-76729b4dac68">
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>
+          <ConnectKitProvider>
+            <MetaMaskProvider>
+              <SuccessDialog />
+              <ErrorDialog />
+              <WarningDialog />
+              {children}
+            </MetaMaskProvider>
+          </ConnectKitProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </HumanBehaviorProvider>
   );
 }
