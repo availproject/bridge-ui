@@ -14,11 +14,11 @@ export default function ToField() {
   const { selected } = useAvailAccount();
 
   useEffect(() => {
-    if (toChain === Chain.AVAIL && selected) {
-      setToAddress(selected.address);
+    if (toChain === Chain.AVAIL) {
+      setToAddress(selected ? selected.address : "");
     }
-    if ((toChain === Chain.BASE || toChain === Chain.ETH) && ethAddress) {
-      setToAddress(ethAddress);
+    if ((toChain === Chain.BASE || toChain === Chain.ETH)) {
+      setToAddress(ethAddress ?? "");
     }
   }, [connected, selected, toChain]);
 
