@@ -16,7 +16,7 @@ import { ResultAsync } from "neverthrow";
 import { encodeAddress } from "@polkadot/util-crypto";
 const JSONBigInt = jsonbigint({ useNativeBigInt: true });
 
-const trim0x = (value: string) =>
+export const trim0x = (value: string) =>
   value.startsWith("0x") ? value.slice(2) : value;
 
 const mapApiStatusToTransactionStatus = (

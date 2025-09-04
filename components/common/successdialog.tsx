@@ -30,7 +30,7 @@ export const SuccessDialog = () => {
   const { status, timeEstimate, isLoading } = useFinalityTracker(
     details?.hash as IAddress,
     details?.chain,
-    details?.isWormhole
+    details?.isWormhole,
   );
 
   const getMessage = () =>
@@ -185,10 +185,10 @@ export const SuccessDialog = () => {
         </div>
 
         {/* Destination Chain Details */}
-        {(!details?.isWormhole && !claimDialog) &&  (
+        {!details?.isWormhole && !claimDialog && (
           <div className="flex flex-row items-center justify-between">
             <h1 className="font-thicccboisemibold text-white text-lg">
-            Destination Status
+              Destination Status
             </h1>
             <DestinationStatus />
           </div>
