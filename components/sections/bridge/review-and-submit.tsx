@@ -74,7 +74,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
         const _details = await reviewTxn(
           new BigNumber(fromAmount)
             .multipliedBy(new BigNumber(10).pow(18))
-            .toString(),
+            .toFixed(0),
           fromChain,
         );
         if (_details.isOk()) {
