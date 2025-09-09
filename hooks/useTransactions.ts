@@ -1,11 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /**
  * Flow:
- * 1. Check for pendingIndexedTransactions from store
- * 2. Process pending transactions with localStorage transactions
- * 3. Merge with proper status precedence
- * 4. Update both indexedTransactions and mergedTransactions atomically
- * 5. Clear pendingIndexedTransactions after processing
+ * 1. Fetch indexed transactions from multiple sources
+ * 2. Load localStorage transactions for current account
+ * 3. Merge transactions with proper status precedence:
+ *    - initiated (local) < pending (indexer) → use indexer, delete local
+ *    - claim_pending (local) > ready_to_claim (indexer) → keep local until bridged
+ * 4. Deduplicate and sort transactions
+ * 5. Update UI atomically only after all mutations complete
  */
 
 import { useTransactionsStore } from "@/stores/transactions";
@@ -36,6 +38,7 @@ export default function useTransactions() {
     [],
   );
   const processingRef = useRef(false);
+  const lastLocalTxnCountRef = useRef(0);
 
   useEffect(() => {
     if (!selected?.address && !address) {
@@ -51,6 +54,7 @@ export default function useTransactions() {
 
       localTransactions.length = 0;
       localTransactions.push(...storedTxns);
+      lastLocalTxnCountRef.current = storedTxns.length;
     };
 
     loadLocalTransactions();
@@ -60,22 +64,31 @@ export default function useTransactions() {
     if (processingRef.current) return;
     if (!selected?.address && !address) return;
 
+    // Check if local transactions changed (e.g., claim was added)
+    const localTxnCountChanged =
+      localTransactions.length !== lastLocalTxnCountRef.current;
+
     // Process pending transactions if available, otherwise use current indexed
     const transactionsToProcess =
       pendingIndexedTransactions !== null
         ? pendingIndexedTransactions
         : indexedTransactions;
 
-    // Only process if we have pending transactions or it's the first render with indexed transactions
+    // Only process if:
+    // 1. We have pending transactions from a new fetch, OR
+    // 2. Local transactions changed (claim added), OR
+    // 3. It's the first render
     if (
       pendingIndexedTransactions === null &&
       mergedTransactions.length > 0 &&
-      indexedTransactions === transactionsToProcess
+      indexedTransactions === transactionsToProcess &&
+      !localTxnCountChanged
     ) {
       return;
     }
 
     processingRef.current = true;
+    lastLocalTxnCountRef.current = localTransactions.length;
 
     const mergeTransactions = async () => {
       const accountAddress = selected?.address || address;
@@ -223,6 +236,9 @@ export default function useTransactions() {
         JSON.stringify(updatedTransactions),
       );
       addLocalTransaction(transaction);
+
+      // Trigger immediate processing by updating the ref
+      lastLocalTxnCountRef.current = updatedTransactions.length;
     }
   };
 
