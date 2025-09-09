@@ -1,10 +1,3 @@
-/**
- * Flow:
- * 1. Use Next.js Image component for optimized loading and caching
- * 2. Set proper dimensions to prevent layout shift
- * 3. Use priority loading for chain logos as they're above the fold
- */
-
 import * as React from "react";
 import Image from "next/image";
 import { Chain } from "@/types/common";

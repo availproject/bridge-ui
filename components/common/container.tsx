@@ -23,23 +23,35 @@ export default function Container() {
   } = useCommonStore();
 
   useEffect(() => {
-    (async () => {
-      /** means some claim is already in process so wait for that to end */
+    let intervalId: NodeJS.Timeout | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    if (!address && !selected?.address) {
+      return;
+    }
+
+    timeoutId = setTimeout(async () => {
       await fetchAllTransactions({
         ethAddress: address,
         availAddress: selected?.address,
         setTransactionLoader,
+        isInitialFetch: true,
       });
-      const interval = setInterval(async () => {
+
+      intervalId = setInterval(async () => {
         await fetchAllTransactions({
           ethAddress: address,
           availAddress: selected?.address,
           setTransactionLoader,
           isInitialFetch: false,
         });
-      }, 30000);
-      return () => clearInterval(interval);
-    })();
+      }, 15000);
+    }, 500);
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [selected?.address, address, fetchAllTransactions, setTransactionLoader]);
 
   return (

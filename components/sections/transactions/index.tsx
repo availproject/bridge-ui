@@ -9,7 +9,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CiCircleQuestion } from "react-icons/ci";
 import CompletedTransactions from "./completedtransactions";
 import NoTransactions from "./notransactions";
@@ -32,13 +32,8 @@ export default function TransactionSection() {
     paginatedPendingTransactions,
   } = useTransactions();
 
-  const {
-    transactionLoader,
-    fetchAllTransactions,
-    setTransactionLoader,
-    isInitialLoad,
-    fetchError,
-  } = useTransactionsStore();
+  const { transactionLoader, isInitialLoad, fetchError } =
+    useTransactionsStore();
 
   const { address: ethAddress } = useAccount();
   const { selected } = useAvailAccount();
@@ -47,64 +42,6 @@ export default function TransactionSection() {
   const [showPagination, setShowPagination] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pendingTab, setPendingTab] = useState<boolean>(true);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const hasInitialFetchedRef = useRef(false);
-
-  // Initial fetch on account connection
-  useEffect(() => {
-    if (!ethAddress && !availAddress) {
-      hasInitialFetchedRef.current = false;
-      return;
-    }
-
-    // Perform initial fetch
-    if (!hasInitialFetchedRef.current) {
-      hasInitialFetchedRef.current = true;
-      fetchAllTransactions({
-        ethAddress,
-        availAddress,
-        setTransactionLoader,
-        isInitialFetch: true,
-      });
-    }
-  }, [ethAddress, availAddress, fetchAllTransactions, setTransactionLoader]);
-
-  useEffect(() => {
-    if (!ethAddress && !availAddress) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      return;
-    }
-
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-
-    intervalRef.current = setInterval(() => {
-      if (!isInitialLoad) {
-        fetchAllTransactions({
-          ethAddress,
-          availAddress,
-          setTransactionLoader,
-          isInitialFetch: false,
-        });
-      }
-    }, 10000);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [
-    ethAddress,
-    availAddress,
-    isInitialLoad,
-    fetchAllTransactions,
-    setTransactionLoader,
-  ]);
 
   useEffect(() => {
     setCurrentPage(0);
@@ -129,15 +66,6 @@ export default function TransactionSection() {
     ? currentPage === paginatedPendingTransactions.length - 1
     : currentPage === paginatedCompletedTransactions.length - 1;
 
-  const handleRetry = () => {
-    fetchAllTransactions({
-      ethAddress,
-      availAddress,
-      setTransactionLoader,
-      isInitialFetch: true,
-    });
-  };
-
   const renderContent = () => {
     if (transactionLoader && isInitialLoad) {
       return <TxnLoading />;
@@ -152,7 +80,7 @@ export default function TransactionSection() {
       pendingTransactions.length === 0 &&
       completedTransactions.length === 0
     ) {
-      return <FetchError onRetry={handleRetry} />;
+      return <FetchError />;
     }
 
     return (

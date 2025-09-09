@@ -1,13 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /**
  * Flow:
- * 1. Fetch indexed transactions from multiple sources
- * 2. Load localStorage transactions for current account
- * 3. Merge transactions with proper status precedence:
- *    - initiated (local) < pending (indexer) → use indexer, delete local
- *    - claim_pending (local) > ready_to_claim (indexer) → keep local until bridged
- * 4. Deduplicate and sort transactions
- * 5. Update UI atomically only after all mutations complete
+ * 1. Check for pendingIndexedTransactions from store
+ * 2. Process pending transactions with localStorage transactions
+ * 3. Merge with proper status precedence
+ * 4. Update both indexedTransactions and mergedTransactions atomically
+ * 5. Clear pendingIndexedTransactions after processing
  */
 
 import { useTransactionsStore } from "@/stores/transactions";
@@ -21,6 +19,9 @@ import { uniqBy } from "lodash";
 export default function useTransactions() {
   const {
     indexedTransactions,
+    pendingIndexedTransactions,
+    setPendingIndexedTransactions,
+    setIndexedTransactions,
     localTransactions,
     addLocalTransaction,
     deleteLocalTransaction,
@@ -35,11 +36,9 @@ export default function useTransactions() {
     [],
   );
   const processingRef = useRef(false);
-  const hasInitializedRef = useRef(false);
 
   useEffect(() => {
     if (!selected?.address && !address) {
-      hasInitializedRef.current = false;
       return;
     }
 
@@ -59,8 +58,22 @@ export default function useTransactions() {
 
   useEffect(() => {
     if (processingRef.current) return;
-    if (transactionLoader && isInitialLoad) return;
     if (!selected?.address && !address) return;
+
+    // Process pending transactions if available, otherwise use current indexed
+    const transactionsToProcess =
+      pendingIndexedTransactions !== null
+        ? pendingIndexedTransactions
+        : indexedTransactions;
+
+    // Only process if we have pending transactions or it's the first render with indexed transactions
+    if (
+      pendingIndexedTransactions === null &&
+      mergedTransactions.length > 0 &&
+      indexedTransactions === transactionsToProcess
+    ) {
+      return;
+    }
 
     processingRef.current = true;
 
@@ -71,13 +84,13 @@ export default function useTransactions() {
       const normalizeHash = (hash?: string) => hash?.toLowerCase() ?? "";
 
       const indexedTxMap = new Map<string, Transaction>();
-      indexedTransactions.forEach((tx) => {
+      transactionsToProcess.forEach((tx) => {
         indexedTxMap.set(normalizeHash(tx.sourceTransactionHash), tx);
       });
 
       const localTxnsToDelete: string[] = [];
       const processedLocalTxns: Transaction[] = [];
-      const processedIndexedTxns = [...indexedTransactions];
+      const processedIndexedTxns = [...transactionsToProcess];
 
       localTransactions.forEach((localTx) => {
         const normalizedLocalHash = normalizeHash(
@@ -134,29 +147,26 @@ export default function useTransactions() {
       const allTxns = [...processedLocalTxns, ...processedIndexedTxns];
       const uniqueTxns = uniqBy(allTxns, "sourceTransactionHash");
 
-      if (!hasInitializedRef.current || uniqueTxns.length > 0) {
-        setMergedTransactions(uniqueTxns);
-        hasInitializedRef.current = true;
+      // Update everything atomically
+      if (pendingIndexedTransactions !== null) {
+        setIndexedTransactions(transactionsToProcess);
+        setPendingIndexedTransactions(null);
       }
 
+      setMergedTransactions(uniqueTxns);
       processingRef.current = false;
     };
 
     mergeTransactions();
   }, [
+    pendingIndexedTransactions,
     indexedTransactions,
     localTransactions,
-    transactionLoader,
-    isInitialLoad,
     selected?.address,
     address,
   ]);
 
   const pendingTransactions: Transaction[] = useMemo(() => {
-    if (fetchError)
-      return mergedTransactions.filter(
-        (txn) => txn.status !== TransactionStatus.CLAIMED,
-      );
     return mergedTransactions
       .filter((txn) => txn.status !== TransactionStatus.CLAIMED)
       .sort(
@@ -164,13 +174,9 @@ export default function useTransactions() {
           new Date(b.sourceTimestamp).getTime() -
           new Date(a.sourceTimestamp).getTime(),
       );
-  }, [mergedTransactions, fetchError]);
+  }, [mergedTransactions]);
 
   const completedTransactions: Transaction[] = useMemo(() => {
-    if (fetchError)
-      return mergedTransactions.filter(
-        (txn) => txn.status === TransactionStatus.CLAIMED,
-      );
     return mergedTransactions
       .filter((txn) => txn.status === TransactionStatus.CLAIMED)
       .sort(
@@ -178,7 +184,7 @@ export default function useTransactions() {
           new Date(b.sourceTimestamp).getTime() -
           new Date(a.sourceTimestamp).getTime(),
       );
-  }, [mergedTransactions, fetchError]);
+  }, [mergedTransactions]);
 
   const CHUNK_SIZE = 4;
 
