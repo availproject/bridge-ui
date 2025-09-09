@@ -17,10 +17,12 @@ export default function Container() {
 
   const { selected } = useAvailAccount();
   const { address } = useAccount();
-  const { fetchAllTransactions, setTransactionLoader} = useTransactionsStore();
-  const { reviewDialog: { isOpen: isModalOpen, onOpenChange: setIsModalOpen } } = useCommonStore();
+  const { fetchAllTransactions, setTransactionLoader } = useTransactionsStore();
+  const {
+    reviewDialog: { isOpen: isModalOpen, onOpenChange: setIsModalOpen },
+  } = useCommonStore();
 
-  useEffect(()=>{
+  useEffect(() => {
     (async () => {
       /** means some claim is already in process so wait for that to end */
       await fetchAllTransactions({
@@ -29,18 +31,16 @@ export default function Container() {
         setTransactionLoader,
       });
       const interval = setInterval(async () => {
-
         await fetchAllTransactions({
-          ethAddress: address,  
+          ethAddress: address,
           availAddress: selected?.address,
           setTransactionLoader,
+          isInitialFetch: false,
         });
-
       }, 30000);
       return () => clearInterval(interval);
-      
-    })()
-  },[selected?.address, address])
+    })();
+  }, [selected?.address, address, fetchAllTransactions, setTransactionLoader]);
 
   return (
     <div className="text-white w-full my-4 flex flex-col space-y-3 items-center justify-center">
@@ -84,10 +84,10 @@ export default function Container() {
               </span>
             </h1>
           </div>
-         <AdvancedSettings/>
+          <AdvancedSettings />
         </TabsList>
         <TabsContent id="bridge" value="bridge" className="flex-1">
-       <BridgeSection/>
+          <BridgeSection />
         </TabsContent>
         <TabsContent
           id="transactions"
@@ -97,8 +97,10 @@ export default function Container() {
           <TransactionSection />
         </TabsContent>
       </Tabs>
-      <TransactionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <TransactionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }
-

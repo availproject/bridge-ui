@@ -259,7 +259,9 @@ export const fetchEVMToAvailTransactions = async (
       destinationChain: Chain.AVAIL,
       amount: tx.amount,
       depositorAddress: tx.sender_hash,
-      receiverAddress: tx.receiver_hash ? encodeAddress(tx.receiver_hash) : 0x0,
+      receiverAddress: tx.receiver_hash
+        ? encodeAddress(tx.receiver_hash)
+        : "0x0",
       sourceTransactionHash: tx.tx_hash,
       sourceTimestamp: new Date(tx.created_at).getTime(),
       destinationTransactionHash: tx.bridged_extrinsic_hash,

@@ -9,16 +9,18 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { CiCircleQuestion } from "react-icons/ci";
 import CompletedTransactions from "./completedtransactions";
 import NoTransactions from "./notransactions";
 import { useTransactionsStore } from "@/stores/transactions";
 import { PendingTransactions } from "./pendingtransactions";
 import TxnLoading from "./loading";
+import FetchError from "./fetcherror";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useAccount } from "wagmi";
+import { useAvailAccount } from "@/stores/availwallet";
 import { capitalizeFirstLetter } from "@/hooks/wormhole/helper";
 import { appConfig } from "@/config/default";
 
@@ -29,11 +31,83 @@ export default function TransactionSection() {
     paginatedCompletedTransactions,
     paginatedPendingTransactions,
   } = useTransactions();
-  const { transactionLoader } = useTransactionsStore();
-  const { address } = useAccount();
+
+  const {
+    transactionLoader,
+    fetchAllTransactions,
+    setTransactionLoader,
+    isInitialLoad,
+    fetchError,
+  } = useTransactionsStore();
+
+  const { address: ethAddress } = useAccount();
+  const { selected } = useAvailAccount();
+  const availAddress = selected?.address;
+
   const [showPagination, setShowPagination] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pendingTab, setPendingTab] = useState<boolean>(true);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const hasInitialFetchedRef = useRef(false);
+
+  // Initial fetch on account connection
+  useEffect(() => {
+    if (!ethAddress && !availAddress) {
+      hasInitialFetchedRef.current = false;
+      return;
+    }
+
+    // Perform initial fetch
+    if (!hasInitialFetchedRef.current) {
+      hasInitialFetchedRef.current = true;
+      fetchAllTransactions({
+        ethAddress,
+        availAddress,
+        setTransactionLoader,
+        isInitialFetch: true,
+      });
+    }
+  }, [ethAddress, availAddress, fetchAllTransactions, setTransactionLoader]);
+
+  // Set up polling for subsequent fetches
+  useEffect(() => {
+    if (!ethAddress && !availAddress) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
+
+    // Clear existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    // Set up polling (every 10 seconds for background updates)
+    intervalRef.current = setInterval(() => {
+      if (!isInitialLoad) {
+        fetchAllTransactions({
+          ethAddress,
+          availAddress,
+          setTransactionLoader,
+          isInitialFetch: false,
+        });
+      }
+    }, 10000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [
+    ethAddress,
+    availAddress,
+    isInitialLoad,
+    fetchAllTransactions,
+    setTransactionLoader,
+  ]);
 
   useEffect(() => {
     setCurrentPage(0);
@@ -58,68 +132,90 @@ export default function TransactionSection() {
     ? currentPage === paginatedPendingTransactions.length - 1
     : currentPage === paginatedCompletedTransactions.length - 1;
 
+  const handleRetry = () => {
+    fetchAllTransactions({
+      ethAddress,
+      availAddress,
+      setTransactionLoader,
+      isInitialFetch: true,
+    });
+  };
+
+  // Determine what to show based on state
+  const renderContent = () => {
+    // Show skeleton only on initial load
+    if (transactionLoader && isInitialLoad) {
+      return <TxnLoading />;
+    }
+
+    // Show error state if fetch failed
+    if (fetchError) {
+      return <FetchError onRetry={handleRetry} />;
+    }
+
+    // Show no accounts connected state
+    if (!ethAddress && !availAddress) {
+      return <NoTransactions />;
+    }
+
+    // Render normal transaction views
+    return (
+      <>
+        <TabsContent value="pending" className="h-[520px]">
+          <div className="h-full">
+            {pendingTransactions.length > 0 ? (
+              <PendingTransactions
+                pendingTransactions={
+                  paginatedPendingTransactions[currentPage] || []
+                }
+              />
+            ) : (
+              <NoTransactions />
+            )}
+          </div>
+        </TabsContent>
+        <TabsContent value="history" className="h-[520px]">
+          <div className="h-full">
+            {completedTransactions.length > 0 ? (
+              <CompletedTransactions
+                completedTransactions={
+                  paginatedCompletedTransactions[currentPage] || []
+                }
+              />
+            ) : (
+              <NoTransactions />
+            )}
+          </div>
+        </TabsContent>
+      </>
+    );
+  };
+
   return (
-    <div className="relative flex flex-col mx-auto w-[95%] h-[100%] ">
+    <div className="relative flex flex-col mx-auto w-[95%] h-[100%]">
       <>
         <Tabs defaultValue="pending" className="flex flex-col h-full">
-          <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2  ">
-            <TabsTrigger
-              value="pending"
-              onClick={() => {
-                setPendingTab(true);
-              }}
-            >
+          <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2">
+            <TabsTrigger value="pending" onClick={() => setPendingTab(true)}>
               Pending
             </TabsTrigger>
             <TabsTrigger
               value="history"
               className="flex flex-row items-center justify-center space-x-1"
-              onClick={() => {
-                setPendingTab(false);
-              }}
+              onClick={() => setPendingTab(false)}
             >
               <p>History</p>
               <FaHistory />
             </TabsTrigger>
           </TabsList>
-          {transactionLoader ? (
-            <TxnLoading />
-          ) : (
-            <>
-              <TabsContent value="pending" className="h-[520px]">
-                <div className=" h-full">
-                  {pendingTransactions.length > 0 ? (
-                    <PendingTransactions
-                      pendingTransactions={
-                        paginatedPendingTransactions[currentPage]
-                      }
-                    />
-                  ) : (
-                    <NoTransactions />
-                  )}
-                </div>
-              </TabsContent>
-              <TabsContent value="history" className="h-[520px]">
-                <div className="h-full">
-                  {completedTransactions.length > 0 ? (
-                    <CompletedTransactions
-                      completedTransactions={
-                        paginatedCompletedTransactions[currentPage]
-                      }
-                    />
-                  ) : (
-                    <NoTransactions />
-                  )}
-                </div>
-              </TabsContent>{" "}
-            </>
-          )}
+          {renderContent()}
         </Tabs>
+
         {/* Pagination */}
         <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
           <span className="font-thicccboisemibold text-sm text-white mr-2">
             <HoverCard>
-              <HoverCardTrigger className="cursor-pointer underline underline-offset-2 font-ppmori text-white text-opacity-80 ">
+              <HoverCardTrigger className="cursor-pointer underline underline-offset-2 font-ppmori text-white text-opacity-80">
                 Can&apos;t find your transaction?
               </HoverCardTrigger>
               <HoverCardContent className="font-ppmori bg-[#282B34] text-white text-opacity-70 w-2/3">
@@ -144,8 +240,8 @@ export default function TransactionSection() {
                     </span>
                     <Link
                       href={
-                        address
-                          ? `https://wormholescan.io/#/txs?address=${address}&network=${
+                        ethAddress
+                          ? `https://wormholescan.io/#/txs?address=${ethAddress}&network=${
                               capitalizeFirstLetter(appConfig.config) as
                                 | "Mainnet"
                                 | "Testnet"
@@ -169,8 +265,8 @@ export default function TransactionSection() {
             onClick={() => setCurrentPage((prev) => prev - 1)}
             className={`rounded-lg bg-[#484C5D] ${
               currentPage === 0
-                ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
-                : " text-white"
+                ? "cursor-not-allowed bg-opacity-30 text-opacity-40 text-white"
+                : "text-white"
             } p-2`}
           >
             <ArrowLeft />
@@ -180,8 +276,8 @@ export default function TransactionSection() {
             onClick={() => setCurrentPage((prev) => prev + 1)}
             className={`rounded-lg bg-[#484C5D] ${
               isEndPage
-                ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
-                : " text-white"
+                ? "cursor-not-allowed bg-opacity-30 text-opacity-40 text-white"
+                : "text-white"
             } p-2`}
           >
             <ArrowRight />
