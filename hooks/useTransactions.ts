@@ -1,151 +1,230 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+/**
+ * Flow:
+ * 1. Fetch indexed transactions from multiple sources
+ * 2. Load localStorage transactions for current account
+ * 3. Merge transactions with proper status precedence:
+ *    - initiated (local) < in_progress (indexer) → use indexer, delete local
+ *    - claim_pending (local) > ready_to_claim (indexer) → keep local until bridged
+ * 4. Deduplicate and sort transactions
+ * 5. Update UI atomically after all mutations complete
+ */
+
 import { useTransactionsStore } from "@/stores/transactions";
 import { Chain, TransactionStatus } from "@/types/common";
 import { Transaction } from "@/types/transaction";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
-import { uniqBy } from 'lodash';
-
-/**
- * @description All the functionalities related managing transactions
- */
+import { uniqBy } from "lodash";
 
 export default function useTransactions() {
   const {
     indexedTransactions,
     localTransactions,
     addLocalTransaction,
+    deleteLocalTransaction,
+    transactionLoader,
+    fetchError,
+    isInitialLoad,
   } = useTransactionsStore();
 
-  const { selected } = useAvailAccount()
-  const { address } = useAccount()
-  const { transactionLoader } = useTransactionsStore()
+  const { selected } = useAvailAccount();
+  const { address } = useAccount();
+  const [mergedTransactions, setMergedTransactions] = useState<Transaction[]>(
+    [],
+  );
+  const processingRef = useRef(false);
 
-
+  // Load localStorage transactions on account change
   useEffect(() => {
     if (!selected?.address && !address) {
-      return
+      return;
     }
 
-    (async () => {
-      const _localtxns = (await JSON.parse(
-        localStorage.getItem(`localTransactions:${selected?.address}`) || "[]",
-      )) as Transaction[];
-      localTransactions.push(..._localtxns);
-    })();
-  }, [selected?.address]);
+    const loadLocalTransactions = async () => {
+      const accountAddress = selected?.address || address;
+      const storageKey = `localTransactions:${accountAddress}`;
+      const storedTxns = JSON.parse(
+        localStorage.getItem(storageKey) || "[]",
+      ) as Transaction[];
 
-  // allTransactions = indexedTransactions + localTransactions
-  const allTransactions: Transaction[] = useMemo(() => {
-    if (transactionLoader) {
-      return [];
-    }
+      // Update local state without triggering re-render until merge is complete
+      localTransactions.length = 0;
+      localTransactions.push(...storedTxns);
+    };
 
-    const normalizeHash = (hash?: string) =>  hash?.toLowerCase() ?? hash;
-    const transactionsMatch = (tx1: Transaction, tx2: Transaction) => 
-      normalizeHash(tx1.sourceTransactionHash) === normalizeHash(tx2.sourceTransactionHash);
-  
-    indexedTransactions.forEach(indexedTx => {
-      const matchingLocalTx = localTransactions.find(localTx => 
-        localTx.status === TransactionStatus.CLAIM_PENDING &&
-        indexedTx.status === TransactionStatus.READY_TO_CLAIM &&
-        transactionsMatch(localTx, indexedTx)
-      );
-  
-      if (matchingLocalTx) {
-        indexedTx.status = TransactionStatus.CLAIM_PENDING;
+    loadLocalTransactions();
+  }, [selected?.address, address]);
+
+  // Merge and process transactions when either source updates
+  useEffect(() => {
+    if (processingRef.current) return;
+    if (transactionLoader && isInitialLoad) return; // Wait for initial load to complete
+
+    processingRef.current = true;
+
+    const mergeTransactions = async () => {
+      const accountAddress = selected?.address || address;
+      const storageKey = `localTransactions:${accountAddress}`;
+      const normalizeHash = (hash?: string) => hash?.toLowerCase() ?? "";
+
+      // Create map of indexed transactions for O(1) lookup
+      const indexedTxMap = new Map<string, Transaction>();
+      indexedTransactions.forEach((tx) => {
+        indexedTxMap.set(normalizeHash(tx.sourceTransactionHash), tx);
+      });
+
+      // Process local transactions and determine which to keep/delete
+      const localTxnsToDelete: string[] = [];
+      const processedLocalTxns: Transaction[] = [];
+      const processedIndexedTxns = [...indexedTransactions];
+
+      localTransactions.forEach((localTx) => {
+        const normalizedLocalHash = normalizeHash(
+          localTx.sourceTransactionHash,
+        );
+        const matchingIndexedTx = indexedTxMap.get(normalizedLocalHash);
+
+        if (!matchingIndexedTx) {
+          // No matching indexed transaction, keep local
+          processedLocalTxns.push(localTx);
+          return;
+        }
+
+        // Handle status precedence
+        if (
+          localTx.status === TransactionStatus.INITIATED &&
+          matchingIndexedTx.status === TransactionStatus.PENDING
+        ) {
+          // Use indexer version, mark local for deletion
+          localTxnsToDelete.push(localTx.sourceTransactionHash);
+        } else if (localTx.status === TransactionStatus.CLAIM_PENDING) {
+          if (matchingIndexedTx.status === TransactionStatus.READY_TO_CLAIM) {
+            // Keep local claim_pending status over ready_to_claim
+            const indexedTxIndex = processedIndexedTxns.findIndex(
+              (tx) =>
+                normalizeHash(tx.sourceTransactionHash) === normalizedLocalHash,
+            );
+            if (indexedTxIndex !== -1) {
+              processedIndexedTxns[indexedTxIndex] = {
+                ...processedIndexedTxns[indexedTxIndex],
+                status: TransactionStatus.CLAIM_PENDING,
+              };
+            }
+          } else if (matchingIndexedTx.status === TransactionStatus.CLAIMED) {
+            // Transaction completed, delete local version
+            localTxnsToDelete.push(localTx.sourceTransactionHash);
+          }
+        } else if (
+          matchingIndexedTx.sourceChain === Chain.ETH ||
+          matchingIndexedTx.sourceChain === Chain.AVAIL
+        ) {
+          // For ETH/AVAIL chains, prefer indexed version
+          localTxnsToDelete.push(localTx.sourceTransactionHash);
+        } else {
+          // Keep local transaction
+          processedLocalTxns.push(localTx);
+        }
+      });
+
+      // Clean up localStorage
+      if (localTxnsToDelete.length > 0 && accountAddress) {
+        const remainingLocalTxns = localTransactions.filter(
+          (tx) => !localTxnsToDelete.includes(tx.sourceTransactionHash),
+        );
+        localStorage.setItem(storageKey, JSON.stringify(remainingLocalTxns));
+
+        // Update store
+        localTxnsToDelete.forEach((hash) => {
+          deleteLocalTransaction(hash as `0x${string}`);
+        });
       }
-    });
-  
-    const indexedTxMap = new Map(
-      indexedTransactions.map(tx => [normalizeHash(tx.sourceTransactionHash), tx])
-    );
-  
-    const uniqueLocalTransactions = localTransactions.filter(localTx => {
-      if (localTx.status === TransactionStatus.CLAIM_PENDING) {
-        return false;
-      }
-  
-      const indexedTx = indexedTxMap.get(normalizeHash(localTx.sourceTransactionHash));
-      
-      // Only include if:
-      // 1. No matching indexed transaction exists
-      // 2. For ETH/AVAIL chains, check additional matching criteria
-      return !indexedTx || (
-        indexedTx.sourceChain !== Chain.ETH && 
-        indexedTx.sourceChain !== Chain.AVAIL
-      );
-    });
-  
-    return [...uniqueLocalTransactions, ...indexedTransactions];
-  }, [localTransactions, indexedTransactions]);
 
+      // Merge all transactions and remove duplicates
+      const allTxns = [...processedLocalTxns, ...processedIndexedTxns];
+      const uniqueTxns = uniqBy(allTxns, "sourceTransactionHash");
+
+      // Update merged transactions state atomically
+      setMergedTransactions(uniqueTxns);
+      processingRef.current = false;
+    };
+
+    mergeTransactions();
+  }, [
+    indexedTransactions,
+    localTransactions,
+    transactionLoader,
+    isInitialLoad,
+  ]);
+
+  // Filter and sort transactions
   const pendingTransactions: Transaction[] = useMemo(() => {
-    return allTransactions && uniqBy(allTransactions, 'sourceTransactionHash').filter((txn) => txn.status !== "CLAIMED");
-  }, [allTransactions]);
+    if (fetchError) return [];
+    return mergedTransactions
+      .filter((txn) => txn.status !== TransactionStatus.CLAIMED)
+      .sort(
+        (a, b) =>
+          new Date(b.sourceTimestamp).getTime() -
+          new Date(a.sourceTimestamp).getTime(),
+      );
+  }, [mergedTransactions, fetchError]);
 
+  const completedTransactions: Transaction[] = useMemo(() => {
+    if (fetchError) return [];
+    return mergedTransactions
+      .filter((txn) => txn.status === TransactionStatus.CLAIMED)
+      .sort(
+        (a, b) =>
+          new Date(b.sourceTimestamp).getTime() -
+          new Date(a.sourceTimestamp).getTime(),
+      );
+  }, [mergedTransactions, fetchError]);
+
+  // Paginate transactions
   const CHUNK_SIZE = 4;
 
   const paginatedPendingTransactions: Transaction[][] = useMemo(() => {
-      const chunks = [];
-      const sortedTxns = pendingTransactions.sort((a, b) => {
-        return (
-          new Date(b.sourceTimestamp).getTime() -
-          new Date(a.sourceTimestamp).getTime()
-        );
-      });
-      for (let i = 0; i < pendingTransactions.length; i += CHUNK_SIZE) {
-        chunks.push(sortedTxns.slice(i, i + CHUNK_SIZE));
-      }
-      return chunks;
+    const chunks = [];
+    for (let i = 0; i < pendingTransactions.length; i += CHUNK_SIZE) {
+      chunks.push(pendingTransactions.slice(i, i + CHUNK_SIZE));
+    }
+    return chunks;
   }, [pendingTransactions]);
-
-  const completedTransactions: Transaction[] = useMemo(() => {
-    return allTransactions.filter((txn ) => txn.status === "CLAIMED");
-  }, [allTransactions]);
 
   const paginatedCompletedTransactions: Transaction[][] = useMemo(() => {
     const chunks = [];
-    const sortedTxns = completedTransactions.sort((a, b) => {
-      return (
-        new Date(b.sourceTimestamp).getTime() -
-        new Date(a.sourceTimestamp).getTime()
-      );
-    });
     for (let i = 0; i < completedTransactions.length; i += CHUNK_SIZE) {
-      chunks.push(sortedTxns.slice(i, i + CHUNK_SIZE));
+      chunks.push(completedTransactions.slice(i, i + CHUNK_SIZE));
     }
-    return chunks
-  },[completedTransactions]);
+    return chunks;
+  }, [completedTransactions]);
 
-
-
+  // Helper functions
   const addToLocalTransaction = (transaction: Transaction) => {
-    const localTransactionsKey = `localTransactions:${selected?.address}`;
-    const existingTransactions = JSON.parse(localStorage.getItem(localTransactionsKey) || '[]');
-   
-    const transactionExists = existingTransactions.some(
-      (t: Transaction) => t.sourceTransactionHash === transaction.sourceTransactionHash
+    const accountAddress = selected?.address || address;
+    const localTransactionsKey = `localTransactions:${accountAddress}`;
+    const existingTransactions = JSON.parse(
+      localStorage.getItem(localTransactionsKey) || "[]",
     );
-      if (!transactionExists) {
+
+    const transactionExists = existingTransactions.some(
+      (t: Transaction) =>
+        t.sourceTransactionHash === transaction.sourceTransactionHash,
+    );
+
+    if (!transactionExists) {
       const updatedTransactions = [...existingTransactions, transaction];
-      localStorage.setItem(localTransactionsKey, JSON.stringify(updatedTransactions));
+      localStorage.setItem(
+        localTransactionsKey,
+        JSON.stringify(updatedTransactions),
+      );
+      addLocalTransaction(transaction);
     }
-    addLocalTransaction(transaction);
   };
 
-  const deleteLocalTransaction = (transaction: Transaction) => {
-    deleteLocalTransaction(transaction)
-    updateLocalStorageTransactions(localTransactions);
-  }
-
-  const updateLocalStorageTransactions = (transactions: Transaction[]) => {
-    localStorage.setItem(`localTransactions:${selected?.address}`, JSON.stringify(transactions));
-  }
-
   return {
-    allTransactions,
+    allTransactions: mergedTransactions,
     pendingTransactions,
     completedTransactions,
     paginatedPendingTransactions,

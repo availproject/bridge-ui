@@ -115,7 +115,7 @@ const DestinationStatus = () => {
     details?.isLiquidityBridge,
     setTransactionStatus,
     toChain,
-    liquidityStatus,
+    details?.chain,
   ]);
 
   if (details?.isLiquidityBridge) {
