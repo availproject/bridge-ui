@@ -7,7 +7,7 @@ import { Result, err, ok } from "neverthrow";
 import { ISubmittableResult, Signer } from "@polkadot/types/types";
 import { chainToAddresses } from "@/components/common/utils";
 import { Chain } from "@/types/common";
-import { cryptoWaitReady, signatureVerify } from '@polkadot/util-crypto';
+import { signatureVerify } from "@polkadot/util-crypto";
 
 export interface LegacySignerOptions {
   app_id: number;
@@ -45,7 +45,7 @@ export const getInjectorMetadata = (api: ApiPromise) => {
 export async function sendMessage(
   props: sendMessageParams,
   account: WalletAccount,
-  api: ApiPromise
+  api: ApiPromise,
 ): Promise<{
   status: string;
   message: string;
@@ -67,7 +67,7 @@ export async function sendMessage(
           ({ status, events, txHash }) => {
             if (status.isInBlock) {
               Logger.info(
-                `Transaction included at blockHash ${status.asInBlock} ${txHash}`
+                `Transaction included at blockHash ${status.asInBlock} ${txHash}`,
               );
 
               events.forEach(({ event }) => {
@@ -78,7 +78,7 @@ export async function sendMessage(
                   if (dispatchError.isModule) {
                     const decoded = api.registry.findMetaError(
                       //@ts-ignore
-                      dispatchError.asModule
+                      dispatchError.asModule,
                     );
                     errorInfo = `${decoded.section}.${decoded.name}`;
                   } else {
@@ -86,14 +86,14 @@ export async function sendMessage(
                   }
                   reject(
                     new Error(
-                      `Transaction failed. Status: ${status} with error: ${errorInfo}`
-                    )
+                      `Transaction failed. Status: ${status} with error: ${errorInfo}`,
+                    ),
                   );
                 }
 
                 if (api.events.system.ExtrinsicSuccess.is(event)) {
                   Logger.info(
-                    `Transaction successful with hash: ${status.asInBlock}`
+                    `Transaction successful with hash: ${status.asInBlock}`,
                   );
                   resolve({
                     blockhash: status.asInBlock.toString(),
@@ -104,7 +104,7 @@ export async function sendMessage(
               //@ts-ignore
               unsubscribe();
             }
-          }
+          },
         )
         .catch((error: any) => {
           reject(`ERROR_SEND_MESSAGE ${error}`);
@@ -113,7 +113,7 @@ export async function sendMessage(
             message: error,
           };
         });
-    }
+    },
   );
 
   return {
@@ -135,7 +135,7 @@ export async function sendMessage(
 export async function executeTransaction(
   props: executeParams,
   account: WalletAccount,
-  api: ApiPromise
+  api: ApiPromise,
 ): Promise<{
   status: string;
   message: string;
@@ -151,7 +151,7 @@ export async function executeTransaction(
           props.slot,
           props.addrMessage,
           props.accountProof,
-          props.storageProof
+          props.storageProof,
         )
         .signAndSend(
           account.address,
@@ -162,7 +162,7 @@ export async function executeTransaction(
           ({ status, events, txHash }) => {
             if (status.isInBlock) {
               Logger.info(
-                `Transaction included at blockHash ${status.asInBlock}`
+                `Transaction included at blockHash ${status.asInBlock}`,
               );
 
               events.forEach(({ event }) => {
@@ -174,7 +174,7 @@ export async function executeTransaction(
                     //@ts-ignore
                     const decoded = api.registry.findMetaError(
                       //@ts-ignore
-                      dispatchError.asModule
+                      dispatchError.asModule,
                     );
                     errorInfo = `${decoded.section}.${decoded.name}`;
                   } else {
@@ -183,14 +183,14 @@ export async function executeTransaction(
                   Logger.info(`ExtrinsicFailed: ${errorInfo}`);
                   reject(
                     new Error(
-                      `Transaction failed. Status: ${status} with error: ${errorInfo}`
-                    )
+                      `Transaction failed. Status: ${status} with error: ${errorInfo}`,
+                    ),
                   );
                 }
 
                 if (api.events.system.ExtrinsicSuccess.is(event)) {
                   Logger.info(
-                    `Transaction successful with hash: ${status.asInBlock}`
+                    `Transaction successful with hash: ${status.asInBlock}`,
                   );
                   resolve({
                     blockhash: status.asInBlock.toString(),
@@ -201,7 +201,7 @@ export async function executeTransaction(
               //@ts-ignore
               unsubscribe();
             }
-          }
+          },
         )
         .catch((error: any) => {
           Logger.error(`Error in Execute: ${error}`);
@@ -211,7 +211,7 @@ export async function executeTransaction(
             message: error,
           };
         });
-    }
+    },
   );
 
   return {
@@ -232,7 +232,7 @@ type TransactionStatus = {
 export async function transfer(
   atomicAmount: string,
   account: WalletAccount,
-  api: ApiPromise
+  api: ApiPromise,
 ): Promise<Result<TransactionStatus, Error>> {
   try {
     const injector = getWalletBySource(account.source);
@@ -245,7 +245,7 @@ export async function transfer(
       api.tx.balances
         .transferKeepAlive(
           chainToAddresses(Chain.AVAIL).liquidityBridgeAddress,
-          atomicAmount
+          atomicAmount,
         )
         .signAndSend(account.address, options, (result: ISubmittableResult) => {
           console.log(`Tx status: ${result.status}`);
@@ -276,31 +276,67 @@ export async function transfer(
     });
   } catch (error) {
     return err(
-      error instanceof Error ? error : new Error("Unknown error occurred")
+      error instanceof Error ? error : new Error("Unknown error occurred"),
     );
   }
 }
 
+async function sha256Hash(message: string): Promise<Uint8Array> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return new Uint8Array(hashBuffer);
+}
+
 export async function signMessage(
-  message: string,
-  account: WalletAccount
+  //message is base64 encoded payload
+  message: string | `0x${string}`,
+  account: WalletAccount,
 ): Promise<Result<string, Error>> {
+  /*
+
+  function flow - contains how ledger implements signing for substrate apps - do not remove.
+
+  - we get the base64 encoded payload here
+  - make a sha2_sha256 out of it - returns uint8array
+  - we convert the uint8array to hex string -> comes 0x prefixed by u8aToHex
+  - talisman’s `useLedgerSubstrateLegacy.ts` internally:
+         - Converts the hex to bytes
+         - trims 0x & wraps bytes with <Bytes> and </Bytes> markers using pkjs's u8aWrapBytes:
+             - u8aWrapBytes -> used internally trims 0x (hexToU8a used internally)
+             - u8aWrapBytes("<Bytes>" + message bytes + "</Bytes>") - it's a concat addition remember!
+        - checks other ledger app related conditions
+        - calls ledger.signRaw
+
+  - ledger.signraw - calls signImpl ->
+    - chunks to apdu packets and sends to ledger device
+    - ledger detected the Bytes at the start - and knows NOT to use SCALE (encoding of how node decodes extrinsic data)
+    - shows as is as hex with (0x) -> but with `bytes` prefix postfix concatenated on both sides
+    - after user approval - signs with sr25519
+    - returns sig
+
+
+  */
   try {
-    const messageBytes = stringToU8a(message);
+    const messageBytes = await sha256Hash(message);
     const signer = account?.wallet?.signer;
 
     if (!signer) {
       throw new Error("Signer does not support signing raw messages");
-    } 
+    }
 
     const hexMessage = u8aToHex(messageBytes);
     const { signature } = await signer.signRaw({
-      type: 'payload',
+      type: "payload",
       data: hexMessage,
       address: account.address,
     });
 
-    const verification = signatureVerify(hexMessage, signature, account.address);
+    const verification = signatureVerify(
+      hexMessage,
+      signature,
+      account.address,
+    );
     if (!verification.isValid) {
       throw new Error("Invalid signature generated");
     }
@@ -309,8 +345,7 @@ export async function signMessage(
   } catch (error) {
     console.error("Error during signing process:", error);
     return err(
-      error instanceof Error ? error : new Error("Failed to sign the message")
+      error instanceof Error ? error : new Error("Failed to sign the message"),
     );
   }
 }
-

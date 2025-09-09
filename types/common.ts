@@ -15,6 +15,7 @@ export enum TransactionStatus {
   CLAIM_PENDING = "PENDING",
   PENDING = "PENDING",
   ERROR = "ERROR",
+  RETRY = "RETRY",
 }
 
 export interface ethBalance {

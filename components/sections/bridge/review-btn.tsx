@@ -21,8 +21,8 @@ export default function ReviewButton() {
     setShowReviewModal(true);
   };
 
-    return (
-      <>
+  return (
+    <>
       <LoadingButton
         variant="primary"
         onClick={handleReview}
@@ -39,11 +39,12 @@ export default function ReviewButton() {
         </p>
       )}
       {isLiquidityBridge(`${fromChain}-${toChain}`) && (
-        <p className="w-full text-white text-opacity-70 text-center text-xs">
-        Only amounts between 1 to 5000 AVAIL allowed  <span className="font-bold">(Currently in Beta)</span>
+        <p className=" text-white text-opacity-70 text-center text-xs ">
+          <span className="flex-row justify-center items-center gap-1">
+            Only amounts between 1 to 5000 AVAIL allowed for beta
+          </span>
         </p>
       )}
     </>
-    );
-  };
-
+  );
+}
