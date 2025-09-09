@@ -12,8 +12,8 @@ export default function NoTransactions() {
       <Image
         src="/images/notransactions.svg"
         alt="no transactions"
-        width={200}
-        height={200}
+        width={50}
+        height={50}
         className="text-opacity-80"
         priority
       />
