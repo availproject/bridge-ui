@@ -1,9 +1,10 @@
 import React from "react";
+import Image from "next/image";
 import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Chain } from "@/types/common";
 import { useCommonStore } from "@/stores/common";
@@ -12,15 +13,19 @@ import useEthWallet from "@/hooks/common/useEthWallet";
 import { capitalizeFirstLetter } from "@/hooks/wormhole/helper";
 
 type ChainSelectorModalProps = {
- isOpen: boolean;
- onClose: () => void;
- type: "from" | "to";
+  isOpen: boolean;
+  onClose: () => void;
+  type: "from" | "to";
 };
 
-const ChainSelectorModal = ({ isOpen, onClose, type }: ChainSelectorModalProps) => {
+const ChainSelectorModal = ({
+  isOpen,
+  onClose,
+  type,
+}: ChainSelectorModalProps) => {
   const { setFromChain, setToChain, fromChain, toChain } = useCommonStore();
   const { validateandSwitchChain } = useEthWallet();
-  
+
   const handleChainSelect = async (selectedChain: Chain) => {
     if (type === "from") {
       if (selectedChain === toChain) {
@@ -48,8 +53,8 @@ const ChainSelectorModal = ({ isOpen, onClose, type }: ChainSelectorModalProps) 
         <div className="rounded-t-xl px-4 py-5">
           <DialogHeader className="p-0 bg-[#252A3C]">
             <div className="flex items-center gap-2">
-              <ChevronLeft 
-                className="h-6 w-6 cursor-pointer text-gray-400 hover:text-white" 
+              <ChevronLeft
+                className="h-6 w-6 cursor-pointer text-gray-400 hover:text-white"
                 onClick={onClose}
               />
               <DialogTitle className="font-sm text-white mt-1 font-ppmori">
@@ -67,10 +72,13 @@ const ChainSelectorModal = ({ isOpen, onClose, type }: ChainSelectorModalProps) 
               className="flex items-center justify-between p-4 mb-2 last:mb-0 rounded-xl cursor-pointer bg-[#252A3C] hover:bg-[#2A2F41] transition-colors duration-200"
             >
               <div className="flex items-center gap-3">
-                <img
+                <Image
                   src={`/images/${chain}small.png`}
                   alt={`${chain} logo`}
+                  width={32}
+                  height={32}
                   className="w-8 h-8"
+                  priority
                 />
                 <span className="text-white text-md font-medium">
                   {capitalizeFirstLetter(chain.toLocaleLowerCase())}
@@ -81,7 +89,13 @@ const ChainSelectorModal = ({ isOpen, onClose, type }: ChainSelectorModalProps) 
         </div>
 
         <div className="flex items-center justify-center p-4 text-[#8B8EA3] text-sm border-t bg-[#1D2230] rounded-b-xl border-[#252A3C]">
-          looking for the testnet bridge, <a href="https://turing.bridge.avail.so/" className="italic cursor-pointer ml-1 underline">click here</a>
+          looking for the testnet bridge,{" "}
+          <a
+            href="https://turing.bridge.avail.so/"
+            className="italic cursor-pointer ml-1 underline"
+          >
+            click here
+          </a>
         </div>
       </DialogContent>
     </Dialog>

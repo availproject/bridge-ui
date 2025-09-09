@@ -1,49 +1,71 @@
-/* eslint-disable @next/next/no-img-element */
-import * as React from "react"
-import { Chain } from "@/types/common"
+/**
+ * Flow:
+ * 1. Use Next.js Image component for optimized loading and caching
+ * 2. Set proper dimensions to prevent layout shift
+ * 3. Use priority loading for chain logos as they're above the fold
+ */
+
+import * as React from "react";
+import Image from "next/image";
+import { Chain } from "@/types/common";
 
 type ChainLabelProps = {
-    chain: Chain
-}
+  chain: Chain;
+};
 
 function ChainLabel({ chain }: ChainLabelProps) {
-    switch (chain) {
-        case Chain.ETH:
-            return (
-                <div className="flex flex-row items-center justify-center space-x-1">
-                    <img
-                        src="/images/ETHEREUMsmall.png"
-                        alt="eth"
-                        className="w-4 h-4"
-                    />
-                    <p className="hidden md:flex text-opacity-70 text-white text-sm">Ethereum</p>
-                </div>
-            )
-        case Chain.BASE:
-            return (
-                <div className="flex flex-row items-center justify-center space-x-1">
-                    <img
-                        src="/images/BASEsmall.png"
-                        alt="base"
-                        className="w-4 h-4"
-                    />
-                    <p className="hidden md:flex text-opacity-70 text-white text-sm">Base</p>
-                </div>
-            )
-        case Chain.AVAIL:
-            return (
-                <div className="flex flex-row items-center justify-center space-x-1">
-                    <img
-                        src="/images/AVAILsmall.png"
-                        alt="avail"
-                        className="w-4 h-4"
-                    />
-                    <p className="hidden md:flex text-opacity-70 text-white text-sm">Avail</p>
-                </div>
-            )
-        default:
-            return null
-    }
+  switch (chain) {
+    case Chain.ETH:
+      return (
+        <div className="flex flex-row items-center justify-center space-x-1">
+          <Image
+            src="/images/ETHEREUMsmall.png"
+            alt="eth"
+            width={16}
+            height={16}
+            className="w-4 h-4"
+            priority
+          />
+          <p className="hidden md:flex text-opacity-70 text-white text-sm">
+            Ethereum
+          </p>
+        </div>
+      );
+    case Chain.BASE:
+      return (
+        <div className="flex flex-row items-center justify-center space-x-1">
+          <Image
+            src="/images/BASEsmall.png"
+            alt="base"
+            width={16}
+            height={16}
+            className="w-4 h-4"
+            priority
+          />
+          <p className="hidden md:flex text-opacity-70 text-white text-sm">
+            Base
+          </p>
+        </div>
+      );
+    case Chain.AVAIL:
+      return (
+        <div className="flex flex-row items-center justify-center space-x-1">
+          <Image
+            src="/images/AVAILsmall.png"
+            alt="avail"
+            width={16}
+            height={16}
+            className="w-4 h-4"
+            priority
+          />
+          <p className="hidden md:flex text-opacity-70 text-white text-sm">
+            Avail
+          </p>
+        </div>
+      );
+    default:
+      return null;
+  }
 }
 
-export { ChainLabel }
+export { ChainLabel };

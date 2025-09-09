@@ -1,4 +1,4 @@
-/* eslint-disable @next/next/no-img-element */
+import Image from "next/image";
 import { Chain } from "@/types/common";
 import {
   HoverCard,
@@ -18,9 +18,9 @@ import { useMemo } from "react";
 import ChainSelectorButton from "../../chainselector";
 
 export default function FromField() {
-    
   const { balances } = useBalanceStore();
-  const {fromChain, toChain, fromAmount, setFromAmount, dollarAmount } = useCommonStore();
+  const { fromChain, toChain, fromAmount, setFromAmount, dollarAmount } =
+    useCommonStore();
   const { selected } = useAvailAccount();
   const account = useAccount();
 
@@ -29,8 +29,10 @@ export default function FromField() {
     const isValidNumber = /^\d*\.?\d*$/.test(fromAmount.toString().trim());
     if (!isValidNumber) return 0;
     const parsedAmount = Number(fromAmount);
-    return !isNaN(parsedAmount) && dollarAmount ? parsedAmount * dollarAmount : 0;
-    }, [fromAmount, dollarAmount]);
+    return !isNaN(parsedAmount) && dollarAmount
+      ? parsedAmount * dollarAmount
+      : 0;
+  }, [fromAmount, dollarAmount]);
 
   return (
     <div>
@@ -49,7 +51,9 @@ export default function FromField() {
       </div>
       <div
         className={`!mt-3 card_background pl-2 !rounded-xl !space-y-2 p-2 flex flex-row items-center justify-between ${
-          !validInputAmount(fromAmount) ? "!border-red-600 border-opacity-40 !border" : ""
+          !validInputAmount(fromAmount)
+            ? "!border-red-600 border-opacity-40 !border"
+            : ""
         }`}
       >
         <div className="!space-y-2 p-1 flex flex-col items-start justify-start">
@@ -64,7 +68,7 @@ export default function FromField() {
               padding: 0,
               margin: 0,
               outline: "none",
-              pointerEvents: "auto"
+              pointerEvents: "auto",
             }}
             type="number"
             min="0"
@@ -73,14 +77,14 @@ export default function FromField() {
             value={fromAmount}
             onChange={(e) => {
               const value = e.target.value;
-    
-              if (value.startsWith('-')) return;
-            
-              if (value.includes('.')) {
-                const decimals = value.split('.')[1];
+
+              if (value.startsWith("-")) return;
+
+              if (value.includes(".")) {
+                const decimals = value.split(".")[1];
                 if (decimals && decimals.length > 5) return;
               }
-              
+
               setFromAmount(value);
             }}
           />
@@ -90,10 +94,13 @@ export default function FromField() {
         </div>
         <div className="p-4 md:mr-2 rounded-xl bg-[#464A5B] flex flex-row transform transition-transform duration-200 hover:scale-105 items-center space-x-2 font-ppmoribsemibold text-2xl justify-center cursor-pointer">
           <div className="flex flex-row items-center justify-center space-x-2 font-ppmori">
-            <img
-              src={`/images/AVAILsmall.png`}
+            <Image
+              src="/images/AVAILsmall.png"
               alt="logo"
+              width={24}
+              height={24}
               className="w-6 h-6"
+              priority
             />
           </div>
         </div>
@@ -109,7 +116,9 @@ export default function FromField() {
         <div className="flex flex-row items-center justify-center">
           <div
             aria-disabled={!(balances[fromChain].status === "success")}
-            onClick={() => setFromAmount(getMaxAmount(balances[fromChain].value, fromChain))}
+            onClick={() =>
+              setFromAmount(getMaxAmount(balances[fromChain].value, fromChain))
+            }
             className="aria-disabled:text-opacity-50 aria-disabled:cursor-not-allowed font-thicccboisemibold flex flex-row space-x-1 text-[#3FB5F8] text-sm cursor-pointer"
           >
             <span>MAX</span>

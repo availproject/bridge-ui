@@ -1,18 +1,25 @@
-/* eslint-disable @next/next/no-img-element */
-function NoTransactions() {
+/**
+ * Flow:
+ * 1. Use Next.js Image component for optimized loading
+ * 2. Prevent layout shift with proper dimensions
+ */
+
+import Image from "next/image";
+
+export default function NoTransactions() {
   return (
     <div className="flex flex-col items-center justify-center space-y-4 !h-[520px]">
-      <img
+      <Image
         src="/images/notransactions.svg"
         alt="no transactions"
+        width={200}
+        height={200}
         className="text-opacity-80"
-      ></img>
-      <h2 className="font-ppmoribsemibold text-center w-[70%] md:text-lg mx-auto text-white text-opacity-90">
-        You don&apos;t have any transactions
-        <br /> with the connected accounts
-      </h2>
+        priority
+      />
+      <p className="text-white font-thicccboisemibold text-opacity-80 text-lg">
+        No transactions
+      </p>
     </div>
   );
 }
-
-export default NoTransactions;

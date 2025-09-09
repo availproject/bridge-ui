@@ -143,12 +143,16 @@ export default function TransactionSection() {
       return <TxnLoading />;
     }
 
-    if (fetchError) {
-      return <FetchError onRetry={handleRetry} />;
-    }
-
     if (!ethAddress && !availAddress) {
       return <NoTransactions />;
+    }
+
+    if (
+      fetchError &&
+      pendingTransactions.length === 0 &&
+      completedTransactions.length === 0
+    ) {
+      return <FetchError onRetry={handleRetry} />;
     }
 
     return (
