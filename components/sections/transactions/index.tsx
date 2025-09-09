@@ -69,7 +69,6 @@ export default function TransactionSection() {
     }
   }, [ethAddress, availAddress, fetchAllTransactions, setTransactionLoader]);
 
-  // Set up polling for subsequent fetches
   useEffect(() => {
     if (!ethAddress && !availAddress) {
       if (intervalRef.current) {
@@ -79,12 +78,10 @@ export default function TransactionSection() {
       return;
     }
 
-    // Clear existing interval
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
 
-    // Set up polling (every 10 seconds for background updates)
     intervalRef.current = setInterval(() => {
       if (!isInitialLoad) {
         fetchAllTransactions({
@@ -141,24 +138,19 @@ export default function TransactionSection() {
     });
   };
 
-  // Determine what to show based on state
   const renderContent = () => {
-    // Show skeleton only on initial load
     if (transactionLoader && isInitialLoad) {
       return <TxnLoading />;
     }
 
-    // Show error state if fetch failed
     if (fetchError) {
       return <FetchError onRetry={handleRetry} />;
     }
 
-    // Show no accounts connected state
     if (!ethAddress && !availAddress) {
       return <NoTransactions />;
     }
 
-    // Render normal transaction views
     return (
       <>
         <TabsContent value="pending" className="h-[520px]">

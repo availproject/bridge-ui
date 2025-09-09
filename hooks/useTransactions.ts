@@ -67,8 +67,6 @@ export default function useTransactions() {
     const mergeTransactions = async () => {
       const accountAddress = selected?.address || address;
       const storageKey = `localTransactions:${accountAddress}`;
-
-      // Normalize hash for comparison
       const normalizeHash = (hash?: string) => hash?.toLowerCase() ?? "";
 
       // Create map of indexed transactions for O(1) lookup
