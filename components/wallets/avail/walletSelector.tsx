@@ -14,6 +14,9 @@ export const WalletSelector = memo(
     const sortedWallets = React.useMemo(
       () =>
         supportedWallets.sort((a, b) => {
+          if (a.installed && !b.installed) return -1;
+          if (!a.installed && b.installed) return 1;
+
           if (a.title === "SubWallet") return -1;
           if (b.title === "SubWallet") return 1;
           return 0;
