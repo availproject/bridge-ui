@@ -1,7 +1,3 @@
-/**
- * TODO: params include from chain, to chain, amount, destination address
- */
-
 import { ONE_POWER_EIGHTEEN } from "@/constants/bigNumber";
 import { sendPayload } from "@/services/bridgeapi";
 import { getTokenBalance } from "@/services/contract";

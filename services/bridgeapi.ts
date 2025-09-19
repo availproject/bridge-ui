@@ -16,7 +16,7 @@ import { ResultAsync } from "neverthrow";
 import { encodeAddress } from "@polkadot/util-crypto";
 const JSONBigInt = jsonbigint({ useNativeBigInt: true });
 
-const trim0x = (value: string) =>
+export const trim0x = (value: string) =>
   value.startsWith("0x") ? value.slice(2) : value;
 
 const mapApiStatusToTransactionStatus = (
@@ -259,7 +259,9 @@ export const fetchEVMToAvailTransactions = async (
       destinationChain: Chain.AVAIL,
       amount: tx.amount,
       depositorAddress: tx.sender_hash,
-      receiverAddress: tx.receiver_hash ? encodeAddress(tx.receiver_hash) : 0x0,
+      receiverAddress: tx.receiver_hash
+        ? encodeAddress(tx.receiver_hash)
+        : "0x0",
       sourceTransactionHash: tx.tx_hash,
       sourceTimestamp: new Date(tx.created_at).getTime(),
       destinationTransactionHash: tx.bridged_extrinsic_hash,

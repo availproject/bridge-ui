@@ -16,9 +16,11 @@ import NoTransactions from "./notransactions";
 import { useTransactionsStore } from "@/stores/transactions";
 import { PendingTransactions } from "./pendingtransactions";
 import TxnLoading from "./loading";
+import FetchError from "./fetcherror";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useAccount } from "wagmi";
+import { useAvailAccount } from "@/stores/availwallet";
 import { capitalizeFirstLetter } from "@/hooks/wormhole/helper";
 import { appConfig } from "@/config/default";
 
@@ -29,8 +31,14 @@ export default function TransactionSection() {
     paginatedCompletedTransactions,
     paginatedPendingTransactions,
   } = useTransactions();
-  const { transactionLoader } = useTransactionsStore();
-  const { address } = useAccount();
+
+  const { transactionLoader, isInitialLoad, fetchError } =
+    useTransactionsStore();
+
+  const { address: ethAddress } = useAccount();
+  const { selected } = useAvailAccount();
+  const availAddress = selected?.address;
+
   const [showPagination, setShowPagination] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pendingTab, setPendingTab] = useState<boolean>(true);
@@ -58,68 +66,80 @@ export default function TransactionSection() {
     ? currentPage === paginatedPendingTransactions.length - 1
     : currentPage === paginatedCompletedTransactions.length - 1;
 
+  const renderContent = () => {
+    if (transactionLoader && isInitialLoad) {
+      return <TxnLoading />;
+    }
+
+    if (!ethAddress && !availAddress) {
+      return <NoTransactions />;
+    }
+
+    if (
+      fetchError &&
+      pendingTransactions.length === 0 &&
+      completedTransactions.length === 0
+    ) {
+      return <FetchError />;
+    }
+
+    return (
+      <>
+        <TabsContent value="pending" className="h-[520px]">
+          <div className="h-full">
+            {pendingTransactions.length > 0 ? (
+              <PendingTransactions
+                pendingTransactions={
+                  paginatedPendingTransactions[currentPage] || []
+                }
+              />
+            ) : (
+              <NoTransactions />
+            )}
+          </div>
+        </TabsContent>
+        <TabsContent value="history" className="h-[520px]">
+          <div className="h-full">
+            {completedTransactions.length > 0 ? (
+              <CompletedTransactions
+                completedTransactions={
+                  paginatedCompletedTransactions[currentPage] || []
+                }
+              />
+            ) : (
+              <NoTransactions />
+            )}
+          </div>
+        </TabsContent>
+      </>
+    );
+  };
+
   return (
-    <div className="relative flex flex-col mx-auto w-[95%] h-[100%] ">
+    <div className="relative flex flex-col mx-auto w-[95%] h-[100%]">
       <>
         <Tabs defaultValue="pending" className="flex flex-col h-full">
-          <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2  ">
-            <TabsTrigger
-              value="pending"
-              onClick={() => {
-                setPendingTab(true);
-              }}
-            >
+          <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2">
+            <TabsTrigger value="pending" onClick={() => setPendingTab(true)}>
               Pending
             </TabsTrigger>
             <TabsTrigger
               value="history"
               className="flex flex-row items-center justify-center space-x-1"
-              onClick={() => {
-                setPendingTab(false);
-              }}
+              onClick={() => setPendingTab(false)}
             >
               <p>History</p>
               <FaHistory />
             </TabsTrigger>
           </TabsList>
-          {transactionLoader ? (
-            <TxnLoading />
-          ) : (
-            <>
-              <TabsContent value="pending" className="h-[520px]">
-                <div className=" h-full">
-                  {pendingTransactions.length > 0 ? (
-                    <PendingTransactions
-                      pendingTransactions={
-                        paginatedPendingTransactions[currentPage]
-                      }
-                    />
-                  ) : (
-                    <NoTransactions />
-                  )}
-                </div>
-              </TabsContent>
-              <TabsContent value="history" className="h-[520px]">
-                <div className="h-full">
-                  {completedTransactions.length > 0 ? (
-                    <CompletedTransactions
-                      completedTransactions={
-                        paginatedCompletedTransactions[currentPage]
-                      }
-                    />
-                  ) : (
-                    <NoTransactions />
-                  )}
-                </div>
-              </TabsContent>{" "}
-            </>
-          )}
+          {renderContent()}
         </Tabs>
+
         {/* Pagination */}
         <div className="absolute w-[102%] pt-4 mx-auto bottom-3 -right-0 flex flex-row space-x-2 items-center justify-end bg-[#2B3042]">
           <span className="font-thicccboisemibold text-sm text-white mr-2">
             <HoverCard>
-              <HoverCardTrigger className="cursor-pointer underline underline-offset-2 font-ppmori text-white text-opacity-80 ">
+              <HoverCardTrigger className="cursor-pointer underline underline-offset-2 font-ppmori text-white text-opacity-80">
                 Can&apos;t find your transaction?
               </HoverCardTrigger>
               <HoverCardContent className="font-ppmori bg-[#282B34] text-white text-opacity-70 w-2/3">
@@ -144,8 +164,8 @@ export default function TransactionSection() {
                     </span>
                     <Link
                       href={
-                        address
-                          ? `https://wormholescan.io/#/txs?address=${address}&network=${
+                        ethAddress
+                          ? `https://wormholescan.io/#/txs?address=${ethAddress}&network=${
                               capitalizeFirstLetter(appConfig.config) as
                                 | "Mainnet"
                                 | "Testnet"
@@ -169,8 +189,8 @@ export default function TransactionSection() {
             onClick={() => setCurrentPage((prev) => prev - 1)}
             className={`rounded-lg bg-[#484C5D] ${
               currentPage === 0
-                ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
-                : " text-white"
+                ? "cursor-not-allowed bg-opacity-30 text-opacity-40 text-white"
+                : "text-white"
             } p-2`}
           >
             <ArrowLeft />
@@ -180,8 +200,8 @@ export default function TransactionSection() {
             onClick={() => setCurrentPage((prev) => prev + 1)}
             className={`rounded-lg bg-[#484C5D] ${
               isEndPage
-                ? "cursor-not-allowed bg-opacity-30 text-opacity-40  text-white "
-                : " text-white"
+                ? "cursor-not-allowed bg-opacity-30 text-opacity-40 text-white"
+                : "text-white"
             } p-2`}
           >
             <ArrowRight />

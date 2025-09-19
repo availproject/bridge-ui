@@ -17,30 +17,42 @@ export default function Container() {
 
   const { selected } = useAvailAccount();
   const { address } = useAccount();
-  const { fetchAllTransactions, setTransactionLoader} = useTransactionsStore();
-  const { reviewDialog: { isOpen: isModalOpen, onOpenChange: setIsModalOpen } } = useCommonStore();
+  const { fetchAllTransactions, setTransactionLoader } = useTransactionsStore();
+  const {
+    reviewDialog: { isOpen: isModalOpen, onOpenChange: setIsModalOpen },
+  } = useCommonStore();
 
-  useEffect(()=>{
-    (async () => {
-      /** means some claim is already in process so wait for that to end */
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    if (!address && !selected?.address) {
+      return;
+    }
+
+    timeoutId = setTimeout(async () => {
       await fetchAllTransactions({
         ethAddress: address,
         availAddress: selected?.address,
         setTransactionLoader,
+        isInitialFetch: true,
       });
-      const interval = setInterval(async () => {
 
+      intervalId = setInterval(async () => {
         await fetchAllTransactions({
-          ethAddress: address,  
+          ethAddress: address,
           availAddress: selected?.address,
           setTransactionLoader,
+          isInitialFetch: false,
         });
+      }, 15000);
+    }, 500);
 
-      }, 30000);
-      return () => clearInterval(interval);
-      
-    })()
-  },[selected?.address, address])
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [selected?.address, address, fetchAllTransactions, setTransactionLoader]);
 
   return (
     <div className="text-white w-full my-4 flex flex-col space-y-3 items-center justify-center">
@@ -84,10 +96,10 @@ export default function Container() {
               </span>
             </h1>
           </div>
-         <AdvancedSettings/>
+          <AdvancedSettings />
         </TabsList>
         <TabsContent id="bridge" value="bridge" className="flex-1">
-       <BridgeSection/>
+          <BridgeSection />
         </TabsContent>
         <TabsContent
           id="transactions"
@@ -97,8 +109,10 @@ export default function Container() {
           <TransactionSection />
         </TabsContent>
       </Tabs>
-      <TransactionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <TransactionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }
-

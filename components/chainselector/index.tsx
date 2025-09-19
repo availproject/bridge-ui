@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Image from "next/image";
 import { badgeVariants } from "@/components/ui/badge";
 import { Chain } from "@/types/common";
 import ChainSelectorModal from "./chainselectormodal";
@@ -9,7 +10,10 @@ type ChainSelectorButtonProps = {
   type: "from" | "to";
 };
 
-const ChainSelectorButton = ({ selectedChain, type }: ChainSelectorButtonProps) => {
+const ChainSelectorButton = ({
+  selectedChain,
+  type,
+}: ChainSelectorButtonProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -19,12 +23,17 @@ const ChainSelectorButton = ({ selectedChain, type }: ChainSelectorButtonProps) 
         className={badgeVariants({ variant: "avail" })}
       >
         <div className="flex items-center justify-center gap-2">
-          <img
+          <Image
             src={`/images/${selectedChain}small.png`}
             alt={`${selectedChain} logo`}
+            width={20}
+            height={20}
             className="w-5 h-5"
+            priority
           />
-          <span className="text-left">{capitalizeFirstLetter(selectedChain.toLocaleLowerCase())}</span>
+          <span className="text-left">
+            {capitalizeFirstLetter(selectedChain.toLocaleLowerCase())}
+          </span>
         </div>
       </button>
 
