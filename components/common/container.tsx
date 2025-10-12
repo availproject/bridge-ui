@@ -10,7 +10,6 @@ import { useAccount } from "wagmi";
 import { useTransactionsStore } from "@/stores/transactions";
 import TransactionModal from "../sections/bridge/review-and-submit";
 import { useCommonStore } from "@/stores/common";
-import AdvancedSettings from "./settings";
 
 export default function Container() {
   const [activeTab, setActiveTab] = useState("bridge");
@@ -96,7 +95,6 @@ export default function Container() {
               </span>
             </h1>
           </div>
-          <AdvancedSettings />
         </TabsList>
         <TabsContent id="bridge" value="bridge" className="flex-1">
           <BridgeSection />
