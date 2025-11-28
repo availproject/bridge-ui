@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/monad/:path*",
+      "destination": "https://nexus-fast-bridge-git-feat-subroute-avail-05812c19.vercel.app/:path*"
+    },
+    {
+      "source": "/monad",
+      "destination": "https://nexus-fast-bridge-git-feat-subroute-avail-05812c19.vercel.app/"
+    }
+  ]
+}
