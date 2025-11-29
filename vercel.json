@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/monad/:path*",
-      "destination": "https://staging.monadfastbridge.com/:path*"
+      "destination": "https://nexus-fast-bridge-92ld5uyp1-avail-05812c19.vercel.app/:path*"
     },
     {
       "source": "/monad",
-      "destination": "https://staging.monadfastbridge.com/"
+      "destination": "https://nexus-fast-bridge-92ld5uyp1-avail-05812c19.vercel.app/"
     }
   ]
 }
