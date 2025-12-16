@@ -225,7 +225,13 @@ importers:
         specifier: ^4.5.5
         version: 4.5.7(@types/react@18.3.27)(immer@9.0.21)(react@18.3.1)
     devDependencies:
+      '@babel/plugin-transform-class-properties':
+        specifier: ^7.27.1
+        version: 7.27.1(@babel/core@7.28.5)
       '@babel/plugin-transform-private-methods':
+        specifier: ^7.27.1
+        version: 7.27.1(@babel/core@7.28.5)
+      '@babel/plugin-transform-private-property-in-object':
         specifier: ^7.27.1
         version: 7.27.1(@babel/core@7.28.5)
       '@noble/hashes':
