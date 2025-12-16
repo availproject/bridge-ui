@@ -83,6 +83,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@babel/plugin-transform-private-methods": "^7.27.1",
     "@noble/hashes": "^2.0.0",
     "@polkadot/types": "^10.13.1",
     "@simbathesailor/babel-plugin-use-what-changed": "^2.1.0",

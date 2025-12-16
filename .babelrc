@@ -5,6 +5,10 @@
       "@simbathesailor/babel-plugin-use-what-changed",
       {
         "active": false
+      },
+      "@babel/plugin-transform-private-methods", 
+      { 
+        "loose": true 
       }
     ]
   ]
