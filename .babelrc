@@ -1,6 +1,19 @@
 {
-    "presets": ["next/babel"],
-   "plugins": [
+  "presets": [
+    [
+      "next/babel",
+      {
+        "preset-env": {
+          "targets": {
+            "esmodules": true
+          }
+        }
+      }
+    ]
+  ],
+  "plugins": [
+    "@babel/plugin-transform-class-static-block",
+    "@babel/plugin-transform-private-methods",
     [
       "@simbathesailor/babel-plugin-use-what-changed",
       {
@@ -8,4 +21,4 @@
       }
     ]
   ]
-  }
+}
