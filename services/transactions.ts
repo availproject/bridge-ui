@@ -92,7 +92,12 @@ async function fetchBridgeApiTransactions(
         messageId: tx.messageId ? Number(tx.messageId) : undefined,
         destinationTransactionBlockNumber: tx.destinationBlockNumber,
         destinationTransactionIndex: tx.destinationTxIndex,
-        sourceTimestamp: new Date().toISOString(), // API doesn't provide this, use current time as fallback
+        // TODO: Bridge API doesn't provide sourceTimestamp (created_at/timestamp field).
+        // This causes issues with:
+        // 1. Transaction sorting - all transactions appear to have the same time
+        // 2. UI display - shows "just now" for all transactions instead of actual time
+        // Solution: Request API team to add timestamp fields or fetch from blockchain
+        sourceTimestamp: new Date().toISOString(),
       };
     });
   } catch (e: any) {
