@@ -6,8 +6,8 @@ import { Logger } from "@/utils/logger";
 import { fetchWormholeTransactions } from "@/hooks/wormhole/helper";
 import { fetchAllLiquidityBridgeTransactions } from "./bridgeapi";
 
-const indexerInstance = axios.create({
-  baseURL: appConfig.bridgeIndexerBaseUrl,
+const bridgeApiInstance = axios.create({
+  baseURL: appConfig.bridgeApiBaseUrl,
   headers: { "Access-Control-Allow-Origin": "*" },
   withCredentials: false,
 });
@@ -26,65 +26,81 @@ function validateParams({ availAddress, ethAddress }: TransactionQueryParams) {
   }
 }
 
-/**
- * @description Fetches transactions from the indexer
- *
- * @param userAddress
- * @param sourceChain
- * @param destinationChain
- * @returns  List of transactions
- */
-async function fetchTransactions(
-  userAddress: string,
-  sourceChain?: string,
-  destinationChain?: string,
-): Promise<Transaction[]> {
+export const markTransactionInitiated = async (
+  txHash: string,
+): Promise<void> => {
   try {
-    const response = await indexerInstance.get(`/transactions`, {
-      params: {
-        userAddress,
-        sourceChain,
-        destinationChain,
-        limit: 100,
-        page: 0,
-      },
-    });
-    const transactions = response.data.data.result;
-    if (destinationChain) {
-      return transactions.map((transaction: Transaction) => ({
-        ...transaction,
-        destinationChain,
-      }));
-    }
-
-    return transactions;
+    await bridgeApiInstance.post(`/v2/transaction/${txHash}`);
+    Logger.info(`Transaction ${txHash} marked as initiated`);
   } catch (e: any) {
-    Logger.error(`ERROR_FETCHING_TRANSACTIONS: ${e}`);
-    throw e; // Re-throw to propagate error to store
-  }
-}
-
-const fetchWithErrorHandling = async (
-  address: string,
-  source: Chain,
-  dest?: Chain,
-) => {
-  try {
-    return await fetchTransactions(address, source, dest);
-  } catch (error) {
-    Logger.error(
-      `Failed to fetch transactions for ${address} from ${source} to ${dest}: ${error}`,
-    );
-    return [];
+    Logger.error(`ERROR_MARKING_TRANSACTION_INITIATED: ${e}`);
+    throw e;
   }
 };
 
-/**
- * @description Fetches transactions and adds to store, based on wallet logged in
- *
- * @param {TransactionQueryParams}
- * @returns Transaction[]
- */
+async function fetchBridgeApiTransactions(
+  ethAddress?: string,
+  availAddress?: string,
+): Promise<Transaction[]> {
+  try {
+    const params: Record<string, string> = {};
+    if (ethAddress) params.ethAddress = ethAddress;
+    if (availAddress) params.availAddress = availAddress;
+
+    if (!ethAddress && !availAddress) {
+      return [];
+    }
+
+    const response = await bridgeApiInstance.get(`/transactions`, {
+      params,
+    });
+
+    const apiTransactions = response.data || [];
+
+    // Map API response to Transaction type
+    return apiTransactions.map((tx: any) => {
+      // Parse direction to get source and destination chains
+      const isEthToAvail = tx.direction === "EthAvail";
+      const sourceChain = isEthToAvail ? Chain.ETH : Chain.AVAIL;
+      const destinationChain = isEthToAvail ? Chain.AVAIL : Chain.ETH;
+
+      // Map status from API to TransactionStatus enum
+      let status;
+      switch (tx.status) {
+        case "ClaimReady":
+          status = "READY_TO_CLAIM";
+          break;
+        case "Bridged":
+          status = "CLAIMED";
+          break;
+        case "Pending":
+          status = "PENDING";
+          break;
+        default:
+          status = tx.status;
+      }
+
+      return {
+        sourceTransactionHash: tx.sourceTxHash,
+        depositorAddress: tx.sender,
+        receiverAddress: tx.receiver,
+        sourceChain,
+        destinationChain,
+        status,
+        amount: tx.amount,
+        sourceBlockHash: tx.sourceBlockHash,
+        messageId: tx.messageId ? Number(tx.messageId) : undefined,
+        destinationTransactionBlockNumber: tx.destinationBlockNumber,
+        destinationTransactionIndex: tx.destinationTxIndex,
+        sourceTimestamp: new Date().toISOString(), // API doesn't provide this, use current time as fallback
+      };
+    });
+  } catch (e: any) {
+    Logger.error(`ERROR_FETCHING_BRIDGE_API_TRANSACTIONS: ${e}`);
+    return [];
+  }
+}
+
 export const getAllTransactions = async ({
   availAddress,
   ethAddress,
@@ -97,10 +113,17 @@ export const getAllTransactions = async ({
 
   const fetchPromises: Promise<Transaction[]>[] = [];
 
+  if (ethAddress || availAddress) {
+    fetchPromises.push(
+      fetchBridgeApiTransactions(ethAddress, availAddress).catch((err) => {
+        Logger.error(`Failed to fetch Bridge API transactions: ${err}`);
+        return [];
+      })
+    );
+  }
+
   if (ethAddress) {
     fetchPromises.push(
-      fetchWithErrorHandling(ethAddress, Chain.ETH, Chain.AVAIL),
-      fetchWithErrorHandling(ethAddress, Chain.AVAIL, Chain.ETH),
       fetchWormholeTransactions(false, ethAddress as `0x${string}`).catch(
         (err) => {
           Logger.error(`Failed to fetch Wormhole transactions: ${err}`);
@@ -119,8 +142,6 @@ export const getAllTransactions = async ({
 
   if (availAddress) {
     fetchPromises.push(
-      fetchWithErrorHandling(availAddress, Chain.AVAIL, Chain.ETH),
-      fetchWithErrorHandling(availAddress, Chain.ETH, Chain.AVAIL),
       fetchAllLiquidityBridgeTransactions(
         false,
         availAddress as `0x${string}`,
@@ -141,7 +162,6 @@ export const getAllTransactions = async ({
     )
     .map((result) => result.value);
 
-  // If all fetches failed, throw error to be caught by store
   if (successfulResults.length === 0 && results.length > 0) {
     throw new Error("All transaction fetches failed");
   }

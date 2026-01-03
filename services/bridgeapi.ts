@@ -266,7 +266,7 @@ export const fetchEVMToAvailTransactions = async (
       sourceTimestamp: new Date(tx.created_at).getTime(),
       destinationTransactionHash: tx.bridged_extrinsic_hash,
       timeRemaining: tx.time_remaining_secs,
-      detinationBlockhash: tx.bridged_block_hash,
+      destinationBlockhash: tx.bridged_block_hash,
       destinationTransactionTimestamp: tx.completed_at
         ? new Date(tx.completed_at).getTime()
         : undefined,

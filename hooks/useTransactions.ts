@@ -1,22 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /**
  * Flow:
- * 1. Fetch indexed transactions from multiple sources
- * 2. Load localStorage transactions for current account
- * 3. Merge transactions with proper status precedence:
- *    - initiated (local) < pending (indexer) → use indexer, delete local
- *    - claim_pending (local) > ready_to_claim (indexer) → keep local until bridged
- * 4. Deduplicate and sort transactions
- * 5. Update UI atomically only after all mutations complete
+ * 1. Fetch transactions from bridge API and other sources (Wormhole, Liquidity Bridge)
+ * 2. Deduplicate and sort transactions
+ * 3. Auto-refresh every 20 seconds
  */
 
 import { useTransactionsStore } from "@/stores/transactions";
-import { Chain, TransactionStatus } from "@/types/common";
+import { TransactionStatus } from "@/types/common";
 import { Transaction } from "@/types/transaction";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
 import { uniqBy } from "lodash";
+import { markTransactionInitiated } from "@/services/transactions";
+import { Logger } from "@/utils/logger";
 
 export default function useTransactions() {
   const {
@@ -24,12 +22,11 @@ export default function useTransactions() {
     pendingIndexedTransactions,
     setPendingIndexedTransactions,
     setIndexedTransactions,
-    localTransactions,
-    addLocalTransaction,
-    deleteLocalTransaction,
     transactionLoader,
     fetchError,
     isInitialLoad,
+    startPolling,
+    stopPolling,
   } = useTransactionsStore();
 
   const { selected } = useAvailAccount();
@@ -38,129 +35,47 @@ export default function useTransactions() {
     [],
   );
   const processingRef = useRef(false);
-  const lastLocalTxnCountRef = useRef(0);
 
   useEffect(() => {
-    if (!selected?.address && !address) {
+    const accountAddress = selected?.address || address;
+
+    if (!accountAddress) {
+      stopPolling();
       return;
     }
 
-    const loadLocalTransactions = async () => {
-      const accountAddress = selected?.address || address;
-      const storageKey = `localTransactions:${accountAddress}`;
-      const storedTxns = JSON.parse(
-        localStorage.getItem(storageKey) || "[]",
-      ) as Transaction[];
+    startPolling({
+      ethAddress: address,
+      availAddress: selected?.address,
+    });
 
-      localTransactions.length = 0;
-      localTransactions.push(...storedTxns);
-      lastLocalTxnCountRef.current = storedTxns.length;
+    return () => {
+      stopPolling();
     };
-
-    loadLocalTransactions();
   }, [selected?.address, address]);
 
   useEffect(() => {
     if (processingRef.current) return;
     if (!selected?.address && !address) return;
 
-    // Check if local transactions changed (e.g., claim was added)
-    const localTxnCountChanged =
-      localTransactions.length !== lastLocalTxnCountRef.current;
-
-    // Process pending transactions if available, otherwise use current indexed
     const transactionsToProcess =
       pendingIndexedTransactions !== null
         ? pendingIndexedTransactions
         : indexedTransactions;
 
-    // Only process if:
-    // 1. We have pending transactions from a new fetch, OR
-    // 2. Local transactions changed (claim added), OR
-    // 3. It's the first render
     if (
       pendingIndexedTransactions === null &&
       mergedTransactions.length > 0 &&
-      indexedTransactions === transactionsToProcess &&
-      !localTxnCountChanged
+      indexedTransactions === transactionsToProcess
     ) {
       return;
     }
 
     processingRef.current = true;
-    lastLocalTxnCountRef.current = localTransactions.length;
 
-    const mergeTransactions = async () => {
-      const accountAddress = selected?.address || address;
-      const storageKey = `localTransactions:${accountAddress}`;
+    const processTransactions = async () => {
+      const uniqueTxns = uniqBy(transactionsToProcess, "sourceTransactionHash");
 
-      const normalizeHash = (hash?: string) => hash?.toLowerCase() ?? "";
-
-      const indexedTxMap = new Map<string, Transaction>();
-      transactionsToProcess.forEach((tx) => {
-        indexedTxMap.set(normalizeHash(tx.sourceTransactionHash), tx);
-      });
-
-      const localTxnsToDelete: string[] = [];
-      const processedLocalTxns: Transaction[] = [];
-      const processedIndexedTxns = [...transactionsToProcess];
-
-      localTransactions.forEach((localTx) => {
-        const normalizedLocalHash = normalizeHash(
-          localTx.sourceTransactionHash,
-        );
-        const matchingIndexedTx = indexedTxMap.get(normalizedLocalHash);
-
-        if (!matchingIndexedTx) {
-          processedLocalTxns.push(localTx);
-          return;
-        }
-
-        if (
-          localTx.status === TransactionStatus.INITIATED &&
-          matchingIndexedTx.status === TransactionStatus.PENDING
-        ) {
-          localTxnsToDelete.push(localTx.sourceTransactionHash);
-        } else if (localTx.status === TransactionStatus.CLAIM_PENDING) {
-          if (matchingIndexedTx.status === TransactionStatus.READY_TO_CLAIM) {
-            const indexedTxIndex = processedIndexedTxns.findIndex(
-              (tx) =>
-                normalizeHash(tx.sourceTransactionHash) === normalizedLocalHash,
-            );
-            if (indexedTxIndex !== -1) {
-              processedIndexedTxns[indexedTxIndex] = {
-                ...processedIndexedTxns[indexedTxIndex],
-                status: TransactionStatus.CLAIM_PENDING,
-              };
-            }
-          } else if (matchingIndexedTx.status === TransactionStatus.CLAIMED) {
-            localTxnsToDelete.push(localTx.sourceTransactionHash);
-          }
-        } else if (
-          matchingIndexedTx.sourceChain === Chain.ETH ||
-          matchingIndexedTx.sourceChain === Chain.AVAIL
-        ) {
-          localTxnsToDelete.push(localTx.sourceTransactionHash);
-        } else {
-          processedLocalTxns.push(localTx);
-        }
-      });
-
-      if (localTxnsToDelete.length > 0 && accountAddress) {
-        const remainingLocalTxns = localTransactions.filter(
-          (tx) => !localTxnsToDelete.includes(tx.sourceTransactionHash),
-        );
-        localStorage.setItem(storageKey, JSON.stringify(remainingLocalTxns));
-
-        localTxnsToDelete.forEach((hash) => {
-          deleteLocalTransaction(hash as `0x${string}`);
-        });
-      }
-
-      const allTxns = [...processedLocalTxns, ...processedIndexedTxns];
-      const uniqueTxns = uniqBy(allTxns, "sourceTransactionHash");
-
-      // Update everything atomically
       if (pendingIndexedTransactions !== null) {
         setIndexedTransactions(transactionsToProcess);
         setPendingIndexedTransactions(null);
@@ -170,11 +85,10 @@ export default function useTransactions() {
       processingRef.current = false;
     };
 
-    mergeTransactions();
+    processTransactions();
   }, [
     pendingIndexedTransactions,
     indexedTransactions,
-    localTransactions,
     selected?.address,
     address,
   ]);
@@ -217,28 +131,11 @@ export default function useTransactions() {
     return chunks;
   }, [completedTransactions]);
 
-  const addToLocalTransaction = (transaction: Transaction) => {
-    const accountAddress = selected?.address || address;
-    const localTransactionsKey = `localTransactions:${accountAddress}`;
-    const existingTransactions = JSON.parse(
-      localStorage.getItem(localTransactionsKey) || "[]",
-    );
-
-    const transactionExists = existingTransactions.some(
-      (t: Transaction) =>
-        t.sourceTransactionHash === transaction.sourceTransactionHash,
-    );
-
-    if (!transactionExists) {
-      const updatedTransactions = [...existingTransactions, transaction];
-      localStorage.setItem(
-        localTransactionsKey,
-        JSON.stringify(updatedTransactions),
-      );
-      addLocalTransaction(transaction);
-
-      // Trigger immediate processing by updating the ref
-      lastLocalTxnCountRef.current = updatedTransactions.length;
+  const addToLocalTransaction = async (transaction: Transaction) => {
+    try {
+      await markTransactionInitiated(transaction.sourceTransactionHash);
+    } catch (error) {
+      Logger.error(`Failed to mark transaction as initiated: ${error}`);
     }
   };
 
