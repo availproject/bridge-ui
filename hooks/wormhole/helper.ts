@@ -1,18 +1,9 @@
 import { Chain as IChain, TransactionStatus } from "@/types/common";
 import { Transaction } from "@/types/transaction";
-import {
-    Chain,
-    Network,
-    Wormhole,
-    TokenId,
-    TokenTransfer,
-    ChainContext,
-    isTokenId,
-    ChainAddress,
-    Signer,
-  } from "@wormhole-foundation/sdk";
+import { Chain } from "@wormhole-foundation/sdk";
 import { Ntt } from "@wormhole-foundation/sdk-definitions-ntt";
 import "@wormhole-foundation/sdk-evm-ntt";
+import { NttExecutorRoute, NttRoute } from "@wormhole-foundation/sdk-route-ntt";
 import { appConfig } from "@/config/default";
 import BigNumber from "bignumber.js";
 import { WormholeTransaction } from "./types";
@@ -39,81 +30,43 @@ export const NTT_CONTRACTS: NttContracts = {
     },
   },
 };
-  
-  export async function getTokenDecimals<
-    N extends "Mainnet" | "Testnet" | "Devnet"
-  >(
-    wh: Wormhole<N>,
-    token: TokenId,
-    sendChain: ChainContext<N, any>
-  ): Promise<number> {
-    return isTokenId(token)
-      ? Number(await wh.getDecimals(token.chain, token.address))
-      : sendChain.config.nativeTokenDecimals;
-  }
 
- export function capitalizeFirstLetter(val: string) {
-    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
-}
-  
-  
-  export interface SignerStuff<N extends Network, C extends Chain> {
-    chain: ChainContext<N, C>;
-    signer: Signer<N, C>;
-    address: ChainAddress<C>;
-  }
-  
-  export type IAddress = `0x${string}`
-  
-  export async function tokenTransfer<N extends Network>(
-    wh: Wormhole<N>,
-    route: {
-      token: TokenId;
-      amount: bigint;
-      sourceAdd: ChainAddress;
-      destAdd: ChainAddress;
-      sourceChain: ChainContext<N, any>;
-      destChain: ChainContext<N, any>;
-      sourceSigner: Signer;
-      delivery?: {
-        automatic: boolean;
-        nativeGas?: bigint;
+export function convertToExecutorConfig(nttContracts: NttContracts): NttExecutorRoute.Config {
+  const tokenName = "AVAIL";
+  const tokens = Object.entries(nttContracts)
+    .filter(([_, contracts]) => contracts !== undefined)
+    .map(([chain, contracts]) => {
+      const executorToken: NttRoute.TokenConfig = {
+        chain: chain as Chain,
+        token: contracts!.token,
+        manager: contracts!.manager,
+        transceiver: Object.entries(contracts!.transceiver).map(([type, address]) => ({
+          type: type as NttRoute.TransceiverType,
+          address: address as string,
+        })),
       };
-      payload?: Uint8Array;
-    }
-  ) {
-    const xfer = await wh.tokenTransfer(
-      route.token,
-      route.amount,
-      route.sourceAdd,
-      route.destAdd,
-      true,
-      route.payload,
-      route.delivery?.nativeGas
-    );
-  
-    const quote = await TokenTransfer.quoteTransfer(
-      wh,
-      route.sourceChain,
-      route.destChain,
-      xfer.transfer
-    );
-  
-    if (xfer.transfer.automatic && quote.destinationToken.amount < 0)
-      throw new Error("The amount requested is too low to cover the fee and any native gas requested.");
-  
-    console.log("Starting transfer ------ ");
-  
-    const srcTxids = await xfer.initiateTransfer(route.sourceSigner);
-  
-    console.log(`${route.sourceSigner.chain()} Trasaction ID: ${srcTxids[0]}`);
-  
-    console.log(`Wormhole Trasaction ID: ${srcTxids[1] ?? srcTxids[0]}`);
-  
-    console.log("Transfer completed successfully");
-  }
+      if (contracts!.quoter) {
+        (executorToken as NttRoute.TokenConfig & { quoter?: string }).quoter = contracts!.quoter;
+      }
+      return executorToken;
+    });
 
-  const SUPPORTED_CHAINS = {
+  return {
+    ntt: {
+      tokens: {
+        [tokenName]: tokens
+      }
+    }
+  };
+}
+
+export function capitalizeFirstLetter(val: string) {
+  return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+}
+
+export type IAddress = `0x${string}`;
+
+const SUPPORTED_CHAINS = {
     SEPOLIA: 10002,
     BASE_SEPOLIA: 10004
   };
