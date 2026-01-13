@@ -7,9 +7,9 @@ interface StatusBadgeProps {
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({txnStatus} : StatusBadgeProps) => {
   const formatStatus = (status: TransactionStatus) => {
-    if (status === "BRIDGED") return "In Progress";
-    if (status === "READY_TO_CLAIM") return "Ready To Claim";
-    if (status === "CLAIM_PENDING") return "Claim Pending";
+    if (status === TransactionStatus.BRIDGED) return "In Progress";
+    if (status === TransactionStatus.READY_TO_CLAIM) return "Ready To Claim";
+    if (status === TransactionStatus.CLAIM_PENDING) return "Claim Pending";
     return status.charAt(0) + status.toLowerCase().slice(1);
   };
 
