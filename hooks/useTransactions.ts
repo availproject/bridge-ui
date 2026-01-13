@@ -1,18 +1,17 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /**
  * Flow:
- * 1. Fetch transactions from bridge API and other sources (Wormhole, Liquidity Bridge)
- * 2. Deduplicate and sort transactions
- * 3. Auto-refresh every 20 seconds
+ * 1. Start/stop polling based on account
+ * 2. Get transactions from store (already deduplicated)
+ * 3. Filter, sort, and paginate for UI display
+ * 4. Auto-refresh every 20 seconds via polling
  */
 
 import { useTransactionsStore } from "@/stores/transactions";
 import { TransactionStatus } from "@/types/common";
 import { Transaction } from "@/types/transaction";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
-import { uniqBy } from "lodash";
 import { markTransactionInitiated } from "@/services/transactions";
 import { Logger } from "@/utils/logger";
 
@@ -20,21 +19,14 @@ export default function useTransactions() {
   const {
     indexedTransactions,
     pendingIndexedTransactions,
-    setPendingIndexedTransactions,
     setIndexedTransactions,
-    transactionLoader,
-    fetchError,
-    isInitialLoad,
+    setPendingIndexedTransactions,
     startPolling,
     stopPolling,
   } = useTransactionsStore();
 
   const { selected } = useAvailAccount();
   const { address } = useAccount();
-  const [mergedTransactions, setMergedTransactions] = useState<Transaction[]>(
-    [],
-  );
-  const processingRef = useRef(false);
 
   useEffect(() => {
     const accountAddress = selected?.address || address;
@@ -52,66 +44,34 @@ export default function useTransactions() {
     return () => {
       stopPolling();
     };
-  }, [selected?.address, address]);
+  }, [selected?.address, address, startPolling, stopPolling]);
 
   useEffect(() => {
-    if (processingRef.current) return;
-    if (!selected?.address && !address) return;
-
-    const transactionsToProcess =
-      pendingIndexedTransactions !== null
-        ? pendingIndexedTransactions
-        : indexedTransactions;
-
-    if (
-      pendingIndexedTransactions === null &&
-      mergedTransactions.length > 0 &&
-      indexedTransactions === transactionsToProcess
-    ) {
-      return;
+    if (pendingIndexedTransactions !== null) {
+      setIndexedTransactions(pendingIndexedTransactions);
+      setPendingIndexedTransactions(null);
     }
-
-    processingRef.current = true;
-
-    const processTransactions = async () => {
-      const uniqueTxns = uniqBy(transactionsToProcess, "sourceTransactionHash");
-
-      if (pendingIndexedTransactions !== null) {
-        setIndexedTransactions(transactionsToProcess);
-        setPendingIndexedTransactions(null);
-      }
-
-      setMergedTransactions(uniqueTxns);
-      processingRef.current = false;
-    };
-
-    processTransactions();
-  }, [
-    pendingIndexedTransactions,
-    indexedTransactions,
-    selected?.address,
-    address,
-  ]);
+  }, [pendingIndexedTransactions, setIndexedTransactions, setPendingIndexedTransactions]);
 
   const pendingTransactions: Transaction[] = useMemo(() => {
-    return mergedTransactions
+    return indexedTransactions
       .filter((txn) => txn.status !== TransactionStatus.CLAIMED)
       .sort(
         (a, b) =>
           new Date(b.sourceTimestamp).getTime() -
           new Date(a.sourceTimestamp).getTime(),
       );
-  }, [mergedTransactions]);
+  }, [indexedTransactions]);
 
   const completedTransactions: Transaction[] = useMemo(() => {
-    return mergedTransactions
+    return indexedTransactions
       .filter((txn) => txn.status === TransactionStatus.CLAIMED)
       .sort(
         (a, b) =>
           new Date(b.sourceTimestamp).getTime() -
           new Date(a.sourceTimestamp).getTime(),
       );
-  }, [mergedTransactions]);
+  }, [indexedTransactions]);
 
   const CHUNK_SIZE = 4;
 
@@ -140,7 +100,7 @@ export default function useTransactions() {
   };
 
   return {
-    allTransactions: mergedTransactions,
+    allTransactions: indexedTransactions,
     pendingTransactions,
     completedTransactions,
     paginatedPendingTransactions,

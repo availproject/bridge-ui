@@ -36,7 +36,7 @@ const mapApiStatusToTransactionStatus = (
 
 export const getMerkleProof = async (blockhash: string, index: number) => {
   const response = await axios.get(
-    `${appConfig.bridgeApiBaseUrl}/eth/proof/${blockhash}`,
+    `${appConfig.bridgeApiBaseUrl}/v1/eth/proof/${blockhash}`,
     {
       params: { index },
       transformResponse: [(data) => data],

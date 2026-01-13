@@ -8,7 +8,9 @@ import { fetchAllLiquidityBridgeTransactions } from "./bridgeapi";
 
 const bridgeApiInstance = axios.create({
   baseURL: appConfig.bridgeApiBaseUrl,
-  headers: { "Access-Control-Allow-Origin": "*" },
+  headers: {
+    "Content-Type": "application/json",
+  },
   withCredentials: false,
 });
 
@@ -89,9 +91,12 @@ async function fetchBridgeApiTransactions(
         status,
         amount: tx.amount,
         sourceBlockHash: tx.sourceBlockHash,
+        sourceBlockNumber: tx.sourceBlockNumber,
+        sourceTransactionIndex: tx.sourceTxIndex,
         messageId: tx.messageId ? Number(tx.messageId) : undefined,
         destinationTransactionBlockNumber: tx.destinationBlockNumber,
         destinationTransactionIndex: tx.destinationTxIndex,
+        timeRemaining: tx.claimEstimate,
         // TODO: Bridge API doesn't provide sourceTimestamp (created_at/timestamp field).
         // This causes issues with:
         // 1. Transaction sorting - all transactions appear to have the same time
@@ -123,7 +128,7 @@ export const getAllTransactions = async ({
       fetchBridgeApiTransactions(ethAddress, availAddress).catch((err) => {
         Logger.error(`Failed to fetch Bridge API transactions: ${err}`);
         return [];
-      })
+      }),
     );
   }
 

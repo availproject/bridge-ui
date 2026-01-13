@@ -9,7 +9,6 @@ type AppConfig = {
     base: Chain;
   };
   bridgeApiBaseUrl: string;
-  bridgeIndexerBaseUrl: string;
   bridgeIndexerPollingInterval: number;
   bridgePricePollingInterval: number;
   bridgeHeadsPollingInterval: number;
@@ -60,8 +59,6 @@ export const appConfig: AppConfig = {
   liquidityBridgeApiBaseUrl:
     process.env.NEXT_PUBLIC_LIQUIDITY_BRIDGE_API_URL ||
     "https://turing-liquidity-bridge.fra.avail.so",
-  bridgeIndexerBaseUrl:
-    process.env.NEXT_PUBLIC_BRIDGE_INDEXER_URL || "http://167.71.41.169:3000",
   bridgeIndexerPollingInterval: 30,
   bridgeHeadsPollingInterval: 600,
   bridgePricePollingInterval: 60,
