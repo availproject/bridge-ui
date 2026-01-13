@@ -22,8 +22,8 @@ export default function Container() {
   } = useCommonStore();
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null;
-    let timeoutId: NodeJS.Timeout | null = null;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     if (!address && !selected?.address) {
       return;

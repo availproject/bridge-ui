@@ -53,7 +53,7 @@ export const SubmitClaim = ({
       to: `${string}`;
       originDomain: number;
       destinationDomain: number;
-    }
+    },
   ) => {
     updateLoadingState(txnHash, true);
     setClaimDialog(true);
@@ -134,7 +134,7 @@ export const SubmitClaim = ({
             to: txn.receiverAddress,
             originDomain: 2,
             destinationDomain: 1,
-          }
+          },
         );
       }}
     >

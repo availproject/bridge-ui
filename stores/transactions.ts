@@ -1,11 +1,9 @@
 /**
  * Flow:
- * 1. Fetch transactions and store in pendingIndexedTransactions
- * 2. Hook processes pending transactions with localStorage
- * 3. Only after processing completes, update indexedTransactions
- * 4. This prevents UI flickering during fetch/merge cycle
- *
- 5. fetchCounter prevents stale updates from StrictMode double-mounts
+ * 1. Fetch transactions from all sources and store in pendingIndexedTransactions
+ * 2. Hook processes pending transactions
+ * 3. Update indexedTransactions atomically
+ * 4. Auto-polling refreshes transactions every 20 seconds
  */
 
 import { getAllTransactions } from "@/services/transactions";
@@ -25,6 +23,15 @@ interface TransactionsStore {
   fetchError: boolean;
   setFetchError: (fetchError: boolean) => void;
   fetchCounter: number;
+  pollingIntervalId: ReturnType<typeof setInterval> | null;
+  startPolling: ({
+    ethAddress,
+    availAddress,
+  }: {
+    ethAddress?: string;
+    availAddress?: string;
+  }) => void;
+  stopPolling: () => void;
   indexedTransactions: Transaction[];
   setIndexedTransactions: (transactions: Transaction[]) => void;
   pendingIndexedTransactions: Transaction[] | null;
@@ -35,9 +42,6 @@ interface TransactionsStore {
     setTransactionLoader,
     isInitialFetch,
   }: FetchTxnParams) => Promise<void>;
-  localTransactions: Transaction[];
-  addLocalTransaction: (transaction: Transaction) => void;
-  deleteLocalTransaction: (sourceTransactionHash: `0x${string}`) => void;
   pendingTransactionsNumber: number;
   setPendingTransactionsNumber: (pendingTransactions: number) => void;
   readyToClaimTransactionsNumber: number;
@@ -120,17 +124,32 @@ export const useTransactionsStore = create<TransactionsStore>((set, get) => ({
       }
     }
   },
-  localTransactions: [],
-  addLocalTransaction: (localTransaction) =>
-    set((state) => ({
-      localTransactions: [...state.localTransactions, localTransaction],
-    })),
-  deleteLocalTransaction: (sourceTransactionHash: `0x${string}`) => {
-    set((state) => ({
-      localTransactions: state.localTransactions.filter(
-        (txn) => txn.sourceTransactionHash !== sourceTransactionHash,
-      ),
-    }));
+  pollingIntervalId: null,
+  startPolling: ({ ethAddress, availAddress }) => {
+    const { pollingIntervalId, stopPolling } = get();
+
+    if (pollingIntervalId) {
+      stopPolling();
+    }
+
+    const intervalId = setInterval(() => {
+      const { setTransactionLoader } = get();
+      get().fetchAllTransactions({
+        ethAddress,
+        availAddress,
+        setTransactionLoader,
+        isInitialFetch: false,
+      });
+    }, 20000);
+
+    set({ pollingIntervalId: intervalId });
+  },
+  stopPolling: () => {
+    const { pollingIntervalId } = get();
+    if (pollingIntervalId) {
+      clearInterval(pollingIntervalId);
+      set({ pollingIntervalId: null });
+    }
   },
   pendingTransactionsNumber: 0,
   setPendingTransactionsNumber: (pendingTransactionsNumber) =>

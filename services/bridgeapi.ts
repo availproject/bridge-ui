@@ -36,7 +36,7 @@ const mapApiStatusToTransactionStatus = (
 
 export const getMerkleProof = async (blockhash: string, index: number) => {
   const response = await axios.get(
-    `${appConfig.bridgeApiBaseUrl}/eth/proof/${blockhash}`,
+    `${appConfig.bridgeApiBaseUrl}/v1/eth/proof/${blockhash}`,
     {
       params: { index },
       transformResponse: [(data) => data],
@@ -266,7 +266,7 @@ export const fetchEVMToAvailTransactions = async (
       sourceTimestamp: new Date(tx.created_at).getTime(),
       destinationTransactionHash: tx.bridged_extrinsic_hash,
       timeRemaining: tx.time_remaining_secs,
-      detinationBlockhash: tx.bridged_block_hash,
+      destinationBlockhash: tx.bridged_block_hash,
       destinationTransactionTimestamp: tx.completed_at
         ? new Date(tx.completed_at).getTime()
         : undefined,

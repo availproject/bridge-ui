@@ -6,12 +6,17 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({txnStatus} : StatusBadgeProps) => {
+  const formatStatus = (status: TransactionStatus) => {
+    if (status === TransactionStatus.BRIDGED) return "In Progress";
+    if (status === TransactionStatus.READY_TO_CLAIM) return "Ready To Claim";
+    if (status === TransactionStatus.CLAIM_PENDING) return "Claim Pending";
+    return status.charAt(0) + status.toLowerCase().slice(1);
+  };
+
   return (
         <Badge className="flex-row items-center justify-center space-x-2 bg-[#24262f]">
           <p className="font-thicccboisemibold whitespace-nowrap">
-            {txnStatus === "BRIDGED"
-              ? `In Progress`
-              : txnStatus.charAt(0) + txnStatus.toLocaleLowerCase().slice(1)}
+            {formatStatus(txnStatus)}
           </p>
           <span className="relative flex h-2 w-2">
             <span
