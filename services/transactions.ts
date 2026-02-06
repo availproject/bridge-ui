@@ -1,7 +1,7 @@
 import axios from "axios";
 import { appConfig } from "@/config/default";
 import { Transaction } from "@/types/transaction";
-import { Chain } from "@/types/common";
+import { Chain, TransactionStatus } from "@/types/common";
 import { Logger } from "@/utils/logger";
 import { fetchWormholeTransactions } from "@/hooks/wormhole/helper";
 import { fetchAllLiquidityBridgeTransactions } from "./bridgeapi";
@@ -17,27 +17,6 @@ const bridgeApiInstance = axios.create({
 type TransactionQueryParams = {
   availAddress?: string;
   ethAddress?: string;
-  sourceChain?: string;
-  destinationChain?: string;
-};
-
-function validateParams({ availAddress, ethAddress }: TransactionQueryParams) {
-  if (!availAddress && !ethAddress) {
-    Logger.info("Either availAddress or ethAddress must be provided.");
-    return [];
-  }
-}
-
-export const markTransactionInitiated = async (
-  txHash: string,
-): Promise<void> => {
-  try {
-    await bridgeApiInstance.post(`/v2/transaction/${txHash}`);
-    Logger.info(`Transaction ${txHash} marked as initiated`);
-  } catch (e: any) {
-    Logger.error(`ERROR_MARKING_TRANSACTION_INITIATED: ${e}`);
-    throw e;
-  }
 };
 
 async function fetchBridgeApiTransactions(
@@ -70,16 +49,16 @@ async function fetchBridgeApiTransactions(
       let status;
       switch (tx.status) {
         case "ClaimReady":
-          status = "READY_TO_CLAIM";
+          status = TransactionStatus.READY_TO_CLAIM;
           break;
         case "Bridged":
-          status = "CLAIMED";
+          status = TransactionStatus.CLAIMED;
           break;
         case "Pending":
-          status = "PENDING";
+          status = TransactionStatus.PENDING;
           break;
         default:
-          status = tx.status;
+          status = TransactionStatus.PENDING;
       }
 
       return {
@@ -97,12 +76,9 @@ async function fetchBridgeApiTransactions(
         destinationTransactionBlockNumber: tx.destinationBlockNumber,
         destinationTransactionIndex: tx.destinationTxIndex,
         timeRemaining: tx.claimEstimate,
-        // TODO: Bridge API doesn't provide sourceTimestamp (created_at/timestamp field).
-        // This causes issues with:
-        // 1. Transaction sorting - all transactions appear to have the same time
-        // 2. UI display - shows "just now" for all transactions instead of actual time
-        // Solution: Request API team to add timestamp fields or fetch from blockchain
-        sourceTimestamp: new Date().toISOString(),
+        sourceTimestamp: tx.timestamp
+          ? new Date(tx.timestamp).getTime()
+          : 0,
       };
     });
   } catch (e: any) {
@@ -114,10 +90,7 @@ async function fetchBridgeApiTransactions(
 export const getAllTransactions = async ({
   availAddress,
   ethAddress,
-  sourceChain,
-  destinationChain,
 }: TransactionQueryParams): Promise<Transaction[]> => {
-  validateParams({ availAddress, ethAddress });
 
   const seenHashes = new Set<string>();
 

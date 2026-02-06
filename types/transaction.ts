@@ -89,7 +89,7 @@ export interface Transaction {
   sourceBlockNumber?: number,
   sourceTransactionHash: `0x${string}`,
   sourceTransactionIndex?: number,
-  sourceTimestamp: string
+  sourceTimestamp: number
   sourceTokenAddress?: `0x${string}`;
   destinationTransactionHash?: `0x${string}` | string;
   destinationTransactionBlockNumber?: number;

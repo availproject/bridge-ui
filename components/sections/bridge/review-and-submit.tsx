@@ -24,6 +24,8 @@ import { Clock, InfoIcon, AlertTriangle } from "lucide-react";
 import { isLiquidityBridge, isWormholeBridge } from "./utils";
 import { useTransactionsStore } from "@/stores/transactions";
 import { formatEstimatedTime } from "@/components/common/utils";
+import { useTokenPriceQuery } from "@/hooks/queries/useTokenPriceQuery";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   HoverCard,
   HoverCardContent,
@@ -50,12 +52,12 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
     errorDialog: { onOpenChange: setErrorOpenDialog, setError },
     reviewDialog: { onOpenChange: setShowReviewModal, isOpen: reviewOpen },
     signatures,
+    setAllowLiquidityBridgeTxn,
   } = useCommonStore();
 
   const { fetchBalance } = useBalanceStore();
   const { selected } = useAvailAccount();
   const { address: ethAddress } = useAccount();
-  const { setAllowLiquidityBridgeTxn } = useCommonStore();
   const { api } = useApi();
   const { initEthToAvailBridging, initAvailToEthBridging } = useZkBridge();
   const {
@@ -64,8 +66,9 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
   } = useLiquidityBridge();
   const { initWormholeBridge } = useWormHoleBridge();
   const { buttonStatus, isDisabled } = useSubmitTxnState(transactionInProgress);
-  const { dollarAmount } = useCommonStore();
+  const dollarAmount = useTokenPriceQuery().data ?? 0;
   const { setTransactionStatus } = useTransactionsStore();
+  const queryClient = useQueryClient();
   const [details, setDetails] = useState<ReviewResponse | null>(null);
 
   useEffect(() => {
@@ -160,7 +163,6 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
           break;
         }
         case ChainPairs.AVAIL_TO_BASE: {
-          console.log("AVAIL TO BASE");
           const init = await initAvailToERC20AutomaticBridging({
             ERC20Chain: Chain.BASE,
             atomicAmount: fromAmountAtomic,
@@ -206,6 +208,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
     } finally {
       setTransactionInProgress(false);
       onClose();
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
       await fetchBalance(
         fromChain === Chain.AVAIL ? selected?.address! : ethAddress!,
         fromChain,

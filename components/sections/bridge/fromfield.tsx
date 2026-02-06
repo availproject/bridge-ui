@@ -16,13 +16,15 @@ import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
 import { useMemo } from "react";
 import ChainSelectorButton from "../../chainselector";
+import { useTokenPriceQuery } from "@/hooks/queries/useTokenPriceQuery";
 
 export default function FromField() {
   const { balances } = useBalanceStore();
-  const { fromChain, toChain, fromAmount, setFromAmount, dollarAmount } =
+  const { fromChain, toChain, fromAmount, setFromAmount } =
     useCommonStore();
   const { selected } = useAvailAccount();
   const account = useAccount();
+  const dollarAmount = useTokenPriceQuery().data ?? 0;
 
   const availAmountToDollars: number = useMemo(() => {
     if (!fromAmount) return 0;

@@ -1,110 +1,51 @@
-/**
- * Flow:
- * 1. Start/stop polling based on account
- * 2. Get transactions from store (already deduplicated)
- * 3. Filter, sort, and paginate for UI display
- * 4. Auto-refresh every 20 seconds via polling
- */
-
-import { useTransactionsStore } from "@/stores/transactions";
+import { useMemo } from "react";
 import { TransactionStatus } from "@/types/common";
 import { Transaction } from "@/types/transaction";
-import { useEffect, useMemo } from "react";
-import { useAvailAccount } from "@/stores/availwallet";
-import { useAccount } from "wagmi";
-import { markTransactionInitiated } from "@/services/transactions";
-import { Logger } from "@/utils/logger";
+import { useTransactionsQuery } from "./queries/useTransactionsQuery";
+
+const CHUNK_SIZE = 4;
+
+function chunk<T>(arr: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
 
 export default function useTransactions() {
-  const {
-    indexedTransactions,
-    pendingIndexedTransactions,
-    setIndexedTransactions,
-    setPendingIndexedTransactions,
-    startPolling,
-    stopPolling,
-  } = useTransactionsStore();
-
-  const { selected } = useAvailAccount();
-  const { address } = useAccount();
-
-  useEffect(() => {
-    const accountAddress = selected?.address || address;
-
-    if (!accountAddress) {
-      stopPolling();
-      return;
-    }
-
-    startPolling({
-      ethAddress: address,
-      availAddress: selected?.address,
-    });
-
-    return () => {
-      stopPolling();
-    };
-  }, [selected?.address, address, startPolling, stopPolling]);
-
-  useEffect(() => {
-    if (pendingIndexedTransactions !== null) {
-      setIndexedTransactions(pendingIndexedTransactions);
-      setPendingIndexedTransactions(null);
-    }
-  }, [pendingIndexedTransactions, setIndexedTransactions, setPendingIndexedTransactions]);
+  const { data: allTransactions = [], isLoading, isError, refetch } = useTransactionsQuery();
 
   const pendingTransactions: Transaction[] = useMemo(() => {
-    return indexedTransactions
+    return allTransactions
       .filter((txn) => txn.status !== TransactionStatus.CLAIMED)
-      .sort(
-        (a, b) =>
-          new Date(b.sourceTimestamp).getTime() -
-          new Date(a.sourceTimestamp).getTime(),
-      );
-  }, [indexedTransactions]);
+      .sort((a, b) => b.sourceTimestamp - a.sourceTimestamp);
+  }, [allTransactions]);
 
   const completedTransactions: Transaction[] = useMemo(() => {
-    return indexedTransactions
+    return allTransactions
       .filter((txn) => txn.status === TransactionStatus.CLAIMED)
-      .sort(
-        (a, b) =>
-          new Date(b.sourceTimestamp).getTime() -
-          new Date(a.sourceTimestamp).getTime(),
-      );
-  }, [indexedTransactions]);
+      .sort((a, b) => b.sourceTimestamp - a.sourceTimestamp);
+  }, [allTransactions]);
 
-  const CHUNK_SIZE = 4;
+  const paginatedPendingTransactions = useMemo(
+    () => chunk(pendingTransactions, CHUNK_SIZE),
+    [pendingTransactions],
+  );
 
-  const paginatedPendingTransactions: Transaction[][] = useMemo(() => {
-    const chunks = [];
-    for (let i = 0; i < pendingTransactions.length; i += CHUNK_SIZE) {
-      chunks.push(pendingTransactions.slice(i, i + CHUNK_SIZE));
-    }
-    return chunks;
-  }, [pendingTransactions]);
-
-  const paginatedCompletedTransactions: Transaction[][] = useMemo(() => {
-    const chunks = [];
-    for (let i = 0; i < completedTransactions.length; i += CHUNK_SIZE) {
-      chunks.push(completedTransactions.slice(i, i + CHUNK_SIZE));
-    }
-    return chunks;
-  }, [completedTransactions]);
-
-  const addToLocalTransaction = async (transaction: Transaction) => {
-    try {
-      await markTransactionInitiated(transaction.sourceTransactionHash);
-    } catch (error) {
-      Logger.error(`Failed to mark transaction as initiated: ${error}`);
-    }
-  };
+  const paginatedCompletedTransactions = useMemo(
+    () => chunk(completedTransactions, CHUNK_SIZE),
+    [completedTransactions],
+  );
 
   return {
-    allTransactions: indexedTransactions,
+    allTransactions,
     pendingTransactions,
     completedTransactions,
     paginatedPendingTransactions,
     paginatedCompletedTransactions,
-    addToLocalTransaction,
+    isLoading,
+    isError,
+    refetch,
   };
 }

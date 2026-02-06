@@ -13,7 +13,6 @@ import { useEffect, useMemo, useState } from "react";
 import { CiCircleQuestion } from "react-icons/ci";
 import CompletedTransactions from "./completedtransactions";
 import NoTransactions from "./notransactions";
-import { useTransactionsStore } from "@/stores/transactions";
 import { PendingTransactions } from "./pendingtransactions";
 import TxnLoading from "./loading";
 import FetchError from "./fetcherror";
@@ -30,10 +29,10 @@ export default function TransactionSection() {
     completedTransactions,
     paginatedCompletedTransactions,
     paginatedPendingTransactions,
+    isLoading,
+    isError,
+    refetch,
   } = useTransactions();
-
-  const { transactionLoader, isInitialLoad, fetchError } =
-    useTransactionsStore();
 
   const { address: ethAddress } = useAccount();
   const { selected } = useAvailAccount();
@@ -67,7 +66,7 @@ export default function TransactionSection() {
     : currentPage === paginatedCompletedTransactions.length - 1;
 
   const renderContent = () => {
-    if (transactionLoader && isInitialLoad) {
+    if (isLoading) {
       return <TxnLoading />;
     }
 
@@ -76,11 +75,11 @@ export default function TransactionSection() {
     }
 
     if (
-      fetchError &&
+      isError &&
       pendingTransactions.length === 0 &&
       completedTransactions.length === 0
     ) {
-      return <FetchError />;
+      return <FetchError onRetry={refetch} />;
     }
 
     return (

@@ -116,7 +116,7 @@ export const fetchWormholeTransactions = async (isPolling = false, address: IAdd
           depositorAddress: tx.content.standarizedProperties.fromAddress,
           receiverAddress: tx.content.standarizedProperties.toAddress,
           sourceTransactionHash: tx.sourceChain.transaction.txHash,
-          sourceTimestamp: tx.sourceChain.timestamp,
+          sourceTimestamp: new Date(tx.sourceChain.timestamp).getTime(),
           destinationTransactionHash: `0x${tx.targetChain?.transaction.txHash}`,
           destinationTransactionTimestamp: tx.targetChain 
             ? new Date(tx.targetChain.timestamp).getTime() 

@@ -3,8 +3,10 @@ import { parseDateTimeToDay, parseDateTimeToMonthShort } from "@/utils/parsers";
 export default function ParsedDate({
     sourceTimestamp,
   }: {
-    sourceTimestamp: string;
+    sourceTimestamp: number;
   }) {
+    if (sourceTimestamp === 0) return null;
+
     return (
       <span className="flex md:flex-col flex-row items-center justify-center mr-4  ">
         <span className="text-white text-opacity-60 flex md:flex-col flex-row space-x-1 items-center justify-center ml-2">
