@@ -77,7 +77,7 @@ async function fetchBridgeApiTransactions(
         destinationTransactionIndex: tx.destinationTxIndex,
         timeRemaining: tx.claimEstimate,
         sourceTimestamp: tx.timestamp
-          ? new Date(tx.timestamp).getTime()
+          ? tx.timestamp * 1000
           : 0,
       };
     });

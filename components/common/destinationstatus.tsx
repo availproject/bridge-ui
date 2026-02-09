@@ -8,8 +8,6 @@ import {
 } from "@/components/ui/tooltip";
 import useTransactions from "@/hooks/useTransactions";
 import { useCommonStore } from "@/stores/common";
-import { SubmitClaim } from "../sections/transactions/submitclaim";
-import { RetryTxns } from "../sections/transactions/retrytxns";
 import { StatusBadge } from "../sections/transactions/statusbadge";
 import { Chain, TransactionStatus } from "@/types/common";
 import Link from "next/link";
@@ -55,7 +53,6 @@ const DestinationStatus = () => {
   const { pendingTransactions } = useTransactions();
   const { setTransactionStatus } = useTransactionsStore();
 
-  const [directLoading, setDirectLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
   const matchingTxn = pendingTransactions.find(
@@ -172,18 +169,10 @@ const DestinationStatus = () => {
     return <Loader2 className="h-5 w-5 text-white animate-spin" />;
   }
 
-  return matchingTxn.status === "READY_TO_CLAIM" ? (
-    <SubmitClaim
-      txn={matchingTxn}
-      isLoading={directLoading}
-      setIsLoading={setDirectLoading}
-    />
-  ) : matchingTxn.status === "RETRY" ? (
-    <RetryTxns
-      txn={matchingTxn}
-      isLoading={directLoading}
-      setIsLoading={setDirectLoading}
-    />
+  return matchingTxn.status === "READY_TO_CLAIM" || matchingTxn.status === "RETRY" ? (
+    <span className="text-white text-opacity-60 text-xs text-right">
+      Ready — claim in Pending tab
+    </span>
   ) : (
     <StatusBadge txnStatus={matchingTxn.status} />
   );

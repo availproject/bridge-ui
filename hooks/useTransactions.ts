@@ -28,9 +28,14 @@ export default function useTransactions() {
     }
     const byTime = (a: Transaction, b: Transaction) =>
       b.sourceTimestamp - a.sourceTimestamp;
+    const byTimeWithFallback = (a: Transaction, b: Transaction) => {
+      const aTime = a.sourceTimestamp || a.destinationTransactionTimestamp || 0;
+      const bTime = b.sourceTimestamp || b.destinationTransactionTimestamp || 0;
+      return bTime - aTime;
+    };
     return {
       pendingTransactions: pending.toSorted(byTime),
-      completedTransactions: completed.toSorted(byTime),
+      completedTransactions: completed.toSorted(byTimeWithFallback),
     };
   }, [allTransactions]);
 

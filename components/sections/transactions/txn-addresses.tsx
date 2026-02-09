@@ -125,6 +125,15 @@ export default function TxnAddresses({ txn }: { txn: Transaction }) {
               Transaction Details
             </span>
           </p>
+          {txn.sourceTimestamp > 0 && (
+            <p className="text-white text-opacity-50 text-xs mt-1">
+              Initiated at{" "}
+              {new Date(txn.sourceTimestamp).toLocaleString([], {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}
+            </p>
+          )}
           {txn.status === TransactionStatus.RETRY && (
             <div className="mt-3 mb-3 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-md">
               <p className="text-white text-opacity-80 font-medium text-sm">
