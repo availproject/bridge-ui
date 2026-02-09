@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import React, { useEffect } from "react";
+import { useReviewTxnQuery } from "@/hooks/queries/useReviewTxnQuery";
 import { LoadingButton } from "@/components/ui/loadingbutton";
 import useZkBridge from "@/hooks/useZkBridge";
 import useSubmitTxnState from "@/hooks/common/useSubmitTxnState";
@@ -17,8 +18,6 @@ import { useAvailAccount } from "@/stores/availwallet";
 import { useAccount } from "wagmi";
 import useLiquidityBridge from "@/hooks/useLiquidityBridge";
 import { motion, AnimatePresence } from "framer-motion";
-import { ReviewResponse, reviewTxn } from "@/services/bridgeapi";
-import Loader from "@/components/common/loader";
 import { parseAvailAmount } from "@/utils/parsers";
 import { Clock, InfoIcon, AlertTriangle } from "lucide-react";
 import { isLiquidityBridge, isWormholeBridge } from "./utils";
@@ -69,26 +68,20 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
   const dollarAmount = useTokenPriceQuery().data ?? 0;
   const { setTransactionStatus } = useTransactionsStore();
   const queryClient = useQueryClient();
-  const [details, setDetails] = useState<ReviewResponse | null>(null);
+  const chainPair = `${fromChain}-${toChain}`;
+  const isLiquidity = isLiquidityBridge(chainPair);
+  const isWormhole = isWormholeBridge(chainPair);
+  const { data: details = null, isLoading: reviewLoading } = useReviewTxnQuery(
+    fromAmount,
+    fromChain,
+    reviewOpen && isLiquidity,
+  );
 
   useEffect(() => {
-    (async () => {
-      try {
-        const _details = await reviewTxn(
-          new BigNumber(fromAmount)
-            .multipliedBy(new BigNumber(10).pow(18))
-            .toFixed(0),
-          fromChain,
-        );
-        if (_details.isOk()) {
-          setDetails(_details.value);
-          setAllowLiquidityBridgeTxn(_details.value.allowed);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    })();
-  }, [fromAmount, reviewOpen, fromChain, setAllowLiquidityBridgeTxn]);
+    if (details) {
+      setAllowLiquidityBridgeTxn(details.allowed);
+    }
+  }, [details, setAllowLiquidityBridgeTxn]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +90,6 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
 
     try {
       let bridgeResult: SuccessDialog["details"] | null = null;
-      const chainPair = `${fromChain}-${toChain}` as const;
 
       const fromAmountAtomic = new BigNumber(fromAmount)
         .multipliedBy(new BigNumber(10).pow(18))
@@ -261,7 +253,7 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
                   </svg>
                 </button>
               </div>
-              {isLiquidityBridge(`${fromChain}-${toChain}`) && (
+              {isLiquidity && (
                 <Badge
                   variant="avail"
                   className="flex items-center gap-1 w-fit -ml-1"
@@ -276,104 +268,116 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
                   </span>
                 </Badge>
               )}
-              {details ? (
-                <>
-                  <div className="space-y-1">
-                    {isLiquidityBridge(`${fromChain}-${toChain}`) && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-400">
-                          Destination Gas Fee ($)
-                        </span>
-                        <span className="text-white">
-                          {Number(
-                            parseAvailAmount(fromBridgeHex(details.fee), 18, 6),
-                          ) < 0.001
-                            ? "< 0.001 AVAIL"
-                            : `${parseAvailAmount(fromBridgeHex(details.fee), 18, 6)} AVAIL ($${(dollarAmount * Number(parseAvailAmount(fromBridgeHex(details.fee), 18, 4))).toFixed(3)})`}
-                        </span>
-                      </div>
-                    )}
-
+              {isLiquidity && !details ? (
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Destination Gas Fee ($)</span>
+                    <span className="h-4 w-24 bg-white/10 rounded animate-pulse" />
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Estimated Time</span>
+                    <span className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Transaction Type</span>
+                    <span className="h-4 w-12 bg-white/10 rounded animate-pulse" />
+                  </div>
+                  <div className="flex justify-between items-center pt-4">
+                    <span className="text-gray-400">User will receive</span>
+                    <span className="h-8 w-32 bg-white/10 rounded animate-pulse" />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {isLiquidity && details && (
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-400">Estimated Time</span>
-                      <div className="flex items-center space-x-2 pb-1">
-                        <Clock className="h-4 w-4 text-white" />
-                        <span className="text-white">
-                          {isWormholeBridge(`${fromChain}-${toChain}`)
-                            ? "~20 minutes"
-                            : isLiquidityBridge(`${fromChain}-${toChain}`)
-                              ? formatEstimatedTime(details.estimated_time_secs)
-                              : "~2 hours"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-400 relative">
-                        Transaction Type
-                        <HoverCard>
-                          <HoverCardTrigger>
-                            <InfoIcon className="w-3 h-3 cursor-help absolute top-0 -right-2 transform translate-x-1/2 -translate-y-1/2" />
-                          </HoverCardTrigger>
-                          <HoverCardContent
-                            align="end"
-                            className="w-80 bg-[#141414] text-sm font-ppmori border-0 text-white"
-                          >
-                            Manual transactions require a claim on the
-                            destination chain, while auto transactions do not.
-                          </HoverCardContent>
-                        </HoverCard>
+                      <span className="text-gray-400">
+                        Destination Gas Fee ($)
                       </span>
-                      <Badge variant={"avail"} className="text-white">
-                        {isLiquidityBridge(`${fromChain}-${toChain}`) ||
-                        isWormholeBridge(`${fromChain}-${toChain}`)
-                          ? "Auto"
-                          : "Manual"}
-                      </Badge>
-                    </div>
-
-                    <div className="flex justify-between items-center pt-4">
-                      <span className="text-gray-400 flex flex-row space-x-1">
-                        <span>User will receive</span>
-                        <HoverCard>
-                          <HoverCardTrigger>
-                            <InfoIcon className="w-3 h-3 cursor-help" />
-                          </HoverCardTrigger>
-                          <HoverCardContent
-                            align="end"
-                            className="w-80 bg-[#141414] text-sm font-ppmori border-0 text-white"
-                          >
-                            The final amount might differ slightly based on
-                            destination gas fees.
-                          </HoverCardContent>
-                        </HoverCard>
+                      <span className="text-white">
+                        {Number(
+                          parseAvailAmount(fromBridgeHex(details.fee), 18, 6),
+                        ) < 0.001
+                          ? "< 0.001 AVAIL"
+                          : `${parseAvailAmount(fromBridgeHex(details.fee), 18, 6)} AVAIL ($${(dollarAmount * Number(parseAvailAmount(fromBridgeHex(details.fee), 18, 4))).toFixed(3)})`}
                       </span>
-                      <div className="text-right">
-                        <span className="text-2xl font-semibold text-white">
-                          {isLiquidityBridge(`${fromChain}-${toChain}`)
-                            ? parseAvailAmount(
-                                new BigNumber(fromAmount)
-                                  .multipliedBy(10 ** 18)
-                                  .minus(fromBridgeHex(details.fee))
-                                  .toString(),
-                                18,
-                                6,
-                              )
-                            : parseAvailAmount(
-                                new BigNumber(fromAmount)
-                                  .multipliedBy(10 ** 18)
-                                  .toString(),
-                                18,
-                                6,
-                              )}
-                        </span>
-                        <span className="text-gray-400 ml-2">AVAIL</span>
-                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Estimated Time</span>
+                    <div className="flex items-center space-x-2 pb-1">
+                      <Clock className="h-4 w-4 text-white" />
+                      <span className="text-white">
+                        {isWormhole
+                          ? "~20 minutes"
+                          : isLiquidity && details
+                            ? formatEstimatedTime(details.estimated_time_secs)
+                            : "~2 hours"}
+                      </span>
                     </div>
                   </div>
-                </>
-              ) : (
-                <Loader />
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 relative">
+                      Transaction Type
+                      <HoverCard>
+                        <HoverCardTrigger>
+                          <InfoIcon className="w-3 h-3 cursor-help absolute top-0 -right-2 transform translate-x-1/2 -translate-y-1/2" />
+                        </HoverCardTrigger>
+                        <HoverCardContent
+                          align="end"
+                          className="w-80 bg-[#141414] text-sm font-ppmori border-0 text-white"
+                        >
+                          Manual transactions require a claim on the
+                          destination chain, while auto transactions do not.
+                        </HoverCardContent>
+                      </HoverCard>
+                    </span>
+                    <Badge variant={"avail"} className="text-white">
+                      {isLiquidity || isWormhole ? "Auto" : "Manual"}
+                    </Badge>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-4">
+                    <span className="text-gray-400 flex flex-row space-x-1">
+                      <span>User will receive</span>
+                      <HoverCard>
+                        <HoverCardTrigger>
+                          <InfoIcon className="w-3 h-3 cursor-help" />
+                        </HoverCardTrigger>
+                        <HoverCardContent
+                          align="end"
+                          className="w-80 bg-[#141414] text-sm font-ppmori border-0 text-white"
+                        >
+                          The final amount might differ slightly based on
+                          destination gas fees.
+                        </HoverCardContent>
+                      </HoverCard>
+                    </span>
+                    <div className="text-right">
+                      <span className="text-2xl font-semibold text-white">
+                        {isLiquidity && details
+                          ? parseAvailAmount(
+                              new BigNumber(fromAmount)
+                                .multipliedBy(10 ** 18)
+                                .minus(fromBridgeHex(details.fee))
+                                .toString(),
+                              18,
+                              6,
+                            )
+                          : parseAvailAmount(
+                              new BigNumber(fromAmount)
+                                .multipliedBy(10 ** 18)
+                                .toString(),
+                              18,
+                              6,
+                            )}
+                      </span>
+                      <span className="text-gray-400 ml-2">AVAIL</span>
+                    </div>
+                  </div>
+                </div>
               )}
               <LoadingButton
                 variant="primary"

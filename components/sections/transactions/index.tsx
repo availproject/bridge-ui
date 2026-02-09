@@ -9,7 +9,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CiCircleQuestion } from "react-icons/ci";
 import CompletedTransactions from "./completedtransactions";
 import NoTransactions from "./notransactions";
@@ -38,13 +38,8 @@ export default function TransactionSection() {
   const { selected } = useAvailAccount();
   const availAddress = selected?.address;
 
-  const [showPagination, setShowPagination] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pendingTab, setPendingTab] = useState<boolean>(true);
-
-  useEffect(() => {
-    setCurrentPage(0);
-  }, [pendingTab]);
 
   const shouldShowPagination = useMemo(() => {
     if (pendingTab) {
@@ -56,10 +51,6 @@ export default function TransactionSection() {
     paginatedPendingTransactions.length,
     pendingTab,
   ]);
-
-  useEffect(() => {
-    setShowPagination(shouldShowPagination);
-  }, [shouldShowPagination]);
 
   const isEndPage = pendingTab
     ? currentPage === paginatedPendingTransactions.length - 1
@@ -119,13 +110,13 @@ export default function TransactionSection() {
       <>
         <Tabs defaultValue="pending" className="flex flex-col h-full">
           <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2">
-            <TabsTrigger value="pending" onClick={() => setPendingTab(true)}>
+            <TabsTrigger value="pending" onClick={() => { setPendingTab(true); setCurrentPage(0); }}>
               Pending
             </TabsTrigger>
             <TabsTrigger
               value="history"
               className="flex flex-row items-center justify-center space-x-1"
-              onClick={() => setPendingTab(false)}
+              onClick={() => { setPendingTab(false); setCurrentPage(0); }}
             >
               <p>History</p>
               <FaHistory />
@@ -184,7 +175,7 @@ export default function TransactionSection() {
             </HoverCard>
           </span>
           <button
-            disabled={currentPage === 0 || !showPagination}
+            disabled={currentPage === 0 || !shouldShowPagination}
             onClick={() => setCurrentPage((prev) => prev - 1)}
             className={`rounded-lg bg-[#484C5D] ${
               currentPage === 0
@@ -195,7 +186,7 @@ export default function TransactionSection() {
             <ArrowLeft />
           </button>
           <button
-            disabled={isEndPage || !showPagination}
+            disabled={isEndPage || !shouldShowPagination}
             onClick={() => setCurrentPage((prev) => prev + 1)}
             className={`rounded-lg bg-[#484C5D] ${
               isEndPage

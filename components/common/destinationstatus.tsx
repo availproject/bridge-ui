@@ -118,11 +118,11 @@ const DestinationStatus = () => {
                     {liquidityStatus === "Error" ? (
                       <InfoIcon className="h-5 w-5 text-red-500" />
                     ) : (
-                      liquidityTime && (
+                      liquidityTime != null && liquidityTime > 0 ? (
                         <p className="text-white text-opacity-70 text-md">
                           {formatEstimatedTime(liquidityTime)}
                         </p>
-                      )
+                      ) : null
                     )}
                     <StatusBadge
                       txnStatus={getLiquidityBridgeStatus(liquidityStatus)}

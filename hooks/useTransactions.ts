@@ -16,16 +16,22 @@ function chunk<T>(arr: T[], size: number): T[][] {
 export default function useTransactions() {
   const { data: allTransactions = [], isLoading, isError, refetch } = useTransactionsQuery();
 
-  const pendingTransactions: Transaction[] = useMemo(() => {
-    return allTransactions
-      .filter((txn) => txn.status !== TransactionStatus.CLAIMED)
-      .sort((a, b) => b.sourceTimestamp - a.sourceTimestamp);
-  }, [allTransactions]);
-
-  const completedTransactions: Transaction[] = useMemo(() => {
-    return allTransactions
-      .filter((txn) => txn.status === TransactionStatus.CLAIMED)
-      .sort((a, b) => b.sourceTimestamp - a.sourceTimestamp);
+  const { pendingTransactions, completedTransactions } = useMemo(() => {
+    const pending: Transaction[] = [];
+    const completed: Transaction[] = [];
+    for (const txn of allTransactions) {
+      if (txn.status === TransactionStatus.CLAIMED) {
+        completed.push(txn);
+      } else {
+        pending.push(txn);
+      }
+    }
+    const byTime = (a: Transaction, b: Transaction) =>
+      b.sourceTimestamp - a.sourceTimestamp;
+    return {
+      pendingTransactions: pending.toSorted(byTime),
+      completedTransactions: completed.toSorted(byTime),
+    };
   }, [allTransactions]);
 
   const paginatedPendingTransactions = useMemo(
