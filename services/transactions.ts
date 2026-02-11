@@ -32,7 +32,7 @@ async function fetchBridgeApiTransactions(
       return [];
     }
 
-    const response = await bridgeApiInstance.get(`/transactions`, {
+    const response = await bridgeApiInstance.get(`/v1/transactions`, {
       params,
     });
 

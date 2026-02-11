@@ -50,7 +50,7 @@ export const getMerkleProof = async (blockhash: string, index: number) => {
 export async function fetchAvlHead(api: ApiPromise): Promise<{
   data: LatestBlockInfo["avlHead"];
 }> {
-  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/avl/head`);
+  const response = await fetch(`${appConfig.bridgeApiBaseUrl}/v1/avl/head`);
   const avlHead: LatestBlockInfo["avlHead"] = await response.json();
   const blockHash = await api.rpc.chain.getBlockHash(avlHead.data.end);
   const block = await api.rpc.chain.getBlock(blockHash);
