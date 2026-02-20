@@ -1,8 +1,9 @@
 import { ChainLabel } from "@/components/ui/chainLabel";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Transaction } from "@/types/transaction";
+import { TransactionStatus } from "@/types/common";
 import { parseAvailAmount } from "@/utils/parsers";
-import { MoveRight, ArrowUpRight, Clock, AlertTriangle } from "lucide-react";
+import { MoveRight, ArrowUpRight } from "lucide-react";
 import ParsedDate from "./parseddate";
 import TxnAddresses from "./txn-addresses";
 import { useState } from "react";
@@ -18,6 +19,7 @@ export const PendingTransactions = ({
   pendingTransactions: Transaction[];
 }) => {
   const [loadingTxns, setLoadingTxns] = useState(new Set());
+  const [claimedTxns, setClaimedTxns] = useState(new Set<string>());
 
   const setTxnLoading = (txnHash: string, isLoading: boolean) => {
     setLoadingTxns((prev) => {
@@ -29,6 +31,10 @@ export const PendingTransactions = ({
       }
       return newSet;
     });
+  };
+
+  const onClaimSuccess = (txnHash: string) => {
+    setClaimedTxns((prev) => new Set(prev).add(txnHash));
   };
   return (
     <Table className="flex h-[85%]">
@@ -78,11 +84,14 @@ export const PendingTransactions = ({
                 <TableCell className="flex text-right items-center">
                   <div className="flex flex-col space-y-2 justify-between">
                     <span>
-                      {txn.status === "READY_TO_CLAIM" ? (
+                      {claimedTxns.has(txn.sourceTransactionHash) ? (
+                        <StatusBadge txnStatus={TransactionStatus.CLAIM_PENDING} />
+                      ) : txn.status === "READY_TO_CLAIM" ? (
                         <SubmitClaim
                           txn={txn}
                           loadingTxns={loadingTxns}
                           setTxnLoading={setTxnLoading}
+                          onClaimSuccess={onClaimSuccess}
                         />
                       ) : txn.status === "RETRY" ? (
                         <RetryTxns

@@ -14,13 +14,20 @@ export default function ToField() {
   const { selected } = useAvailAccount();
 
   useEffect(() => {
-    if (toChain === Chain.AVAIL && selected) {
-      setToAddress(selected.address);
-    }
-    if ((toChain === Chain.BASE || toChain === Chain.ETH) && ethAddress) {
-      setToAddress(ethAddress);
-    }
-  }, [connected, selected, toChain]);
+    const getAddress = () => {
+      if (toChain === Chain.AVAIL) {
+        return selected ? selected.address : "";
+      }
+
+      if (toChain === Chain.BASE || toChain === Chain.ETH) {
+        return connected && ethAddress ? ethAddress : "";
+      }
+
+      return "";
+    };
+
+    setToAddress(getAddress());
+  }, [connected, selected, toChain, ethAddress]);
 
   return (
     <div>
@@ -62,10 +69,10 @@ export default function ToField() {
                     ? ethAddress.slice(0, 10) + "..." + ethAddress.slice(-4)
                     : "Connect Wallet or add address"
                   : selected?.address
-                  ? selected.address.slice(0, 10) +
-                    "..." +
-                    selected.address.slice(-4)
-                  : "Connect Wallet or add address"
+                    ? selected.address.slice(0, 10) +
+                      "..." +
+                      selected.address.slice(-4)
+                    : "Connect Wallet or add address"
               }
               value={
                 toAddress

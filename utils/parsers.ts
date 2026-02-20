@@ -20,13 +20,13 @@ export const parseAvailAmount = (
     .toFixed(points ?? decimal_points);
 };
 
-export const parseDateTimeToMonthShort = (dateTime: string) => {
+export const parseDateTimeToMonthShort = (dateTime: string | number) => {
   return new Date(dateTime)
     .toLocaleDateString("en-GB", { month: "short" })
     .toUpperCase();
 };
 
-export const parseDateTimeToDay = (dateTime: string) => {
+export const parseDateTimeToDay = (dateTime: string | number) => {
   return new Date(dateTime)
     .toLocaleDateString("en-GB", { day: "numeric" })
     .toUpperCase();

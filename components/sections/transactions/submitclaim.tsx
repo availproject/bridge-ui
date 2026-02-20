@@ -6,6 +6,7 @@ import { Chain } from "@/types/common";
 import { Transaction } from "@/types/transaction";
 import { Logger } from "@/utils/logger";
 import { showFailedMessage } from "@/utils/toasts";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface SubmitClaimProps {
   txn: Transaction;
@@ -13,6 +14,7 @@ interface SubmitClaimProps {
   setTxnLoading?: (txnHash: `0x${string}`, loading: boolean) => void;
   isLoading?: boolean;
   setIsLoading?: (loading: boolean) => void;
+  onClaimSuccess?: (txnHash: string) => void;
 }
 
 export const SubmitClaim = ({
@@ -21,6 +23,7 @@ export const SubmitClaim = ({
   setTxnLoading,
   isLoading: directLoading,
   setIsLoading: setDirectLoading,
+  onClaimSuccess,
 }: SubmitClaimProps) => {
   const { initClaimAvailToEth, initClaimEthtoAvail } = useClaim();
   const {
@@ -28,6 +31,7 @@ export const SubmitClaim = ({
     errorDialog: { onOpenChange: setErrorOpenDialog, setError },
   } = useCommonStore();
   const { setInProcess } = useTransactionsStore();
+  const queryClient = useQueryClient();
 
   const isLoading =
     directLoading ?? loadingTxns?.has(txn.sourceTransactionHash) ?? false;
@@ -43,7 +47,6 @@ export const SubmitClaim = ({
     chainFrom: Chain,
     blockhash: `0x${string}`,
     txnHash: `0x${string}`,
-    sourceTimestamp: string,
     atomicAmount: string,
     sourceTransactionIndex?: number,
     executeParams?: {
@@ -53,7 +56,7 @@ export const SubmitClaim = ({
       to: `${string}`;
       originDomain: number;
       destinationDomain: number;
-    }
+    },
   ) => {
     updateLoadingState(txnHash, true);
     setClaimDialog(true);
@@ -70,7 +73,6 @@ export const SubmitClaim = ({
           blockhash,
           sourceTransactionIndex,
           sourceTransactionHash: txnHash,
-          sourceTimestamp,
           atomicAmount,
           senderAddress: executeParams.from,
           receiverAddress: executeParams.to,
@@ -81,12 +83,12 @@ export const SubmitClaim = ({
             chain: Chain.ETH,
             hash: successBlockhash,
           });
+          onClaimSuccess?.(txnHash);
           setOpenDialog(true);
         }
       } else if (chainFrom === Chain.ETH && blockhash && executeParams) {
         const successBlockhash = await initClaimEthtoAvail({
           sourceTransactionHash: txnHash,
-          sourceTimestamp,
           atomicAmount,
           executeParams,
         });
@@ -96,7 +98,7 @@ export const SubmitClaim = ({
             chain: Chain.AVAIL,
             hash: successBlockhash.txHash,
           });
-
+          onClaimSuccess?.(txnHash);
           setOpenDialog(true);
         }
       } else {
@@ -109,6 +111,7 @@ export const SubmitClaim = ({
     } finally {
       updateLoadingState(txnHash, false);
       setInProcess(false);
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
     }
   };
 
@@ -124,7 +127,6 @@ export const SubmitClaim = ({
           txn.sourceChain,
           txn.sourceBlockHash as `0x${string}`,
           txn.sourceTransactionHash,
-          txn.sourceTimestamp,
           txn.amount,
           txn.sourceTransactionIndex,
           {
@@ -134,7 +136,7 @@ export const SubmitClaim = ({
             to: txn.receiverAddress,
             originDomain: 2,
             destinationDomain: 1,
-          }
+          },
         );
       }}
     >

@@ -9,11 +9,10 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useMemo, useState } from "react";
 import { CiCircleQuestion } from "react-icons/ci";
 import CompletedTransactions from "./completedtransactions";
 import NoTransactions from "./notransactions";
-import { useTransactionsStore } from "@/stores/transactions";
 import { PendingTransactions } from "./pendingtransactions";
 import TxnLoading from "./loading";
 import FetchError from "./fetcherror";
@@ -30,85 +29,17 @@ export default function TransactionSection() {
     completedTransactions,
     paginatedCompletedTransactions,
     paginatedPendingTransactions,
+    isLoading,
+    isError,
+    refetch,
   } = useTransactions();
-
-  const {
-    transactionLoader,
-    fetchAllTransactions,
-    setTransactionLoader,
-    isInitialLoad,
-    fetchError,
-  } = useTransactionsStore();
 
   const { address: ethAddress } = useAccount();
   const { selected } = useAvailAccount();
   const availAddress = selected?.address;
 
-  const [showPagination, setShowPagination] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pendingTab, setPendingTab] = useState<boolean>(true);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const hasInitialFetchedRef = useRef(false);
-
-  // Initial fetch on account connection
-  useEffect(() => {
-    if (!ethAddress && !availAddress) {
-      hasInitialFetchedRef.current = false;
-      return;
-    }
-
-    // Perform initial fetch
-    if (!hasInitialFetchedRef.current) {
-      hasInitialFetchedRef.current = true;
-      fetchAllTransactions({
-        ethAddress,
-        availAddress,
-        setTransactionLoader,
-        isInitialFetch: true,
-      });
-    }
-  }, [ethAddress, availAddress, fetchAllTransactions, setTransactionLoader]);
-
-  useEffect(() => {
-    if (!ethAddress && !availAddress) {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-      return;
-    }
-
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-
-    intervalRef.current = setInterval(() => {
-      if (!isInitialLoad) {
-        fetchAllTransactions({
-          ethAddress,
-          availAddress,
-          setTransactionLoader,
-          isInitialFetch: false,
-        });
-      }
-    }, 10000);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [
-    ethAddress,
-    availAddress,
-    isInitialLoad,
-    fetchAllTransactions,
-    setTransactionLoader,
-  ]);
-
-  useEffect(() => {
-    setCurrentPage(0);
-  }, [pendingTab]);
 
   const shouldShowPagination = useMemo(() => {
     if (pendingTab) {
@@ -121,34 +52,25 @@ export default function TransactionSection() {
     pendingTab,
   ]);
 
-  useEffect(() => {
-    setShowPagination(shouldShowPagination);
-  }, [shouldShowPagination]);
-
   const isEndPage = pendingTab
     ? currentPage === paginatedPendingTransactions.length - 1
     : currentPage === paginatedCompletedTransactions.length - 1;
 
-  const handleRetry = () => {
-    fetchAllTransactions({
-      ethAddress,
-      availAddress,
-      setTransactionLoader,
-      isInitialFetch: true,
-    });
-  };
-
   const renderContent = () => {
-    if (transactionLoader && isInitialLoad) {
+    if (isLoading) {
       return <TxnLoading />;
-    }
-
-    if (fetchError) {
-      return <FetchError onRetry={handleRetry} />;
     }
 
     if (!ethAddress && !availAddress) {
       return <NoTransactions />;
+    }
+
+    if (
+      isError &&
+      pendingTransactions.length === 0 &&
+      completedTransactions.length === 0
+    ) {
+      return <FetchError onRetry={refetch} />;
     }
 
     return (
@@ -188,13 +110,13 @@ export default function TransactionSection() {
       <>
         <Tabs defaultValue="pending" className="flex flex-col h-full">
           <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2">
-            <TabsTrigger value="pending" onClick={() => setPendingTab(true)}>
+            <TabsTrigger value="pending" onClick={() => { setPendingTab(true); setCurrentPage(0); }}>
               Pending
             </TabsTrigger>
             <TabsTrigger
               value="history"
               className="flex flex-row items-center justify-center space-x-1"
-              onClick={() => setPendingTab(false)}
+              onClick={() => { setPendingTab(false); setCurrentPage(0); }}
             >
               <p>History</p>
               <FaHistory />
@@ -253,7 +175,7 @@ export default function TransactionSection() {
             </HoverCard>
           </span>
           <button
-            disabled={currentPage === 0 || !showPagination}
+            disabled={currentPage === 0 || !shouldShowPagination}
             onClick={() => setCurrentPage((prev) => prev - 1)}
             className={`rounded-lg bg-[#484C5D] ${
               currentPage === 0
@@ -264,7 +186,7 @@ export default function TransactionSection() {
             <ArrowLeft />
           </button>
           <button
-            disabled={isEndPage || !showPagination}
+            disabled={isEndPage || !shouldShowPagination}
             onClick={() => setCurrentPage((prev) => prev + 1)}
             className={`rounded-lg bg-[#484C5D] ${
               isEndPage

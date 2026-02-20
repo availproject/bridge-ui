@@ -5,6 +5,7 @@ This is the official UI for Avail's bridge from AVAIL -> ETH and vice versa. You
 
 ## Run it Locally
 
+
 ```bash
 cp .env.example .env.local
 

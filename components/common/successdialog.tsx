@@ -232,7 +232,7 @@ export const SuccessDialog = () => {
                   variant="primary"
                   className="w-full !border-0"
                 >
-                  View Source Txn on Explorer{" "}
+                  View transaction on explorer{" "}
                   <ArrowUpRight className="h-3 w-6" />
                 </Button>
               </Link>
