@@ -145,6 +145,10 @@ export default function TransactionSection() {
                     {">"} We fetch transaction data by connected wallet, make
                     sure you&apos;re connected to the right accounts.
                   </p>
+                  <p className="pb-1">
+                    {">"} Manual claim transactions may take a few minutes to
+                    appear while they are being indexed.
+                  </p>
                   <span className="">
                     <span>
                       {">"} All third party wormhole transactions might take a
