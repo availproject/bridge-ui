@@ -27,11 +27,21 @@ export const SuccessDialog = () => {
   const { successDialog } = useCommonStore();
   const { isOpen, onOpenChange, details, claimDialog } = successDialog;
   const { transactionStatus } = useTransactionsStore();
-  const { status, timeEstimate, isLoading } = useFinalityTracker(
+  const { status, timeEstimate, isLoading, error: trackerError } = useFinalityTracker(
     details?.hash as IAddress,
     details?.chain,
     details?.isWormhole,
   );
+
+  const isAlreadyBridged = trackerError?.message?.toLowerCase().includes("alreadybridged") ||
+    trackerError?.message?.toLowerCase().includes("execution reverted");
+
+  const getErrorMessage = () => {
+    if (claimDialog && isAlreadyBridged) {
+      return "This transaction was already claimed. Your funds should already be in your destination wallet.";
+    }
+    return trackerError?.message || "Something went wrong while tracking this transaction. Check the explorer for the latest status.";
+  };
 
   const getMessage = () =>
     claimDialog ? (
@@ -40,6 +50,9 @@ export const SuccessDialog = () => {
         successfully submitted to the destination chain. Your funds will be
         deposited to the destination account, generally within{" "}
         <span className="text-white italics">~2-5 minutes.</span>
+        <p>
+          The transaction will move to history once it&apos;s fully confirmed.
+        </p>
       </>
     ) : (
       <>
@@ -60,17 +73,19 @@ export const SuccessDialog = () => {
             Your transaction shall be picked up in the next few minutes and will
             be fulfilled.
             <p>
-              You can close this tab in the meantime, or initiate another
-              transfer.
+              You can close this dialog and initiate another transfer. It may
+              take a few minutes for this transaction to appear in your pending
+              list.
             </p>
           </>
         ) : details?.isWormhole ? (
           <>
-            Your funds should automically reach the destination chain in{" "}
+            Your funds should automatically reach the destination chain in{" "}
             <span className="text-white italics text-md">~18-20 minutes.</span>{" "}
             <p>
-              You can close this tab in the meantime, or initiate another
-              transfer.
+              You can close this dialog and initiate another transfer. It may
+              take a few minutes for this transaction to appear in your pending
+              list.
             </p>
           </>
         ) : (
@@ -80,8 +95,9 @@ export const SuccessDialog = () => {
               ~2 hours to claim on destination chain.
             </span>
             <p>
-              You can close this tab in the meantime, or initiate another
-              transfer.
+              You can close this dialog and initiate another transfer. It may
+              take a few minutes for this transaction to appear in your pending
+              list.
             </p>
             <Badge className="bg-[#20242C] -ml-2">
               {" "}
@@ -124,6 +140,13 @@ export const SuccessDialog = () => {
                 </p>
               </div>
             )
+          ) : status === "error" ? (
+            <div className="flex flex-row items-center justify-center">
+              <AlertCircle className="mr-4 h-8 w-8 text-red-500" />
+              <p className="font-thicccboisemibold text-white text-opacity-70 text-sm">
+                {claimDialog && isAlreadyBridged ? "Claim already processed" : "Transaction failed"}
+              </p>
+            </div>
           ) : isLoading ? (
             <div className="flex flex-row items-center justify-center">
               <Loader />{" "}
@@ -140,13 +163,13 @@ export const SuccessDialog = () => {
         <div className="flex flex-col items-center justify-center !space-x-3 pt-4 px-1.5">
           <div className="flex flex-col space-y-2">
             <div className="font-ppmori text-white text-sm text-opacity-60 space-y-3 -mt-1 ">
-              {getMessage()}
+              {status === "error" ? getErrorMessage() : getMessage()}
             </div>
           </div>
         </div>
 
         {/* Source Chain Details / STEPS */}
-        <div className="flex flex-col space-y-4 py-3">
+        {status !== "error" && <div className="flex flex-col space-y-4 py-3">
           <div className="space-y-1">
             {!claimDialog && (
               <h1 className="font-thicccboisemibold text-white text-lg pb-1">
@@ -182,7 +205,7 @@ export const SuccessDialog = () => {
               );
             })}
           </div>
-        </div>
+        </div>}
 
         {/* Destination Chain Details */}
         {!details?.isWormhole && !claimDialog && (

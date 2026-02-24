@@ -14,7 +14,6 @@ interface SubmitClaimProps {
   setTxnLoading?: (txnHash: `0x${string}`, loading: boolean) => void;
   isLoading?: boolean;
   setIsLoading?: (loading: boolean) => void;
-  onClaimSuccess?: (txnHash: string) => void;
 }
 
 export const SubmitClaim = ({
@@ -23,14 +22,13 @@ export const SubmitClaim = ({
   setTxnLoading,
   isLoading: directLoading,
   setIsLoading: setDirectLoading,
-  onClaimSuccess,
 }: SubmitClaimProps) => {
   const { initClaimAvailToEth, initClaimEthtoAvail } = useClaim();
   const {
     successDialog: { onOpenChange: setOpenDialog, setDetails, setClaimDialog },
     errorDialog: { onOpenChange: setErrorOpenDialog, setError },
   } = useCommonStore();
-  const { setInProcess } = useTransactionsStore();
+  const { setInProcess, addClaimedHash } = useTransactionsStore();
   const queryClient = useQueryClient();
 
   const isLoading =
@@ -79,11 +77,11 @@ export const SubmitClaim = ({
         });
 
         if (successBlockhash) {
+          addClaimedHash(txnHash);
           setDetails({
             chain: Chain.ETH,
             hash: successBlockhash,
           });
-          onClaimSuccess?.(txnHash);
           setOpenDialog(true);
         }
       } else if (chainFrom === Chain.ETH && blockhash && executeParams) {
@@ -94,11 +92,11 @@ export const SubmitClaim = ({
         });
 
         if (successBlockhash.txHash) {
+          addClaimedHash(txnHash);
           setDetails({
             chain: Chain.AVAIL,
             hash: successBlockhash.txHash,
           });
-          onClaimSuccess?.(txnHash);
           setOpenDialog(true);
         }
       } else {

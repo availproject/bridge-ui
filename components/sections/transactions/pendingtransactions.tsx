@@ -12,6 +12,7 @@ import { RetryTxns } from "./retrytxns";
 import { getHref } from "@/utils/common";
 import { StatusBadge } from "./statusbadge";
 import { StatusTimeComponent } from "./statustime";
+import { useTransactionsStore } from "@/stores/transactions";
 
 export const PendingTransactions = ({
   pendingTransactions,
@@ -19,7 +20,7 @@ export const PendingTransactions = ({
   pendingTransactions: Transaction[];
 }) => {
   const [loadingTxns, setLoadingTxns] = useState(new Set());
-  const [claimedTxns, setClaimedTxns] = useState(new Set<string>());
+  const claimedTxns = useTransactionsStore((s) => s.claimedHashes);
 
   const setTxnLoading = (txnHash: string, isLoading: boolean) => {
     setLoadingTxns((prev) => {
@@ -31,10 +32,6 @@ export const PendingTransactions = ({
       }
       return newSet;
     });
-  };
-
-  const onClaimSuccess = (txnHash: string) => {
-    setClaimedTxns((prev) => new Set(prev).add(txnHash));
   };
   return (
     <Table className="flex h-[85%]">
@@ -91,7 +88,6 @@ export const PendingTransactions = ({
                           txn={txn}
                           loadingTxns={loadingTxns}
                           setTxnLoading={setTxnLoading}
-                          onClaimSuccess={onClaimSuccess}
                         />
                       ) : txn.status === "RETRY" ? (
                         <RetryTxns

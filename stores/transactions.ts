@@ -8,6 +8,9 @@ interface TransactionsStore {
   /** transactionStatus — tracks current bridge flow status for UI */
   transactionStatus: TransactionStatus;
   setTransactionStatus: (status: TransactionStatus) => void;
+  /** claimedHashes — txns claimed this session, prevents re-showing claim button */
+  claimedHashes: Set<string>;
+  addClaimedHash: (hash: string) => void;
 }
 
 export const useTransactionsStore = create<TransactionsStore>((set) => ({
@@ -15,4 +18,9 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
   setInProcess: (inProcess) => set({ inProcess }),
   transactionStatus: TransactionStatus.PENDING,
   setTransactionStatus: (transactionStatus) => set({ transactionStatus }),
+  claimedHashes: new Set(),
+  addClaimedHash: (hash) =>
+    set((state) => ({
+      claimedHashes: new Set(state.claimedHashes).add(hash),
+    })),
 }));
