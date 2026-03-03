@@ -6,7 +6,7 @@ import { decodeAddress } from "@polkadot/util-crypto";
 import { u8aToHex } from "@polkadot/util";
 
 import { executeParams, merkleProof } from "@/types/transaction";
-import { Chain, TransactionStatus } from "@/types/common";
+import { Chain } from "@/types/common";
 import { 
  Transaction as MetamaskTransaction,
  TxPayload 
@@ -21,7 +21,6 @@ import { executeTransaction } from "@/services/pallet";
 
 import { useAvailAccount } from "@/stores/availwallet";
 import { useApi } from "@/stores/api";
-import useTransactions from "./useTransactions";
 import useEthWallet from "./common/useEthWallet";
 import { useInvokeSnap } from "./metamask/useInvokeSnap";
 
@@ -40,7 +39,6 @@ export default function useClaim() {
   const { validateandSwitchChain } = useEthWallet();
   const { selected } = useAvailAccount();
   const { address } = useAccount();
-  const { addToLocalTransaction } = useTransactions();
   const { api, ensureConnection } = useApi();
   const invokeSnap = useInvokeSnap();
 
@@ -159,17 +157,15 @@ export default function useClaim() {
     blockhash: `0x${string}`;
     sourceTransactionHash: `0x${string}`;
     sourceTransactionIndex: number;
-    sourceTimestamp: string;
     atomicAmount: string;
     senderAddress: string;
     receiverAddress: string;
-  }; 
+  };
 
   const initClaimAvailToEth = async ({
     blockhash,
     sourceTransactionHash,
     sourceTransactionIndex,
-    sourceTimestamp,
     atomicAmount,
     senderAddress,
     receiverAddress,
@@ -189,18 +185,6 @@ export default function useClaim() {
         Logger.info(
           `AVAIL_TO_ETH_CLAIM_SUCCESS ${receive} claim_to: ${address} amount: ${atomicAmount}`
         );
-
-        addToLocalTransaction({
-          sourceChain: Chain.AVAIL,
-          destinationChain: Chain.ETH,
-          sourceTransactionHash: sourceTransactionHash,
-          destinationTransactionHash: receive,
-          amount: atomicAmount,
-          status: TransactionStatus.CLAIM_PENDING,
-          sourceTimestamp: sourceTimestamp,
-          depositorAddress: senderAddress,
-          receiverAddress: receiverAddress
-        });
       }
       return receive;
     } catch (e: any) {
@@ -225,14 +209,12 @@ export default function useClaim() {
       destinationDomain: number;
     };
     sourceTransactionHash: `0x${string}`;
-    sourceTimestamp: string;
     atomicAmount: string;
   };
 
   const initClaimEthtoAvail = async ({
     executeParams,
     sourceTransactionHash,
-    sourceTimestamp,
     atomicAmount,
   }: AvailClaimParams) => {
     try {
@@ -291,18 +273,6 @@ export default function useClaim() {
         selected.source === "MetamaskSnap"
           ? await snapVectorExecute({ api: api!, executeParams: params })
           : await executeTransaction(params, selected!, api!);
-
-      addToLocalTransaction({
-        sourceTransactionHash: sourceTransactionHash,
-        status: TransactionStatus.CLAIM_PENDING,
-        sourceTimestamp: sourceTimestamp,
-        amount: atomicAmount,
-        destinationTransactionHash: execute.txHash,
-        sourceChain: Chain.ETH,
-        destinationChain: Chain.AVAIL,
-        depositorAddress: executeParams.from,
-        receiverAddress: executeParams.to    
-      });
 
       Logger.info(
         `ETH_TO_AVAIL_CLAIM_SUCCESS ${execute.txHash} claim_to: ${executeParams.to} amount: ${atomicAmount}`

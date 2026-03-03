@@ -5,44 +5,37 @@ interface StatusBadgeProps {
     txnStatus: TransactionStatus
 }
 
+const statusColor: Record<string, string> = {
+  INITIATED: "bg-yellow-600",
+  PENDING: "bg-blue-600",
+  ERROR: "bg-red-600",
+};
+
 export const StatusBadge: React.FC<StatusBadgeProps> = ({txnStatus} : StatusBadgeProps) => {
+  const formatStatus = (status: TransactionStatus) => {
+    if (status === TransactionStatus.INITIATED) return "In Progress";
+    if (status === TransactionStatus.PENDING) return "In Progress";
+    if (status === TransactionStatus.BRIDGED) return "In Progress";
+    if (status === TransactionStatus.READY_TO_CLAIM) return "Ready To Claim";
+    if (status === TransactionStatus.CLAIM_PENDING) return "Claim Pending";
+    return status.charAt(0) + status.toLowerCase().slice(1);
+  };
+
+  const dotColor = statusColor[txnStatus] ?? "bg-orange-500";
+
   return (
         <Badge className="flex-row items-center justify-center space-x-2 bg-[#24262f]">
           <p className="font-thicccboisemibold whitespace-nowrap">
-            {txnStatus === "BRIDGED"
-              ? `In Progress`
-              : txnStatus.charAt(0) + txnStatus.toLocaleLowerCase().slice(1)}
+            {formatStatus(txnStatus)}
           </p>
           <span className="relative flex h-2 w-2">
             <span
-              className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
-                txnStatus === "INITIATED"
-                  ? "bg-yellow-600"
-                  : `${
-                      txnStatus === "PENDING" 
-                        ? "bg-blue-600" 
-                        : txnStatus === "ERROR"
-                          ? "bg-red-600"
-                          : "bg-orange-500"
-                    }`
-              } opacity-75`}
+              className={`animate-ping absolute inline-flex h-full w-full rounded-full ${dotColor} opacity-75`}
             ></span>
             <span
-              className={`relative inline-flex rounded-full h-2 w-2  ${
-                txnStatus === "INITIATED"
-                  ? "bg-yellow-600"
-                  : `${
-                      txnStatus === "PENDING" 
-                        ? "bg-blue-600" 
-                        : txnStatus === "ERROR"
-                          ? "bg-red-600"
-                          : "bg-orange-500"
-                    }`
-              }`}
+              className={`relative inline-flex rounded-full h-2 w-2 ${dotColor}`}
             ></span>
           </span>
         </Badge>
   );
 }
-
-

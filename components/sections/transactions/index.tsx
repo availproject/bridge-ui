@@ -9,11 +9,10 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CiCircleQuestion } from "react-icons/ci";
 import CompletedTransactions from "./completedtransactions";
 import NoTransactions from "./notransactions";
-import { useTransactionsStore } from "@/stores/transactions";
 import { PendingTransactions } from "./pendingtransactions";
 import TxnLoading from "./loading";
 import FetchError from "./fetcherror";
@@ -30,22 +29,17 @@ export default function TransactionSection() {
     completedTransactions,
     paginatedCompletedTransactions,
     paginatedPendingTransactions,
+    isLoading,
+    isError,
+    refetch,
   } = useTransactions();
-
-  const { transactionLoader, isInitialLoad, fetchError } =
-    useTransactionsStore();
 
   const { address: ethAddress } = useAccount();
   const { selected } = useAvailAccount();
   const availAddress = selected?.address;
 
-  const [showPagination, setShowPagination] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pendingTab, setPendingTab] = useState<boolean>(true);
-
-  useEffect(() => {
-    setCurrentPage(0);
-  }, [pendingTab]);
 
   const shouldShowPagination = useMemo(() => {
     if (pendingTab) {
@@ -58,16 +52,12 @@ export default function TransactionSection() {
     pendingTab,
   ]);
 
-  useEffect(() => {
-    setShowPagination(shouldShowPagination);
-  }, [shouldShowPagination]);
-
   const isEndPage = pendingTab
     ? currentPage === paginatedPendingTransactions.length - 1
     : currentPage === paginatedCompletedTransactions.length - 1;
 
   const renderContent = () => {
-    if (transactionLoader && isInitialLoad) {
+    if (isLoading) {
       return <TxnLoading />;
     }
 
@@ -76,11 +66,11 @@ export default function TransactionSection() {
     }
 
     if (
-      fetchError &&
+      isError &&
       pendingTransactions.length === 0 &&
       completedTransactions.length === 0
     ) {
-      return <FetchError />;
+      return <FetchError onRetry={refetch} />;
     }
 
     return (
@@ -120,13 +110,13 @@ export default function TransactionSection() {
       <>
         <Tabs defaultValue="pending" className="flex flex-col h-full">
           <TabsList className="grid w-full grid-cols-2 !bg-[#33384B] !border-0 mb-2">
-            <TabsTrigger value="pending" onClick={() => setPendingTab(true)}>
+            <TabsTrigger value="pending" onClick={() => { setPendingTab(true); setCurrentPage(0); }}>
               Pending
             </TabsTrigger>
             <TabsTrigger
               value="history"
               className="flex flex-row items-center justify-center space-x-1"
-              onClick={() => setPendingTab(false)}
+              onClick={() => { setPendingTab(false); setCurrentPage(0); }}
             >
               <p>History</p>
               <FaHistory />
@@ -154,6 +144,10 @@ export default function TransactionSection() {
                   <p className="pb-1">
                     {">"} We fetch transaction data by connected wallet, make
                     sure you&apos;re connected to the right accounts.
+                  </p>
+                  <p className="pb-1">
+                    {">"} Manual claim transactions may take a few minutes to
+                    appear while they are being indexed.
                   </p>
                   <span className="">
                     <span>
@@ -185,7 +179,7 @@ export default function TransactionSection() {
             </HoverCard>
           </span>
           <button
-            disabled={currentPage === 0 || !showPagination}
+            disabled={currentPage === 0 || !shouldShowPagination}
             onClick={() => setCurrentPage((prev) => prev - 1)}
             className={`rounded-lg bg-[#484C5D] ${
               currentPage === 0
@@ -196,7 +190,7 @@ export default function TransactionSection() {
             <ArrowLeft />
           </button>
           <button
-            disabled={isEndPage || !showPagination}
+            disabled={isEndPage || !shouldShowPagination}
             onClick={() => setCurrentPage((prev) => prev + 1)}
             className={`rounded-lg bg-[#484C5D] ${
               isEndPage

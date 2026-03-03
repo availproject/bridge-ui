@@ -4,12 +4,11 @@ import BigNumber from "bignumber.js";
 import { useAccount, useWriteContract } from "wagmi";
 import { estimateGas, readContract } from "@wagmi/core";
 
-import { Transaction } from "@/types/transaction";
-import { Chain, TransactionStatus } from "@/types/common";
+import { Chain } from "@/types/common";
 import { appConfig } from "@/config/default";
 
 import useEthWallet from "@/hooks/common/useEthWallet";
-import useTransactions from "@/hooks/useTransactions";
+
 import { useAvailAccount } from "@/stores/availwallet";
 import { sendMessage } from "@/services/pallet";
 import { substrateAddressToPublicKey } from "@/utils/common";
@@ -34,7 +33,6 @@ import { useCommonStore } from "@/stores/common";
 
 export default function useZkBridge() {
   const { activeUserAddress, validateandSwitchChain, getERC20AvailBalance } = useEthWallet();
-  const { addToLocalTransaction } = useTransactions();
   const { writeContractAsync } = useWriteContract();
   const { selected } = useAvailAccount();
   const { address } = useAccount();
@@ -195,17 +193,6 @@ export default function useZkBridge() {
         destinationAddress,
       });
 
-      addToLocalTransaction({
-        sourceChain: Chain.ETH,
-        destinationChain: Chain.AVAIL,
-        sourceTransactionHash: burnTxHash,
-        amount: atomicAmount,
-        status: TransactionStatus.INITIATED,
-        depositorAddress: activeUserAddress,
-        receiverAddress: destinationAddress,
-        sourceTimestamp: new Date().toISOString(),
-      });
-
       Logger.info(
         `ETH_TO_AVAIL_INIT_SUCCESS ${burnTxHash} receiver_address: ${destinationAddress} sender_address: ${address} amount: ${atomicAmount}`
       );
@@ -276,23 +263,6 @@ export default function useZkBridge() {
             blockhash: result.value.blockhash,
           };
 
-          const tempLocalTransaction: Transaction = {
-            status: TransactionStatus.INITIATED,
-            destinationChain: Chain.ETH,
-            messageId: 0,
-            sourceChain: Chain.AVAIL,
-            amount: atomicAmount,
-            dataType: "ERC20",
-            depositorAddress: selected?.address,
-            receiverAddress: destinationAddress,
-            sourceBlockHash: success.blockhash,
-            sourceBlockNumber: 0,
-            sourceTransactionHash: success.txHash as `0x${string}`,
-            sourceTransactionIndex: 0,
-            sourceTimestamp: new Date().toISOString(),
-          };
-
-          await addToLocalTransaction(tempLocalTransaction);
           Logger.info(
             `AVAIL_TO_ETH_INIT_SUCCESS ${send} receiver_address: ${destinationAddress} sender_address: ${selected?.address} amount: ${atomicAmount}`
           );
@@ -320,22 +290,6 @@ export default function useZkBridge() {
         api
       );
       if (send.blockhash !== undefined && send.txHash !== undefined) {
-        const tempLocalTransaction: Transaction = {
-          status: TransactionStatus.INITIATED,
-          destinationChain: Chain.ETH,
-          messageId: 0,
-          sourceChain: Chain.AVAIL,
-          amount: atomicAmount,
-          dataType: "ERC20",
-          depositorAddress: selected?.address,
-          receiverAddress: destinationAddress,
-          sourceBlockHash: send.blockhash,
-          sourceTransactionHash: send.txHash as `0x${string}`,
-          sourceTransactionIndex: 0,
-          sourceTimestamp: new Date().toISOString(),
-        };
-
-        await addToLocalTransaction(tempLocalTransaction);
         Logger.info(
           `AVAIL_TO_ETH_INIT_SUCCESS ${send.txHash} receiver_address: ${destinationAddress} sender_address: ${selected?.address} amount: ${atomicAmount}`
         );

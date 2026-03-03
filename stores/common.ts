@@ -1,4 +1,3 @@
-import { fetchTokenPrice } from "@/services/bridgeapi";
 import { Chain } from "@/types/common";
 import { create } from "zustand";
 
@@ -43,9 +42,6 @@ interface WarningDialog extends DialogBase {
 interface CommonStore {
   fromChain: Chain;
   setFromChain: (fromChain: Chain) => void;
-  dollarAmount: number;
-  setDollarAmount: (dollarAmount: number) => void;
-  fetchDollarAmount: () => Promise<number>;
   toChain: Chain;
   setToChain: (toChain: Chain) => void;
   fromAmount: string;
@@ -65,16 +61,6 @@ interface CommonStore {
 export const useCommonStore = create<CommonStore>((set) => ({
   fromChain: Chain.AVAIL,
   setFromChain: (fromChain) => set({ fromChain }),
-  dollarAmount: 0,
-  setDollarAmount: (dollarAmount) => set({ dollarAmount }),
-  fetchDollarAmount: async () => {
-    const price = await fetchTokenPrice({
-      coin: "avail",
-      fiat: "usd",
-    });
-    set({ dollarAmount: price });
-    return price;
-  },
   toChain: Chain.ETH,
   setToChain: (toChain) => set({ toChain }),
   fromAmount: EMPTY_AMOUNT,

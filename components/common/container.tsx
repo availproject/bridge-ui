@@ -1,57 +1,19 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import TransactionSection from "../sections/transactions";
 import PendingTxnsBadge from "@/components/common/pendingtxnsbadge";
 import BridgeSection from "../sections/bridge";
-import { useAvailAccount } from "@/stores/availwallet";
-import { useAccount } from "wagmi";
-import { useTransactionsStore } from "@/stores/transactions";
 import TransactionModal from "../sections/bridge/review-and-submit";
 import { useCommonStore } from "@/stores/common";
 
 export default function Container() {
   const [activeTab, setActiveTab] = useState("bridge");
 
-  const { selected } = useAvailAccount();
-  const { address } = useAccount();
-  const { fetchAllTransactions, setTransactionLoader } = useTransactionsStore();
   const {
     reviewDialog: { isOpen: isModalOpen, onOpenChange: setIsModalOpen },
   } = useCommonStore();
-
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null;
-    let timeoutId: NodeJS.Timeout | null = null;
-
-    if (!address && !selected?.address) {
-      return;
-    }
-
-    timeoutId = setTimeout(async () => {
-      await fetchAllTransactions({
-        ethAddress: address,
-        availAddress: selected?.address,
-        setTransactionLoader,
-        isInitialFetch: true,
-      });
-
-      intervalId = setInterval(async () => {
-        await fetchAllTransactions({
-          ethAddress: address,
-          availAddress: selected?.address,
-          setTransactionLoader,
-          isInitialFetch: false,
-        });
-      }, 15000);
-    }, 500);
-
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [selected?.address, address, fetchAllTransactions, setTransactionLoader]);
 
   return (
     <div className="text-white w-full my-4 flex flex-col space-y-3 items-center justify-center">

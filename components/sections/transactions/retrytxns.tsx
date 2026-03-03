@@ -5,6 +5,7 @@ import { useTransactionsStore } from "@/stores/transactions";
 import { Transaction } from "@/types/transaction";
 import { Logger } from "@/utils/logger";
 import { RotateCcw } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface RetryTxnsProps {
   txn: Transaction;
@@ -27,6 +28,7 @@ export const RetryTxns = ({
     errorDialog: { onOpenChange: setErrorOpenDialog, setError },
   } = useCommonStore();
   const { setInProcess } = useTransactionsStore();
+  const queryClient = useQueryClient();
 
   const isLoading =
     directLoading ?? loadingTxns?.has(txn.sourceTransactionHash) ?? false;
@@ -67,6 +69,7 @@ export const RetryTxns = ({
     } finally {
       updateLoadingState(txn.sourceTransactionHash, false);
       setInProcess(false);
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
     }
   };
 

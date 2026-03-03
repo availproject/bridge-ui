@@ -25,11 +25,6 @@ export default async function RootLayout({
     <html lang="en">
       <body>
       <Analytics/>
-      <img
-          src="/images/bg.png"
-          className="-z-50 object-cover h-screen w-screen select-none absolute top-0 left-0 "
-          alt=""
-        />
         <Providers>  
           <NavBar/>
           <DatadogInit />

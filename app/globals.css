@@ -4,7 +4,8 @@
 
 
 * body{
-    background-color: #15181D;
+    background: linear-gradient(to bottom, #181A20, #181920, #15181D);
+    min-height: 100vh;
 }
 
 
@@ -44,6 +45,7 @@ input[type=number]::-webkit-outer-spin-button {
   }
   html {
     scrollbar-color: #666 transparent;
+    background-color: #181A20;
   }
 
 
