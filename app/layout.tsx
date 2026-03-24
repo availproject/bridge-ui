@@ -8,7 +8,6 @@ import { FooterSection } from "@/components/ui/FooterSection/FooterSection";
 import { Footer } from "@/components/ui/Footer/Footer";
 import DatadogInit from "./datadog-init";
 import { Analytics } from "@vercel/analytics/react";
-import { SupportButton } from "@/components/ui/SupportButton/SupportButton";
 
 
 export const metadata: Metadata = {
@@ -33,7 +32,6 @@ export default async function RootLayout({
            <Toaster />
           <FooterSection title={"Accelerating the unification of web3"} description={"DA Mainnet is now live!"}/>
           <Footer />
-          <SupportButton />
           </Providers>
       </body>
     </html>
