@@ -43,7 +43,7 @@
     "@wormhole-foundation/sdk-evm-ntt": "^4.0.4",
     "@wormhole-foundation/sdk-route-ntt": "^4.0.4",
     "avail-js-sdk": "^0.2.18",
-    "axios": "^1.7.7",
+    "axios": "^1.15.0",
     "bignumber.js": "^9.1.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -101,7 +101,9 @@
       "@wormhole-foundation/sdk": "^3.12.0",
       "@wormhole-foundation/sdk-base": "^3.12.0",
       "@wormhole-foundation/sdk-definitions": "^3.12.0",
-      "@wormhole-foundation/sdk-connect": "^3.12.0"
+      "@wormhole-foundation/sdk-connect": "^3.12.0",
+      "axios": ">=1.15.0",
+      "motion-dom": "12.0.0"
     }
   }
 }
