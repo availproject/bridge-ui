@@ -176,15 +176,15 @@ export default function AvailWalletConnect() {
                 <div className="flex flex-row font-ppmori items-start justify-start pt-3 space-x-2">
                   <InfoIcon />
                   <span>
-                    Don&apos;t have an Avail Wallet yet? Checkout this{" "}
+                    Don&apos;t have an Avail Wallet yet? Check out the{" "}
                     <a
-                      href="https://docs.availspace.app/avail-space/web-dashboard-user-guide/getting-started/how-to-install-subwallet-and-create-a-new-avail-account?utm_source=avail&utm_medium=docspace&utm_campaign=avlclaim"
+                      href="https://docs.availproject.org/docs/da/user-guides/accounts"
                       className="underline"
                       target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      cool tutorial
-                    </a>{" "}
-                    by Subwallet.
+                      Avail accounts guide
+                    </a>.
                   </span>
                 </div>
               </DialogDescription>
