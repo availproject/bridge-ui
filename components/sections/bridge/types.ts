@@ -1,18 +1,4 @@
 import { Chain } from "@/types/common";
-import { UseFormReturn } from "react-hook-form";
-import { z } from "zod";
-
-export const formSchema = z.object({
-  fromAmount: z.preprocess(
-    (val) => parseFloat(val as string),
-    z.number({
-      invalid_type_error: "Amount should be a number",
-    })
-  ),
-  toAddress: z.string(),
-});
-
-export type FormSchema = z.infer<typeof formSchema>;
 
 export interface Account {
   address: string;
@@ -21,19 +7,6 @@ export interface Account {
 export interface ChainBalance {
   balance: string;
   chain: Chain;
-}
-
-export interface BridgeFormProps {
-  form: UseFormReturn<FormSchema>;
-  fromChain: Chain;
-  toChain: Chain;
-  setFromChain: (chain: Chain) => void;
-  setToChain: (chain: Chain) => void;
-  setFromAmount: (amount: number) => void;
-  setToAddress: (address: string) => void;
-  toAddress: string | undefined;
-  selected: Account | null;
-  account: Account | null;
 }
 
 export interface Account {
